@@ -36,6 +36,11 @@ public final class ReservedSymbols {
   public static final String LEFT_CURLY = "{";
   public static final String RIGHT_CURLY = "}";
   
+  public static final String LNE_COMMENT = "//"; 
+  public static final String BLC_CMN_SRT = "/*";
+  public static final String BLC_CMN_END = "*/";
+
+  
   public static final String FALSE = "false";
   public static final String TRUE = "true";
   
@@ -55,25 +60,28 @@ public final class ReservedSymbols {
   public static final String BREAK = "break";
   public static final String CONTINUE = "continue";
   
+  public static final String TRY = "try";
+  public static final String CATCH = "catch";
+  
   public static final String NULL = "null";
   
   public static final String CLASS = "class";
 
   
   public static boolean isAnOperator(String potential) {
-    return potential.equals(PLUS) | potential.equals(MINUS) | potential.equals(MULT)
-        |  potential.equals(DIV) | potential.equals(MOD) | potential.equals(EQUALS) 
-        | potential.equals(BANG) | potential.equals(BANG_EQUALS) | potential.equals(LESS)
-        |  potential.equals(GREAT) | potential.equals(GREATE) | potential.equals(EQUAL_EQ) 
-        |  potential.equals(LESSE) | potential.equals(INCREMENT) | potential.equals(DECREMENT) 
-        | potential.equals(AND) | potential.equals(OR) | potential.equals(BOOL_AND) | 
+    return potential.equals(PLUS) || potential.equals(MINUS) || potential.equals(MULT)
+        ||  potential.equals(DIV) || potential.equals(MOD) || potential.equals(EQUALS) 
+        || potential.equals(BANG) || potential.equals(BANG_EQUALS) || potential.equals(LESS)
+        ||  potential.equals(GREAT) || potential.equals(GREATE) || potential.equals(EQUAL_EQ) 
+        ||  potential.equals(LESSE) || potential.equals(INCREMENT) || potential.equals(DECREMENT) 
+        || potential.equals(AND) || potential.equals(OR) || potential.equals(BOOL_AND) || 
         potential.equals(BOOL_OR);
   }
   
   public static boolean isAComparisonOp(String potential) {
-    return potential.equals(EQUAL_EQ) | potential.equals(LESS) | potential.equals(LESSE)
-        |  potential.equals(GREAT) | potential.equals(GREATE) | potential.equals(BANG_EQUALS) 
-        | potential.equals(BANG);
+    return potential.equals(EQUAL_EQ) || potential.equals(LESS) || potential.equals(LESSE)
+        ||  potential.equals(GREAT) || potential.equals(GREATE) || potential.equals(BANG_EQUALS) 
+        || potential.equals(BANG);
   }
   
   public static boolean isABooleanOperator(String potential) {
@@ -81,11 +89,12 @@ public final class ReservedSymbols {
   }
   
   public static boolean isABooleanVal(String potential) {
-    return potential.equals(FALSE) | potential.equals(TRUE);
+    return potential.equals(FALSE) || potential.equals(TRUE);
   }
   
   public static boolean isABlockSignifier(String potential) {
-    return potential.equals(IF) | potential.equals(FOR) | potential.equals(WHILE)
-        | potential.equals(ELSE) | potential.equals(FUNC);
+    return potential.equals(IF) || potential.equals(FOR) || potential.equals(WHILE)
+        || potential.equals(ELSE) || potential.equals(FUNC) || potential.equals(TRY)
+        || potential.equals(CATCH);
   }
 }

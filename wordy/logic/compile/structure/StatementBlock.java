@@ -31,6 +31,8 @@ public class StatementBlock extends Statement{
     FOR,
     WHILE,
     IF,
+    TRY,
+    CATCH,
     GENERAL; //For blocks that are just in a separate scope
   }
   
@@ -39,10 +41,9 @@ public class StatementBlock extends Statement{
   protected Token blockSig;
   
   public StatementBlock(BlockType type) {
+    super(StatementDescription.BLOCK);
     statements = new ArrayList<>();
     this.type = type;
-    isABlock = true;
-    isVarDec = false;
   }
 
   public void addStatement(Statement statement) {

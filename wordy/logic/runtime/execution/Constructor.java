@@ -26,16 +26,26 @@ public class Constructor extends FunctionMember{
   
   public Constant call(GenVisitor visitor, RuntimeExecutor executor, Constant ... args) {
     executor = executor.clone();
-    System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
     visitor = new GenVisitor(executor);
+    System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
+    
+    
+    TypeInstance typeInstance = new TypeInstance(definition);
+    
+    /*
+     * Place the "this" variable
+     */
+    VariableMember thisVar = new VariableMember("this", true);
+    System.out.println("****PLACING THIS*****");
+    thisVar.setValue(typeInstance, typeInstance.getDefinition().getType());
+    typeInstance.placeVariable(thisVar);
+    
     /*
      * Initialize the instance variables
      */
-    TypeInstance typeInstance = new TypeInstance(definition);
     for(Variable member: definition.getVariables()) {
       VariableMember varMem = new VariableMember(member.getName().content(), member.isConstant());
-      System.out.println("----PLACING VAR: "+varMem.getName());
-      executor.placeLocalVar(varMem);
+      System.out.println("----PLACING INSTANCE VAR: "+varMem.getName());
       if (member.getExpression() != null) {
         member.getExpression().visit(visitor);
         varMem.setValue(visitor.peekStack(), visitor.peekStack().getType());
@@ -43,9 +53,8 @@ public class Constructor extends FunctionMember{
       typeInstance.placeVariable(varMem);
     }
     
-    VariableMember thisVar = new VariableMember("this", true);
-    thisVar.setValue(typeInstance, typeInstance.getDefinition().getType());
-    executor.placeLocalVar(thisVar);
+    executor.initialize(typeInstance.getVariables(), null, null, null, null);
+    
     /*
      * Then execute the actual statements of this constructor
      */

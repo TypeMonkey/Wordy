@@ -5,47 +5,34 @@ import wordy.logic.compile.nodes.ASTNode;
 
 public class Statement {
   
-  protected ASTNode expression;
-  
-  protected boolean isVarDec;
-  protected boolean isABlock;
-  protected boolean isAReturn;
-  protected boolean isABreak;
-  protected boolean isAContinue;
-  
-  protected Statement() {
-    this(null, false, false, false);
+  public enum StatementDescription{
+    REGULAR,
+    VAR_DEC,
+    BLOCK,
+    BREAK,
+    CONTINUE,
+    RETURN, 
+    THROW;
   }
   
-  public Statement(ASTNode expression, boolean isAReturn, boolean isABreak, boolean isAContinue) {
+  protected ASTNode expression;
+  protected StatementDescription description;
+  
+  protected Statement(StatementDescription description) {
+    this(null, description);
+  }
+  
+  public Statement(ASTNode expression, StatementDescription description) {
     this.expression = expression;
-    this.isAReturn = isAReturn;
-    this.isABreak = isABreak;
-    this.isAContinue = isAContinue;
+    this.description = description;
   }
     
   public ASTNode getExpression() {
     return expression;
   }
   
-  public boolean isAVarDec() {
-    return isVarDec;
-  }
-  
-  public boolean isABlock() {
-    return isABlock;
-  }
-  
-  public boolean isAReturn() {
-    return isAReturn;
-  }
-  
-  public boolean isABreak() {
-    return isABreak;
-  }
-  
-  public boolean isAContinue() {
-    return isAContinue;
+  public StatementDescription getDescription() {
+    return description;
   }
   
   public String toString() {

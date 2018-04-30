@@ -2,11 +2,19 @@ package wordy.logic.compile.structure;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import wordy.logic.compile.Token;
-import wordy.logic.compile.nodes.ASTNode;
 
+/**
+ * Represents a function, and houses the statements declared inside the function
+ * it represents
+ * 
+ * Two functions are equal if they have the same name, parameter amount and are both
+ * constructors - or are both non-constructors
+ * 
+ * @author Jose Guaro
+ *
+ */
 public class Function {
   
   private Token name;
@@ -14,6 +22,14 @@ public class Function {
   private int paramAmnt;
   private boolean isConstructor;
   
+  /**
+   * Constructs a Function
+   * @param name - name of the Function (as a Token)
+   * @param statements - the Statements in this Function
+   * @param paramAmnt - the amount of parameters this Function takes
+   * @param isConstructor - true if this Function is a class constructor
+   *                        false if else
+   */
   public Function(Token name, Statement [] statements, int paramAmnt, boolean isConstructor) {
     this.name = name;
     this.statements = statements;
@@ -21,14 +37,27 @@ public class Function {
     this.isConstructor = isConstructor;
   }
   
+  /**
+   * Returns the amount of arguments this function accepts
+   * @return the amount of arguments this function accepts
+   */
   public int argAmount() {
     return paramAmnt;
   }
   
+  /**
+   * Returns the Statements inside this Function
+   * @return the Statements inside this Function
+   */
   public Statement [] getStatements() {
     return statements;
   }
   
+  /**
+   * Checks if this Function is a class constructor
+   * @return true if this Function is a constructor
+   *         false if not
+   */
   public boolean isConstructor() {
     return isConstructor;
   }
@@ -47,10 +76,19 @@ public class Function {
     return name.content()+" , args: "+paramAmnt+" | "+isConstructor;
   }
   
+  /**
+   * Returns the name of this Function (as a Token)
+   * @return the name of this Function (as a Token)
+   */
   public Token getName() {
     return name;
   }
   
+  /**
+   * A builder for Functions
+   * @author Jose Guaro
+   *
+   */
   public static class FunctionBuilder{
     
     private Token name;
@@ -58,6 +96,10 @@ public class Function {
     private int paramAmnt;
     private boolean isConstructor;
     
+    /**
+     * Constructs a FunctionBuilder
+     * @param name - the name for the Function being built (in Token form)
+     */
     public FunctionBuilder(Token name) {
       this.name = name;
       statements = new ArrayList<>();

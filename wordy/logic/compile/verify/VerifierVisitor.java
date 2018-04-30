@@ -3,6 +3,7 @@ package wordy.logic.compile.verify;
 import java.util.Stack;
 
 import wordy.logic.common.NodeVisitor;
+import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.errors.ParseError;
 import wordy.logic.compile.nodes.BinaryOpNode;
@@ -57,40 +58,42 @@ public class VerifierVisitor implements NodeVisitor{
     Token iden = node.getTokenName();
     if (prior == null || prior == Prior.MEM_ACC || prior == Prior.IDEN) {
       Variable variable = table.getVariable(iden.content());
-      if (variable == null) {
-        if (className == null) {
-          throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
-        }
-        //System.out.println("***CHECKING CLASS");
-        ClassStruct struct = table.getClass(className.content());
-        if (struct == null) {
-          throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
-        }
-        
-        variable = struct.getVariable(iden.content());
+      if (!iden.content().equals(ReservedSymbols.THIS)) {
         if (variable == null) {
-          throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
-        }
-      }    
-      //System.out.println("*-*VAR FOUND");
-    }
-    else if (prior == Prior.FUNC) {
-      Function function = table.getFunction(iden.content(), argAmnt);
-      if (function == null) {
-        System.out.println("---SYS FUNCS: "+table.getSystemFunctions());
-        if (table.systemFunctionExists(iden.content(), argAmnt) == false) {
           if (className == null) {
-            throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+            throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
           }
-          //System.out.println("*****CHECKING CLASS");
+          //System.out.println("***CHECKING CLASS");
           ClassStruct struct = table.getClass(className.content());
           if (struct == null) {
             throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
           }
           
-          function = struct.getFunction(iden.content(),argAmnt);
-          if (function == null) {
-            throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+          variable = struct.getVariable(iden.content());
+          if (variable == null) {
+            throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
+          }
+        }    
+        //System.out.println("*-*VAR FOUND");
+      }
+      else if (prior == Prior.FUNC) {
+        Function function = table.getFunction(iden.content(), argAmnt);
+        if (function == null) {
+          System.out.println("---SYS FUNCS: "+table.getSystemFunctions());
+          if (table.systemFunctionExists(iden.content(), argAmnt) == false) {
+            if (className == null) {
+              throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+            }
+            //System.out.println("*****CHECKING CLASS");
+            ClassStruct struct = table.getClass(className.content());
+            if (struct == null) {
+              throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
+            }
+            
+            function = struct.getFunction(iden.content(),argAmnt);
+            if (function == null) {
+              throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+            }
           }
         }
       }

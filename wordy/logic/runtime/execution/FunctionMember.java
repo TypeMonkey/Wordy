@@ -5,6 +5,7 @@ import java.util.List;
 import wordy.logic.compile.structure.ForLoopBlock;
 import wordy.logic.compile.structure.IfBlock;
 import wordy.logic.compile.structure.Statement;
+import wordy.logic.compile.structure.Statement.StatementDescription;
 import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
@@ -45,7 +46,7 @@ public class FunctionMember extends Callable{
     for(Statement statement: statements) {
       System.out.println("------NEXT STATEMENT------ ");
       visitor.resetStack();
-      if (statement.isABlock()) {
+      if (statement.getDescription() == StatementDescription.BLOCK) {
         RuntimeExecutor blockExec = executor.clone();
         BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec), blockExec, (StatementBlock) statement);
         if (result.gotBreak()) {
@@ -58,10 +59,10 @@ public class FunctionMember extends Callable{
           return result.getReturnedObject();
         }
       }
-      else if (statement.isAVarDec()) {
+      else if (statement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) statement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-        System.out.println("----PLACING VAR: "+variableMember.getName());
+        System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " +executor.getLocalVars());
         if(executor.placeLocalVar(variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
                                        variable.getName().lineNumber());
@@ -92,7 +93,7 @@ public class FunctionMember extends Callable{
           }
         }       
       }
-      else if (statement.isAReturn()) {
+      else if (statement.getDescription() == StatementDescription.RETURN) {
         if (statement.getExpression() == null) {
           //an "empty" return
           return Constant.VOID;
@@ -181,7 +182,7 @@ public class FunctionMember extends Callable{
   }
   
   private BlockExecResult executeForLoop(GenVisitor visitor, RuntimeExecutor executor, ForLoopBlock forLoop) {
-    if (forLoop.getInitialization().isAVarDec()) {
+    if (forLoop.getInitialization().getDescription() == StatementDescription.VAR_DEC) {
       Variable variable = (Variable) forLoop.getInitialization();
       VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
       executor.placeLocalVar(variableMember);
@@ -212,13 +213,13 @@ public class FunctionMember extends Callable{
   private BlockExecResult executeBlock(GenVisitor visitor, RuntimeExecutor executor, List<Statement> statements) {
     for(Statement loopStatement: statements) {
       visitor.resetStack();
-      if (loopStatement.isABreak()) {
+      if (loopStatement.getDescription() == StatementDescription.BREAK) {
         return new BlockExecResult(BlockExecResult.BREAK_ENCOUNTERED, null);
       }
-      else if (loopStatement.isAContinue()) {
+      else if (loopStatement.getDescription() == StatementDescription.CONTINUE) {
         return new BlockExecResult(BlockExecResult.CONTINUE_ENCOUNTERED, null);
       }
-      else if (loopStatement.isAReturn()) {
+      else if (loopStatement.getDescription() == StatementDescription.RETURN) {
         if (loopStatement.getExpression() != null) {
           loopStatement.getExpression().visit(visitor);
           VariableMember member = visitor.peekStack();
@@ -228,7 +229,7 @@ public class FunctionMember extends Callable{
           return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, Constant.VOID);
         }
       }
-      else if (loopStatement.isAVarDec()) {
+      else if (loopStatement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) loopStatement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
         if(executor.placeLocalVar(variableMember)) {
@@ -243,7 +244,7 @@ public class FunctionMember extends Callable{
           }          
         }       
       }
-      else if (loopStatement.isABlock()) {
+      else if (loopStatement.getDescription() == StatementDescription.BLOCK) {
         StatementBlock block = (StatementBlock) loopStatement;
         executor = executor.clone();
         BlockExecResult result = executeStatementBlock(new GenVisitor(executor), executor, block);

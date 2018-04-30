@@ -23,7 +23,13 @@ public class Main {
 
     Tokenizer tokenizer = new Tokenizer(sourceFile);
     Token [] tokens = tokenizer.tokenize();
-
+    
+    System.out.println("------TOKENS------");
+    for (int i = 0; i < tokens.length; i++) {
+      System.out.println(tokens[i]);
+    }
+    System.out.println("------TOKENS_END------");
+    
     Formatter formatter = new Formatter(Arrays.asList(tokens), sourceFile);
     FileStructure structure = formatter.formatSource();
     

@@ -16,6 +16,7 @@ import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
+import wordy.logic.compile.structure.Statement.StatementDescription;
 
 /**
  * Checks the provided file structure of any problems
@@ -33,6 +34,7 @@ public class StructureVerifier {
   private FileStructure structure;
   private List<FunctionKey> systemFunctions;
   private boolean ifWasEncountered;
+  private boolean tryWasEncountered;
   
   public StructureVerifier(FileStructure structure, List<FunctionKey> systemFunctions) {
     this.structure = structure;
@@ -131,14 +133,14 @@ public class StructureVerifier {
 
     Statement [] statements = function.getStatements();
     for(Statement statement : statements) {
-      if (statement.isAVarDec()) {
+      if (statement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) statement;
         funcTable.placeVariable(variable);
         if (variable.getExpression() != null) {
           variable.getExpression().visit(visitor);
         }
       }
-      else if (statement.isABlock()) {
+      else if (statement.getDescription() == StatementDescription.BLOCK) {
         SymbolTable blockTable = funcTable.clone();
         StatementBlock block = (StatementBlock) statement;
         boolean insideALoop = false;
@@ -168,7 +170,7 @@ public class StructureVerifier {
           ForLoopBlock forLoopBlock = (ForLoopBlock) block;
           if (forLoopBlock.getInitialization() != null) {
             Statement init = forLoopBlock.getInitialization();
-            if(init.isAVarDec()) {
+            if(init.getDescription() == StatementDescription.VAR_DEC) {
               Variable variable = (Variable) statement;
               blockTable.placeVariable(variable);
               if (variable.getExpression() != null) {
@@ -201,12 +203,18 @@ public class StructureVerifier {
         insideALoop = false;
       }
       else {
-        if(statement.isABreak() || statement.isAContinue()) {         
+        if(statement.getDescription() == StatementDescription.BREAK || 
+            statement.getDescription() == StatementDescription.CONTINUE) {         
           throw new ParseError("'break' and 'continue' statements must be inside loops"
               , statement.getExpression().tokens()[0].lineNumber());       
         }
+        else if (statement.getDescription() == StatementDescription.RETURN) {
+          if (statement.getExpression() != null) {
+            statement.getExpression().visit(visitor);
+          }
+        }
         else {
-          System.out.println("---IS A BREAK? "+statement.isABreak());
+          System.out.println("---IS A BREAK? "+statement.getDescription());       
           statement.getExpression().visit(visitor);
         }
       }
@@ -216,15 +224,15 @@ public class StructureVerifier {
   private void verifyBlock(StatementBlock block, SymbolTable table, Token className, boolean insideALoop) {
     VerifierVisitor visitor = new VerifierVisitor(table, className);
     for(Statement statement : block.getStatements()) {
-      System.out.println("----BLOCK EXEC---- "+insideALoop);
-      if (statement.isAVarDec()) {
+      System.out.println("----BLOCK EXEC---- "+insideALoop+"||"+statement);
+      if (statement.getDescription() == StatementDescription.VAR_DEC) {
         table.placeVariable((Variable) statement);
         Variable variable = (Variable) statement;
         if (variable.getExpression() != null) {
           variable.getExpression().visit(visitor);
         }
       }
-      else if (statement.isABlock()) {
+      else if (statement.getDescription() == StatementDescription.BLOCK) {
         SymbolTable blockTable = table.clone();
         StatementBlock nestedBlock = (StatementBlock) statement;
         boolean nestedInsideLoop = insideALoop;
@@ -254,7 +262,7 @@ public class StructureVerifier {
           ForLoopBlock forLoopBlock = (ForLoopBlock) nestedBlock;
           if (forLoopBlock.getInitialization() != null) {
             Statement init = forLoopBlock.getInitialization();
-            if(init.isAVarDec()) {
+            if(init.getDescription() == StatementDescription.VAR_DEC) {
               Variable variable = (Variable) statement;
               blockTable.placeVariable(variable);
               if (variable.getExpression() != null) {
@@ -286,7 +294,8 @@ public class StructureVerifier {
         
       }
       else {
-        if(statement.isABreak() || statement.isAContinue()) {
+        if(statement.getDescription() == StatementDescription.BREAK || 
+            statement.getDescription() == StatementDescription.CONTINUE) {
           if (insideALoop == false) {
             throw new ParseError("'break' and 'continue' statements must be inside loops"
                 , statement.getExpression().tokens()[0].lineNumber());

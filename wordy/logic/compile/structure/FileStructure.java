@@ -14,6 +14,7 @@ public class FileStructure {
   
   private String fileName;
   
+  private List<ImportedFile> imports;
   private Map<String, ClassStruct> classes;
   private Map<FunctionKey, Function> functions; 
   private Map<String, Variable> variables;
@@ -27,7 +28,10 @@ public class FileStructure {
      */
     this.variables = new LinkedHashMap<>();
     this.classes = new HashMap<>();
+    imports = new ArrayList<>();
   }
+  
+  
   
   public boolean addClass(ClassStruct struct) {
     if (classes.put(struct.getName().content(), struct) != null) {
@@ -70,8 +74,8 @@ public class FileStructure {
     return classes.get(name);
   }
   
-  public Function getFunction(String name) {
-    return functions.get(name);
+  public Function getFunction(String name, int argAmnt) {
+    return functions.get(new FunctionKey(name, argAmnt));
   }
   
   public Variable getVariable(String name) {

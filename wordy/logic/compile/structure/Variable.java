@@ -9,8 +9,8 @@ public class Variable extends Statement{
   private boolean isConstant;
     
   public Variable(Token name, boolean isConstant) {
+    super(StatementDescription.VAR_DEC);
     this.name = name;
-    isVarDec = true;
     this.isConstant = isConstant;
   }
   

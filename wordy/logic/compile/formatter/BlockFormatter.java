@@ -7,8 +7,10 @@ import java.util.ListIterator;
 import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.Token.Type;
+import wordy.logic.compile.structure.CatchBlock;
 import wordy.logic.compile.structure.IfBlock;
 import wordy.logic.compile.structure.StatementBlock;
+import wordy.logic.compile.structure.TryBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
 
 public class BlockFormatter {
@@ -59,6 +61,14 @@ public class BlockFormatter {
         ifBlock.setBlockSig(blockSignifier);
         return ifBlock;
       }
+    case ReservedSymbols.TRY:
+      TryBlock block = new TryBlock(blockSignifier);
+      tokens.remove(0);
+      block.addStatement(formatGeneralBlock());
+      return block;
+    case ReservedSymbols.CATCH:
+      CatchBlock catchBlock = new CatchBlockFormatter(tokens).formCatchBlock();
+      return catchBlock;
     default:
       System.out.println("---DEFAULT");
       return formatGeneralBlock();

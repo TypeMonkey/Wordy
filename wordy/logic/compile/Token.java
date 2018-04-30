@@ -25,6 +25,8 @@ public class Token {
     DIVI,
     MOD,
     EQUALS,
+    TRY,
+    CATCH,
     OR,
     AND,
     BOOL_OR,

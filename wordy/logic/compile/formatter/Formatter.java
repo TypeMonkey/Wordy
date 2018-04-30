@@ -54,9 +54,10 @@ public class Formatter {
                     
           if (varDecTokens.isEmpty() == false) {
             VariableFormatter varFormatter = new VariableFormatter(varDecTokens);
-            
-            if (structure.addVariable(varFormatter.formVariable())) {
-              throw new RuntimeException("Duplicate variable definition at line "+current.lineNumber());
+            Variable variable = varFormatter.formVariable();
+            if (structure.addVariable(variable)) {
+              throw new ParseError("Duplicate variable definition of '"+variable.getName().content()+"' ",
+                                    current.lineNumber());
             }
             
             expected.clear();
@@ -97,7 +98,7 @@ public class Formatter {
         }
       }
       else {
-        throw new RuntimeException("Misplaced token '"+current.content()+"' in line "+current.lineNumber());
+        throw new ParseError("Misplaced token '"+current.content()+"'", current.lineNumber());
       }
     }
   }
@@ -112,8 +113,9 @@ public class Formatter {
     
     List<Token> bodyTokens = new ArrayList<>();
     boolean currentParamIsConstant = false;
+    Token current = null;
     while (iterator.hasNext()) {
-      Token current = iterator.next();
+      current = iterator.next();
       System.out.println("--FUNC CUR: "+current);
       if (expected.contains(current.type())) {
         if (current.type() == Type.IDENT) {
@@ -171,7 +173,7 @@ public class Formatter {
         }
       }
       else {
-        throw new RuntimeException("Misplaced token '"+current.content()+"' in line "+current.lineNumber());
+        throw new ParseError("Misplaced token '"+current.content()+"'",current.lineNumber());
       }
     }
     
@@ -203,7 +205,7 @@ public class Formatter {
         }
       }
       else {
-        throw new RuntimeException("Misplaced token '"+current.content()+"' in line "+current.lineNumber());
+        throw new ParseError("Misplaced token '"+current.content()+"' ",current.lineNumber());
       }
     }
     
@@ -266,11 +268,13 @@ public class Formatter {
                */
               System.out.println("****CONSTRUCTOR "+current+" || "+function.argAmount());
               if(!struct.addFunction(function)) {
-                throw new RuntimeException("Duplicate constructor definition at line "+current.lineNumber());
+                throw new ParseError("Duplicate constructor definition of class '"+
+                                      function.getName().content()+"'",
+                                      current.lineNumber());
               }
             }
             else {
-              throw new RuntimeException("Invalid constructor definition at line "+current.lineNumber());
+              throw new ParseError("Invalid constructor definition",current.lineNumber());
             }
             
             expected.clear();
@@ -278,7 +282,7 @@ public class Formatter {
           }
         }
         else {
-          throw new RuntimeException("Misplaced token '"+current.content()+"' in line "+current.lineNumber());
+          throw new ParseError("Misplaced token '"+current.content()+"'",current.lineNumber());
         }
       }
       
@@ -329,9 +333,9 @@ public class Formatter {
     
     if (closureReached == false) {
       if (current == null) {
-        throw new RuntimeException("Missing closing brace in line "+lineNumber);
+        throw new ParseError("Missing closing brace",lineNumber);
       }
-      throw new RuntimeException("Missing closing brace in line "+lineNumber);
+      throw new ParseError("Missing closing brace",lineNumber);
     }
     
     return blockContents;

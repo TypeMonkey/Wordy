@@ -1,0 +1,44 @@
+
+Wordy | Date: 4/3/2018
+I'm still considering whether I should rename this to R-Hex.
+The reason I haven't yet is because R-Hex was meant to b statically typed
+
+Wordy | Date: 4/3/2018
+Wordy is pretty operational right now. Here's the features implemented so far:
+
+*Functions - ability to call them, declare them.
+*Classes - can declare classes and class instance variables, and functions
+  *Can access instance members now
+*Loops - Supports while and for loops 
+*Conditionals - support if/else blocks, and finally adheres to block scopes
+*Scopes! Finally got it adhere to block scopes in general
+*Returns, breaks, cotinues are all supported
+  *Functions will always return Void (a null valued object), unless otherwise declared in the function body.
+*Comments - line and block statements are supported
+
+What I need to do so far:
+*More testing for the list above.
+*Direct interaction with Java Class - any Java class
+  -Notably, direct use of the Java Standard Library
+  
+*Multi-file support - So far, I've just been interpreting one file. Need support for many files
+  - And with this, how to handle naming
+  
+*Harsher syntax checking - I'm seeing a significant amount of edge cases pass through the parser
+*Further document and comment the source files
+
+
+
+Wordy | Date: 4/3/2018
+Import statements should be like this:
+"import /*FILENAME*/" <-- for non Java classes
+
+For importing Java classes, the syntax for it is:
+"import System" <---With System being a stand-in for java.lang
+
+If you want to use somethign outside java.lang, we could extend this syntax to:
+"import System:/*package name*/" 
+ For example: "import System:java.net.*"  (yes, asterisk will be supported)
+ 
+Wordy | Date: 4/6/2018
+* try/catch syntax:  try{ /*code*/ }catch(Exception1, Exception2 , ... ExceptionN var){}
