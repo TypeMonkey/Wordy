@@ -19,7 +19,7 @@ import wordy.logic.runtime.types.ValType;
 public class Main {
   
   public static void main(String[] args) throws IOException {
-    String sourceFile = "Sources\\Source1.w";    
+    String sourceFile = "src\\Sources\\Source1.w";    
 
     Tokenizer tokenizer = new Tokenizer(sourceFile);
     Token [] tokens = tokenizer.tokenize();
