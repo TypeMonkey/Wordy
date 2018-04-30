@@ -81,7 +81,7 @@ public class GenVisitor implements NodeVisitor{
         stack.push(Operator.booleanOperations(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
       }
       else {
-        stack.push(Operator.numericalArithmetic(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
+        stack.push(Operator.simpleArithmetic(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
       }
     }
   }

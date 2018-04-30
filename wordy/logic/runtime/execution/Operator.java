@@ -20,7 +20,7 @@ public class Operator {
    * @param operator - the operator for the two operands
    * @return the resulting Value of the operator
    */
-  public static Constant numericalArithmetic(Constant leftOperand, Constant rightOperand, Token operator) {
+  public static Constant simpleArithmetic(Constant leftOperand, Constant rightOperand, Token operator) {
     if (leftOperand.getType().isChildOf(ValType.NUMBER) && 
         rightOperand.getType().isChildOf(ValType.NUMBER)) {
       Constant result = null;
@@ -105,6 +105,17 @@ public class Operator {
         }    
       }
       return result;
+    }
+    if (leftOperand.getType().equals(ValType.STRING) || 
+        rightOperand.getType().equals(ValType.STRING)) {
+      String leftStr = leftOperand.getValue().toString();
+      String rightStr = rightOperand.getValue().toString();
+      if (!operator.content().equals(ReservedSymbols.PLUS)) {
+        throw new RuntimeException("Invalid operation for string at line "+operator.lineNumber());
+      }
+      else {
+        return new Constant(ValType.STRING, leftStr.concat(rightStr));        
+      }
     }
     throw new RuntimeException("Invalid types for arithmetic operation at line "+operator.lineNumber());
   }

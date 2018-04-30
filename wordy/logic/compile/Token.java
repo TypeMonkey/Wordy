@@ -3,6 +3,7 @@ package wordy.logic.compile;
 public class Token {
   
   public enum Type{
+    IMPORT,
     LET,
     FUNCTION,
     DOT,

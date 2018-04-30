@@ -66,6 +66,8 @@ public final class ReservedSymbols {
   public static final String NULL = "null";
   
   public static final String CLASS = "class";
+  
+  public static final String IMPORT = "import";
 
   
   public static boolean isAnOperator(String potential) {

@@ -188,6 +188,9 @@ public class Tokenizer {
           else if (ReservedSymbols.NULL.equals(identStr)) {
             tokens.add(new Token(identStr, Type.NULL, lineNumber));
           }
+          else if (ReservedSymbols.IMPORT.equals(identStr)) {
+            tokens.add(new Token(identStr, Type.IMPORT, lineNumber));
+          }
           else {
             tokens.add(new Token(identStr, Type.IDENT, lineNumber));
           }

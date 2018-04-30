@@ -7,6 +7,7 @@ import java.util.ListIterator;
 import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.Token.Type;
+import wordy.logic.compile.errors.ParseError;
 import wordy.logic.compile.structure.CatchBlock;
 import wordy.logic.compile.structure.IfBlock;
 import wordy.logic.compile.structure.StatementBlock;
@@ -86,9 +87,9 @@ public class BlockFormatter {
     StatementBlock block = new StatementBlock(BlockType.GENERAL);
     ArrayList<Token> tempStatement = new ArrayList<>();
     
-    
+    Token current = null;
     while (iterator.hasNext()) {
-      Token current = iterator.next();
+      current = iterator.next();
       System.out.println("---BL: "+current);
       tempStatement.add(current);
       if (current.type() == Type.STATE_END) {
@@ -138,6 +139,13 @@ public class BlockFormatter {
         
         tempStatement = new ArrayList<>();
       }
+    }
+    
+    //the temp statement isn't empty which means a statement delimiter 
+    // - be it a semicolon, or a opening curly brace - hasn't been encountered.
+    //This means we have dangling statements
+    if (!tempStatement.isEmpty()) {
+      throw new ParseError("Dangling statemen or block declaration", current.lineNumber());
     }
     return block;
   }

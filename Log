@@ -38,7 +38,22 @@ For importing Java classes, the syntax for it is:
 
 If you want to use somethign outside java.lang, we could extend this syntax to:
 "import System:/*package name*/" 
- For example: "import System:java.net.*"  (yes, asterisk will be supported)
+ For example: "import System:java.net.Socket"  
+  -Wildcard imports will not be supported
  
 Wordy | Date: 4/6/2018
 * try/catch syntax:  try{ /*code*/ }catch(Exception1, Exception2 , ... ExceptionN var){}
+
+Wordy | Date: 4/30/2018
+*Added string concatenation. You can concat strings to strings and numbers.
+
+*TODO: try/catch structure verification
+       import statements
+       *More testing for the list above.
+	   *Direct interaction with Java Class - any Java class
+  		-Notably, direct use of the Java Standard Library
+	   *Multi-file support - So far, I've just been interpreting one file. Need support for many files
+  		- And with this, how to handle naming
+	   *Harsher syntax checking - I'm seeing a significant amount of edge cases pass through the parser
+	   *Further document and comment the source files
+       

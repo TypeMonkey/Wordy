@@ -44,7 +44,7 @@ public class FunctionMember extends Callable{
     System.out.println("-----CALLED: "+getName());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
-      System.out.println("------NEXT STATEMENT------ ");
+      System.out.println("------NEXT STATEMENT------ "+statements.length+" || "+statements[0].getClass().getName());
       visitor.resetStack();
       if (statement.getDescription() == StatementDescription.BLOCK) {
         RuntimeExecutor blockExec = executor.clone();

@@ -34,9 +34,12 @@ public class FunctionBodyFormatter {
     ListIterator<Token> iterator = tokens.listIterator();        
     ArrayList<Token> tempStatement = new ArrayList<>();
         
+    Token token = null;
+    
     while (iterator.hasNext()) {
-      Token token = iterator.next();
+      token = iterator.next();
       tempStatement.add(token);
+      System.out.println("---FUNC FORM: "+token);
       if (token.type() == Type.STATE_END ) {
         tempStatement.remove(tempStatement.size()-1);
         
@@ -46,6 +49,8 @@ public class FunctionBodyFormatter {
         
         StatementFormatter statementFormatter = new StatementFormatter(tempStatement);
         builder.addStatement(statementFormatter.formatStatements(), false);
+        
+        System.out.println("---FORM: STATE: "+tempStatement);
         
         tempStatement = new ArrayList<>();
       }
@@ -84,6 +89,13 @@ public class FunctionBodyFormatter {
         
         tempStatement = new ArrayList<>();
       }
+    }
+    
+    //the temp statement isn't empty which means a statement delimiter 
+    // - be it a semicolon, or a opening curly brace - hasn't been encountered.
+    //This means we have dangling statements
+    if (!tempStatement.isEmpty()) {
+      throw new ParseError("Dangling statemen or block declaration", token.lineNumber());
     }
   }
 }

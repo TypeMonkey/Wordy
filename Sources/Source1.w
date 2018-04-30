@@ -1,4 +1,4 @@
 
 function main(a){
-	print("hello")
+	print("hello"+19);
 }
