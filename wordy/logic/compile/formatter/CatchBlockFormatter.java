@@ -25,6 +25,7 @@ public class CatchBlockFormatter {
     ListIterator<Token> iterator = tokens.listIterator();
     
     Token current = null;
+    Token blockSig = null;
     
     Object [] closureResult = null;
     StatementBlock stateBlock = null;
@@ -33,6 +34,7 @@ public class CatchBlockFormatter {
       current = iterator.next();
       if (expected.contains(current.type())) {
         if (current.type() == Type.BLOCK_SIG) {
+          blockSig = current;
           expected.clear();
           expected.addAll(Arrays.asList(Type.LEFT_PAREN));
         }
@@ -52,8 +54,10 @@ public class CatchBlockFormatter {
           expected.add(Type.OPEN_SCOPE);
         }
         else if (current.type() == Type.OPEN_SCOPE) {
-          List<Token> scopeTokens = Formatter.gatherBlock(iterator, current.lineNumber());
-          scopeTokens.remove(scopeTokens.size()-1); // remove ending curly brace
+          List<Token> scopeTokens = new ArrayList<>();
+          scopeTokens.add(current);
+          scopeTokens.addAll(Formatter.gatherBlock(iterator, current.lineNumber()));          
+          System.out.println("---CATCH BLOCK BODY: "+scopeTokens);
           
           if (!scopeTokens.isEmpty()) {
             BlockFormatter formatter = new BlockFormatter(scopeTokens);
@@ -74,9 +78,8 @@ public class CatchBlockFormatter {
     }
     
     CatchBlock catchBlock = new CatchBlock((Token) closureResult[1], (ExceptionName[])closureResult[0]);
-    if (stateBlock != null) {
-      catchBlock.addStatement(stateBlock);
-    }
+    catchBlock.setBlockSig(blockSig);
+    catchBlock.addStatements(stateBlock.getStatements());
     return catchBlock;
   }
   

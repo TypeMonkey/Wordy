@@ -65,7 +65,7 @@ public class BlockFormatter {
     case ReservedSymbols.TRY:
       TryBlock block = new TryBlock(blockSignifier);
       tokens.remove(0);
-      block.addStatement(formatGeneralBlock());
+      block.addStatements(formatGeneralBlock().getStatements());
       return block;
     case ReservedSymbols.CATCH:
       CatchBlock catchBlock = new CatchBlockFormatter(tokens).formCatchBlock();

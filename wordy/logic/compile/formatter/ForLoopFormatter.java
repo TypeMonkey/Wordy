@@ -97,7 +97,7 @@ public class ForLoopFormatter {
       
       ForLoopBlock forLoopBlock = new ForLoopBlock(init, comparison, changeState);
       forLoopBlock.setBlockSig(forBlockSig);
-      forLoopBlock.addStatement(loopBlock);
+      forLoopBlock.addStatements(loopBlock.getStatements());
       
       return forLoopBlock;
     }

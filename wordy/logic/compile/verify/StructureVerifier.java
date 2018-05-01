@@ -6,6 +6,7 @@ import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.errors.ParseError;
 import wordy.logic.compile.nodes.ASTNode;
+import wordy.logic.compile.structure.CatchBlock;
 import wordy.logic.compile.structure.ClassStruct;
 import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.structure.ForLoopBlock;
@@ -14,6 +15,7 @@ import wordy.logic.compile.structure.IfBlock;
 import wordy.logic.compile.structure.Statement;
 import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
+import wordy.logic.compile.structure.TryBlock;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
 import wordy.logic.compile.structure.Statement.StatementDescription;
@@ -34,7 +36,6 @@ public class StructureVerifier {
   private FileStructure structure;
   private List<FunctionKey> systemFunctions;
   private boolean ifWasEncountered;
-  private boolean tryWasEncountered;
   
   public StructureVerifier(FileStructure structure, List<FunctionKey> systemFunctions) {
     this.structure = structure;
@@ -100,9 +101,8 @@ public class StructureVerifier {
     for(Function function: structure.getFunctions()) {
       SymbolTable funcTable = table.clone();
       verifyFunction(function, funcTable, null);
+      ifWasEncountered = false;
     }
-    
-    ifWasEncountered = false;
     
     /*
      * Then finally end with the class functions
@@ -131,6 +131,8 @@ public class StructureVerifier {
   private void verifyFunction(Function function, SymbolTable funcTable, Token className) {
     VerifierVisitor visitor = new VerifierVisitor(funcTable, className);
 
+    TryBlock recentTryBlock = null;
+    
     Statement [] statements = function.getStatements();
     for(Statement statement : statements) {
       if (statement.getDescription() == StatementDescription.VAR_DEC) {
@@ -144,12 +146,16 @@ public class StructureVerifier {
         SymbolTable blockTable = funcTable.clone();
         StatementBlock block = (StatementBlock) statement;
         boolean insideALoop = false;
+        System.out.println("---NEXT-F: "+block.blockType());
+        if(recentTryBlock != null && block.blockType() != BlockType.CATCH) {
+          throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
+        }
+        
         if(block.blockType() == BlockType.IF) {
           IfBlock ifBlock = (IfBlock) block;
           if(ifBlock.isElseIf()) {
             if(ifWasEncountered == false) {
-              String message = "Invalid else block placement";
-              throw new ParseError(message, ifBlock.getBlockSig().lineNumber());
+              throw new ParseError("Invalid else block placement", ifBlock.getBlockSig().lineNumber());
             }
             else {
               if(ifBlock.getCondition() == null){
@@ -198,6 +204,20 @@ public class StructureVerifier {
           whileLoop.getExpression().visit(visitor);
           insideALoop = true;
         }
+        else if (block.blockType() == BlockType.TRY) {
+          recentTryBlock = (TryBlock) block;
+          insideALoop = false;
+        }
+        else if (block.blockType() == BlockType.CATCH) {
+          if(recentTryBlock == null) {
+            throw new ParseError("Invalid catch block placement", block.getBlockSig().lineNumber());
+          }
+          else {
+            recentTryBlock = null;
+            insideALoop = false;
+          }
+        }
+        
         System.out.println("---GOING: "+insideALoop);
         verifyBlock(block, blockTable, className, insideALoop);
         insideALoop = false;
@@ -219,10 +239,18 @@ public class StructureVerifier {
         }
       }
     }
+    
+    //dangling try block
+    if(recentTryBlock != null) {
+      throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
+    }
   }
   
   private void verifyBlock(StatementBlock block, SymbolTable table, Token className, boolean insideALoop) {
     VerifierVisitor visitor = new VerifierVisitor(table, className);
+    
+    TryBlock recentTryBlock = null;
+    
     for(Statement statement : block.getStatements()) {
       System.out.println("----BLOCK EXEC---- "+insideALoop+"||"+statement);
       if (statement.getDescription() == StatementDescription.VAR_DEC) {
@@ -236,6 +264,12 @@ public class StructureVerifier {
         SymbolTable blockTable = table.clone();
         StatementBlock nestedBlock = (StatementBlock) statement;
         boolean nestedInsideLoop = insideALoop;
+        
+        System.out.println("---NEXT: "+nestedBlock.blockType());
+        if(recentTryBlock != null && nestedBlock.blockType() != BlockType.CATCH) {
+          throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
+        }       
+        
         if(nestedBlock.blockType() == BlockType.IF) {
           IfBlock ifBlock = (IfBlock) nestedBlock;
           if(ifBlock.isElseIf()) {
@@ -290,8 +324,21 @@ public class StructureVerifier {
           whileLoop.getExpression().visit(visitor);
           nestedInsideLoop = true;
         }
-        verifyBlock(nestedBlock, table, className, nestedInsideLoop);
-        
+        else if (block.blockType() == BlockType.TRY) {
+          System.out.println("-----TRY!!!!!");
+          recentTryBlock = (TryBlock) block;
+          nestedInsideLoop = false;
+        }
+        else if (block.blockType() == BlockType.CATCH) {
+          if(recentTryBlock == null) {
+            throw new ParseError("Invalid catch block placement", block.getBlockSig().lineNumber());
+          }
+          else {
+            recentTryBlock = null;
+            nestedInsideLoop = false;
+          }
+        }
+        verifyBlock(nestedBlock, table, className, nestedInsideLoop);     
       }
       else {
         if(statement.getDescription() == StatementDescription.BREAK || 
@@ -305,7 +352,14 @@ public class StructureVerifier {
           statement.getExpression().visit(visitor);
         }
       }
-      System.out.println("----BLOCK EXEC END----");
+      
+      
+      System.out.println("----BLOCK EXEC END---- ");
+    }
+    
+    //dangling try block
+    if(recentTryBlock != null) {
+      throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
     }
   }
 }
