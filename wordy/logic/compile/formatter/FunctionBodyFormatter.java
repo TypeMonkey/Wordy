@@ -56,6 +56,7 @@ public class FunctionBodyFormatter {
       }
       else if (token.type() == Type.BLOCK_SIG) {        
         boolean headerEndReached = false;
+        
         while (iterator.hasNext()) {
           Token header = iterator.next();
           tempStatement.add(header);
@@ -70,7 +71,6 @@ public class FunctionBodyFormatter {
         }
         
         tempStatement.addAll(Formatter.gatherBlock(iterator, token.lineNumber()));
-        
         BlockFormatter formatter = new BlockFormatter(tempStatement);
         builder.addStatement(formatter.formBlock(), false);
         

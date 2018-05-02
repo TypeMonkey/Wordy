@@ -23,7 +23,7 @@ import wordy.logic.compile.structure.Function.FunctionBuilder;
  * @author Jose Guaro
  *
  */
-public class Formatter {  
+public class Formatter{  
   private List<Token> tokens;
   private String fileName;
   

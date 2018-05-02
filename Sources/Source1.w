@@ -1,10 +1,14 @@
 
 function main(a){
 	try{
-	
+		try{
+		
+		}
+		catch(JokeException e){
+		
+		}
 	}
 	catch(Exception e){
-		print("hello"+19);
+		
 	}
-	print("hello"+19);
 }

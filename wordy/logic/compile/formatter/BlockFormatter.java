@@ -58,7 +58,7 @@ public class BlockFormatter {
       }
       else {
         IfBlock ifBlock = new IfBlock(null, true);
-        ifBlock.addStatement(formatGeneralBlock());
+        ifBlock.addStatements(formatGeneralBlock().getStatements());
         ifBlock.setBlockSig(blockSignifier);
         return ifBlock;
       }

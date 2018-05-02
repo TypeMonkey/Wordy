@@ -56,4 +56,23 @@ Wordy | Date: 4/30/2018
   		- And with this, how to handle naming
 	   *Harsher syntax checking - I'm seeing a significant amount of edge cases pass through the parser
 	   *Further document and comment the source files
-       
+      
+Wordy | Date: 5/1/2018
+*Potential class extension syntax:
+
+class Car extends Vehicle{}
+
+*I was thinking of using Python's syntax, which would be like:
+
+class Car(Vehicle){}
+
+But it looks like a function declaration. 
+
+*Note: this syntax has yet to be implemented
+
+
+
+
+
+
+ 

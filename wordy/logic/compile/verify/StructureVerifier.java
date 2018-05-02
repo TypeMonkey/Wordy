@@ -146,7 +146,8 @@ public class StructureVerifier {
         SymbolTable blockTable = funcTable.clone();
         StatementBlock block = (StatementBlock) statement;
         boolean insideALoop = false;
-        System.out.println("---NEXT-F: "+block.blockType());
+        System.out.println("---NEXT-F: "+block.blockType()+" | "+block.getBlockSig().lineNumber());
+        
         if(recentTryBlock != null && block.blockType() != BlockType.CATCH) {
           throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
         }
@@ -205,10 +206,12 @@ public class StructureVerifier {
           insideALoop = true;
         }
         else if (block.blockType() == BlockType.TRY) {
+          System.out.println("---TRY-F!!!!! "+block.getBlockSig().lineNumber());
           recentTryBlock = (TryBlock) block;
           insideALoop = false;
         }
         else if (block.blockType() == BlockType.CATCH) {
+          System.out.println("---CATCH-F!!!!! "+block.getBlockSig().lineNumber());
           if(recentTryBlock == null) {
             throw new ParseError("Invalid catch block placement", block.getBlockSig().lineNumber());
           }
@@ -265,7 +268,7 @@ public class StructureVerifier {
         StatementBlock nestedBlock = (StatementBlock) statement;
         boolean nestedInsideLoop = insideALoop;
         
-        System.out.println("---NEXT: "+nestedBlock.blockType());
+        System.out.println("---NEXT: "+nestedBlock.blockType()+" | "+nestedBlock.getBlockSig().lineNumber());
         if(recentTryBlock != null && nestedBlock.blockType() != BlockType.CATCH) {
           throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
         }       
@@ -324,14 +327,15 @@ public class StructureVerifier {
           whileLoop.getExpression().visit(visitor);
           nestedInsideLoop = true;
         }
-        else if (block.blockType() == BlockType.TRY) {
-          System.out.println("-----TRY!!!!!");
-          recentTryBlock = (TryBlock) block;
+        else if (nestedBlock.blockType() == BlockType.TRY) {
+          System.out.println("-----TRY!!!!! "+block.getBlockSig().lineNumber());
+          recentTryBlock = (TryBlock) nestedBlock;
           nestedInsideLoop = false;
         }
-        else if (block.blockType() == BlockType.CATCH) {
+        else if (nestedBlock.blockType() == BlockType.CATCH) {
+          System.out.println("---CATCH!!!!! "+block.getBlockSig().lineNumber());
           if(recentTryBlock == null) {
-            throw new ParseError("Invalid catch block placement", block.getBlockSig().lineNumber());
+            throw new ParseError("Invalid catch block placement", nestedBlock.getBlockSig().lineNumber());
           }
           else {
             recentTryBlock = null;
