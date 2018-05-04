@@ -34,11 +34,7 @@ Import statements should be like this:
 "import /*FILENAME*/" <-- for non Java classes
 
 For importing Java classes, the syntax for it is:
-"import System" <---With System being a stand-in for java.lang
-
-If you want to use somethign outside java.lang, we could extend this syntax to:
-"import System:/*package name*/" 
- For example: "import System:java.net.Socket"  
+"import Java:\*Java class name (full, binary name if needed)*\"
   -Wildcard imports will not be supported
  
 Wordy | Date: 4/6/2018

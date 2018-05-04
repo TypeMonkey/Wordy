@@ -39,7 +39,7 @@ public class Main {
     StructureVerifier verifier = new StructureVerifier(structure, sysFuncs);
     verifier.verify();
     
-    
+    /*
     System.out.println("--------PRE--------");
     for(Variable variable: structure.getVariables()) {
       System.out.println("--NAME: "+variable.getName());
@@ -52,7 +52,7 @@ public class Main {
     System.out.println("--------PROGRAM EXECUTION--------");
     executor.execute("main", 1, new Constant(ValType.STRING, "hello"));  
     
-    
+    */
   }
   
 
