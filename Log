@@ -34,7 +34,7 @@ Import statements should be like this:
 "import /*FILENAME*/" <-- for non Java classes
 
 For importing Java classes, the syntax for it is:
-"import Java:\*Java class name (full, binary name if needed)*\"
+"import java:\*Java class name (full, binary name if needed)*\"
   -Wildcard imports will not be supported
  
 Wordy | Date: 4/6/2018
@@ -56,19 +56,27 @@ Wordy | Date: 4/30/2018
 Wordy | Date: 5/1/2018
 *Potential class extension syntax:
 
-class Car extends Vehicle{}
+class Car : Vehicle{}
 
 *I was thinking of using Python's syntax, which would be like:
 
 class Car(Vehicle){}
 
-But it looks like a function declaration. 
-
 *Note: this syntax has yet to be implemented
 
 
-
-
+Wordy | Date: 5/4/2018
+*Implemented syntax for class extension and imports. 
+ -For imports, I'm allowing aliases so two classes that have the same simple name
+  can be implemented.
+ -Example use:
+ 	"import hello.world.Class"
+ 	"import hello.terra.Class"  <---type conflict
+ 	
+ 	with aliases:
+ 	
+ 	"import hello.world.Class as Point1"
+ 	"import hello.terra.Class"   <--no type conflict
 
 
  

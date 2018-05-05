@@ -15,6 +15,8 @@ public class ClassStruct {
   private Map<FunctionKey, Function> functions; 
   private Map<String, Variable> variables;
   
+  private Token parentClass;
+  
   public ClassStruct(Token name) {
     this.name = name;
     this.functions = new HashMap<>();
@@ -50,7 +52,15 @@ public class ClassStruct {
     return functions.put(key, function) == null;
   }
   
+  public void setParent(Token parentClass) {
+    this.parentClass = parentClass;
+  }
+  
   public Token getName() {
+    return name;
+  }
+  
+  public Token getParentClass() {
     return name;
   }
   

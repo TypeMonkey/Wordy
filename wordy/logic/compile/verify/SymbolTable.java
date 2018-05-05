@@ -16,12 +16,14 @@ public class SymbolTable {
   private Map<String, Variable> variables;
   private Map<FunctionKey, Function> functions;
   private List<FunctionKey> systemFuncs;
+  private Map<String, Class<?>> systemClasses;
   
   public SymbolTable() {
     classes = new HashMap<>();
     variables = new HashMap<>();
     functions = new HashMap<>();
     systemFuncs = new ArrayList<>();
+    systemClasses = new HashMap<>();
   }
   
   public SymbolTable clone() {
@@ -30,6 +32,7 @@ public class SymbolTable {
     table.variables = new HashMap<>(variables);
     table.functions = new HashMap<>(functions);
     table.systemFuncs = new ArrayList<>(systemFuncs);
+    table.systemClasses = new HashMap<>(systemClasses);
     return table;
   }
   
@@ -89,6 +92,7 @@ public class SymbolTable {
     systemFuncs.add(key);
     return false;
   }
+  
   
   public ClassStruct getClass(String name) {
     return classes.get(name);

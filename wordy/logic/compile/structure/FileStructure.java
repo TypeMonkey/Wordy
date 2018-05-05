@@ -3,10 +3,12 @@ package wordy.logic.compile.structure;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import wordy.logic.common.FunctionKey;
 
@@ -14,7 +16,7 @@ public class FileStructure {
   
   private String fileName;
   
-  private List<ImportedFile> imports;
+  private Set<ImportedFile> imports;
   private Map<String, ClassStruct> classes;
   private Map<FunctionKey, Function> functions; 
   private Map<String, Variable> variables;
@@ -28,10 +30,12 @@ public class FileStructure {
      */
     this.variables = new LinkedHashMap<>();
     this.classes = new HashMap<>();
-    imports = new ArrayList<>();
+    imports = new HashSet<>();
   }
   
-  
+  public boolean addImport(ImportedFile importedFile) {
+    return imports.add(importedFile);
+  }
   
   public boolean addClass(ClassStruct struct) {
     if (classes.put(struct.getName().content(), struct) != null) {

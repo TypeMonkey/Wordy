@@ -191,12 +191,18 @@ public class Tokenizer {
           else if (ReservedSymbols.IMPORT.equals(identStr)) {
             tokens.add(new Token(identStr, Type.IMPORT, lineNumber));
           }
+          else if (ReservedSymbols.AS.equals(identStr)) {
+            tokens.add(new Token(identStr, Type.AS, lineNumber));
+          }
           else {
             tokens.add(new Token(identStr, Type.IDENT, lineNumber));
           }
         }
         else if (readByte.equals(ReservedSymbols.SEMI_COLON)) {
           tokens.add(new Token(readByte, Type.STATE_END, lineNumber));
+        }
+        else if (readByte.equals(ReservedSymbols.COLON)) {
+          tokens.add(new Token(readByte, Type.COLON, lineNumber));
         }
         else if (readByte.equals(ReservedSymbols.COMMA)) {
           tokens.add(new Token(readByte, Type.COMMA, lineNumber));

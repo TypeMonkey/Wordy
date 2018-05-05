@@ -15,6 +15,7 @@ import wordy.logic.compile.nodes.ASTNode;
 import wordy.logic.compile.structure.ClassStruct;
 import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.structure.Function;
+import wordy.logic.compile.structure.ImportedFile;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.Function.FunctionBuilder;
 
@@ -42,11 +43,28 @@ public class Formatter{
     
     ListIterator<Token> iterator = tokens.listIterator();
     
-    ArrayList<Type> expected = new ArrayList<>(Arrays.asList(Type.LET, Type.FUNCTION, Type.CLASS));
+    ArrayList<Type> expected = new ArrayList<>(Arrays.asList(Type.IMPORT, Type.LET, Type.FUNCTION, Type.CLASS));
     while (iterator.hasNext()) {
       Token current = iterator.next();
       if (expected.contains(current.type())) {
-        if (current.type() == Type.LET) {
+        if (current.type() == Type.IMPORT) {
+          ArrayList<Token> importTokens = new ArrayList<>();
+          importTokens.add(current);
+          importTokens.addAll(gatherStatement(iterator, current.lineNumber()));
+          importTokens.remove(importTokens.size() - 1);
+          
+          ImportFormatter importFormatter = new ImportFormatter(importTokens);
+          ImportedFile importedFile = importFormatter.formImport();
+          
+          if (!structure.addImport(importedFile)) {
+            throw new ParseError("The file '"+importedFile.getImported()+"' has already been imported", current.lineNumber());
+          }
+          System.out.println("!!! IMPORTED RAISED!!! "+importedFile.isAJavaFile()+" | "+importedFile.getTypeNameImported() +" | "+importedFile.getAlias());
+          
+          expected.clear();
+          expected.addAll(Arrays.asList(Type.IMPORT, Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
+        }
+        else if (current.type() == Type.LET) {
           ArrayList<Token> varDecTokens = new ArrayList<>();
           varDecTokens.add(current);
           varDecTokens.addAll(gatherStatement(iterator, current.lineNumber()));
@@ -61,7 +79,7 @@ public class Formatter{
             }
             
             expected.clear();
-            expected.addAll(Arrays.asList(Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
+            expected.addAll(Arrays.asList(Type.IMPORT, Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
           }
         }
         else if (current.type() == Type.FUNCTION) {
@@ -84,7 +102,7 @@ public class Formatter{
           }
           
           expected.clear();
-          expected.addAll(Arrays.asList(Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
+          expected.addAll(Arrays.asList(Type.IMPORT, Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
         }
         else if (current.type() == Type.CLASS) {
           ClassStruct struct = parseClassDeclaration(iterator);
@@ -94,7 +112,7 @@ public class Formatter{
           }
           
           expected.clear();
-          expected.addAll(Arrays.asList(Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
+          expected.addAll(Arrays.asList(Type.IMPORT, Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));
         }
       }
       else {
@@ -187,16 +205,28 @@ public class Formatter{
   
   private ClassStruct parseClassDeclaration(ListIterator<Token> iterator) {
     Token name = null;
+    Token parent = null;
     ArrayList<Type> expected = new ArrayList<>(Arrays.asList(Type.IDENT));
     Token current = null;
     while (iterator.hasNext()) {
       current = iterator.next();
-      System.out.println("---CURRENT "+current);
+      System.out.println("---CURRENT CLASS"+current);
       if (expected.contains(current.type())) {
         if(current.type() == Type.IDENT) {
-          name = current;
+          if (name != null) {
+            parent = current;
+            expected.clear();
+            expected.add(Type.OPEN_SCOPE);
+          }
+          else {
+            name = current;
+            expected.clear();
+            expected.addAll(Arrays.asList(Type.OPEN_SCOPE, Type.COLON));
+          }
+        }
+        else if (current.type() == Type.COLON) {
           expected.clear();
-          expected.add(Type.OPEN_SCOPE);
+          expected.add(Type.IDENT);
         }
         else if (current.type() == Type.OPEN_SCOPE) {
           expected.clear();
@@ -216,11 +246,13 @@ public class Formatter{
     List<Token> body = gatherBlock(iterator, current.lineNumber());
     body.remove(body.size()-1);
     
+    ClassStruct struct = new ClassStruct(name);
+    struct.setParent(parent);
     if (body.isEmpty()) {
-      return new ClassStruct(name);
+      System.out.println("---CLASS PRINT: "+struct.getParentClass().content());
+      return struct;
     }
     else {
-      ClassStruct struct = new ClassStruct(name);
       iterator = body.listIterator();
       expected = new ArrayList<>(Arrays.asList(Type.LET, Type.FUNCTION, Type.IDENT));
       while (iterator.hasNext()) {
@@ -286,7 +318,7 @@ public class Formatter{
         }
       }
       
-      System.out.println("---CLASS PRINT: ");
+      System.out.println("---CLASS PRINT: "+struct.getParentClass().content());
       for(Function function: struct.getFunctions()) {
         System.out.println("FUNC: "+function.getName()+" || "+function.isConstructor());
       }
@@ -294,6 +326,7 @@ public class Formatter{
         System.out.println("VAR: "+variable.getName());
       }
       System.out.println("----CLASS PRINT END-----");
+      
       return struct;
     }
   }

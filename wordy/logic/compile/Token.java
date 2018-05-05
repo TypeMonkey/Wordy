@@ -4,6 +4,7 @@ public class Token {
   
   public enum Type{
     IMPORT,
+    AS,
     LET,
     FUNCTION,
     DOT,
@@ -43,6 +44,7 @@ public class Token {
     DECREMENT,
     COMMA,
     RETURN,
+    COLON,
     BLOCK_SIG, //like if, for, while, else, function
     STATE_END,//semicolon
     NO_EXPECT;  //for the formatter to check if there's no tokens expected

@@ -1,17 +1,44 @@
 package wordy.logic.compile.structure;
 
+import java.util.Objects;
+
 import wordy.logic.compile.Token;
 
 public class ImportedFile {
 
   private Token importKey;
   private String imported;
-  private boolean isASystemImport;
+  private boolean isJavaFile;
+  
+  private Token alias;
   
   public ImportedFile(Token importKey, String imported, boolean systemImport) {
     this.importKey = importKey;
     this.imported = imported;
-    this.isASystemImport = systemImport;
+    this.isJavaFile = systemImport;
+  }
+  
+  public boolean equals(Object object) {
+    if (object instanceof ImportedFile) {
+      ImportedFile file = (ImportedFile) object;
+      
+      return file.getTypeNameImported().equals(this.getTypeNameImported()) &&
+             (file.getAlias() != null && this.alias != null 
+               && file.getAlias().equals(this.alias));
+    }
+    return false;
+  }
+  
+  public int hashCode() {
+    return Objects.hash(getTypeNameImported(), isJavaFile);
+  }
+  
+  public void setAlias(Token alias) {
+    this.alias = alias;
+  }
+  
+  public Token getAlias() {
+    return alias;
   }
 
   public Token getImportKey() {
@@ -21,8 +48,13 @@ public class ImportedFile {
   public String getImported() {
     return imported;
   }
+  
+  public String getTypeNameImported() {
+    String [] typeNameArr = imported.split("\\.");
+    return typeNameArr[typeNameArr.length-1];
+  }
 
-  public boolean isASystemImport() {
-    return isASystemImport;
+  public boolean isAJavaFile() {
+    return isJavaFile;
   } 
 }

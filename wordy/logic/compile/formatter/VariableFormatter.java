@@ -73,16 +73,16 @@ public class VariableFormatter {
             throw new ParseError("Invalid assignment expression", current.lineNumber());
           }
           System.out.println("---PARING: "+varName.content()+" | "+assignment);
-          expression = new Parser(assignment).parse();        
+          expression = new Parser(assignment).parse();    
         }
       }
       else {
-        throw new RuntimeException("Misplaced token '"+current.content()+"' in line "+current.lineNumber());
+        throw new ParseError("Misplaced token '"+current.content(), current.lineNumber());
       }
     }
     
     if (expected.contains(Type.NO_EXPECT) == false) {
-      throw new RuntimeException("Missing tokens: "+expected+" at line: "+current.lineNumber());
+      throw new ParseError("Missing tokens: "+expected, current.lineNumber());
     }
         
     Variable variable = new Variable(varName,isConstant);
