@@ -93,6 +93,19 @@ public class SymbolTable {
     return false;
   }
   
+  /**
+   * Places a System Class in this SymbolTable
+   * @param key - the key to add
+   * @return true if this key has been added already
+   *         false if it hasn't
+   */
+  public boolean placeSystemFunction(String className, Class<?> sysClass) {
+    if (systemClasses.put(className, sysClass) != null) {
+      return true;
+    }
+    return false;
+  }
+  
   
   public ClassStruct getClass(String name) {
     return classes.get(name);
@@ -104,6 +117,10 @@ public class SymbolTable {
   
   public boolean systemFunctionExists(String name, int argcCnt) {
     return systemFuncs.contains(new FunctionKey(name, argcCnt));
+  }
+  
+  public Class<?> getSystemClass(String name){
+    return systemClasses.get(name);
   }
   
   public Variable getVariable(String name) {

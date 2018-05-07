@@ -249,7 +249,7 @@ public class Formatter{
     ClassStruct struct = new ClassStruct(name);
     struct.setParent(parent);
     if (body.isEmpty()) {
-      System.out.println("---CLASS PRINT: "+struct.getParentClass().content());
+      System.out.println("---CLASS PRINT: "+struct.getParentClass());
       return struct;
     }
     else {

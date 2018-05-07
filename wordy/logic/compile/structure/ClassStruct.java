@@ -61,7 +61,7 @@ public class ClassStruct {
   }
   
   public Token getParentClass() {
-    return name;
+    return parentClass;
   }
   
   public Function getFunction(String name, int argCount) {
