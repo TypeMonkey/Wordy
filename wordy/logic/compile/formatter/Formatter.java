@@ -59,7 +59,7 @@ public class Formatter{
           if (!structure.addImport(importedFile)) {
             throw new ParseError("The file '"+importedFile.getImported()+"' has already been imported", current.lineNumber());
           }
-          System.out.println("!!! IMPORTED RAISED!!! "+importedFile.isAJavaFile()+" | "+importedFile.getTypeNameImported() +" | "+importedFile.getAlias());
+          System.out.println("!!! IMPORTED RAISED!!! | "+importedFile.getTypeNameImported() +" | "+importedFile.getAlias());
           
           expected.clear();
           expected.addAll(Arrays.asList(Type.IMPORT, Type.LET, Type.FUNCTION, Type.CLASS, Type.NO_EXPECT));

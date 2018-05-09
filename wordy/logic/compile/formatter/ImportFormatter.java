@@ -27,7 +27,6 @@ public class ImportFormatter {
     
     Token importKey = null;
     String imported = "";
-    boolean isJavaFile = false;
     Token alias = null;
     
     boolean expectAliasName = false;
@@ -35,7 +34,7 @@ public class ImportFormatter {
     Token current = null;
     while (iterator.hasNext()) {
       current = iterator.next();
-      System.out.println("---Import CURR: "+current+" | "+isJavaFile+" | "+expectAliasName);
+      System.out.println("---Import CURR: "+current+" | "+expectAliasName);
       if (expected.contains(current.type())) {
         if (current.type() == Type.IMPORT) {
           importKey = current;
@@ -59,13 +58,11 @@ public class ImportFormatter {
           else{
             imported += current.content();
             expected.clear();
-            expected.addAll(Arrays.asList(Type.COLON, Type.DOT, 
-                                          Type.AS, Type.NO_EXPECT));
+            expected.addAll(Arrays.asList(Type.COLON, Type.AS, Type.NO_EXPECT));
           }          
         }
         else if (current.type() == Type.COLON) {
           encounteredColon = true;
-          isJavaFile = true;
           imported = ""; //clear previous concatenations
           
           expected.clear();
@@ -90,7 +87,7 @@ public class ImportFormatter {
     if (expected.contains(Type.NO_EXPECT) == false) {
       throw new ParseError("Missing tokens: "+expected, current.lineNumber());
     }
-    ImportedFile file = new ImportedFile(importKey, imported, isJavaFile);
+    ImportedFile file = new ImportedFile(importKey, imported);
     file.setAlias(alias);
     return file;
   }

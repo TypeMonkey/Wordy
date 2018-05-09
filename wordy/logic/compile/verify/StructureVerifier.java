@@ -1,6 +1,7 @@
 package wordy.logic.compile.verify;
 
 import java.util.List;
+import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
@@ -37,13 +38,18 @@ public class StructureVerifier {
   private List<FunctionKey> systemFunctions;
   private boolean ifWasEncountered;
   
-  public StructureVerifier(FileStructure structure, List<FunctionKey> systemFunctions) {
+  private Map<String, FileStructure> otherFiles;
+  
+  public StructureVerifier(FileStructure structure, 
+                           List<FunctionKey> systemFunctions, 
+                           Map<String, FileStructure> otherFiles) {
     this.structure = structure;
     this.systemFunctions = systemFunctions;
+    this.otherFiles = otherFiles;
   }
   
   public void verify() {
-    SymbolTable table = new SymbolTable();
+    SymbolTable table = new SymbolTable(otherFiles);
     
     /*
      * Place constructors in function map

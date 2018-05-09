@@ -31,7 +31,7 @@ What I need to do so far:
 
 Wordy | Date: 4/3/2018
 Import statements should be like this:
-"import /*FILENAME*/" <-- for non Java classes
+"import "/*FILENAME*/" <-- for non Java classes
 
 For importing Java classes, the syntax for it is:
 "import java:\*Java class name (full, binary name if needed)*\"
@@ -77,6 +77,43 @@ Wordy | Date: 5/4/2018
  	
  	"import hello.world.Class as Point1"
  	"import hello.terra.Class"   <--no type conflict
+
+
+Wordy | Date: 5/8/2018
+*Changed imports to only importing java classes.
+ - If you want to access a member in another Wordy file, just do:
+      "OtherFile.function() or OtherFile.variable" and etc.
+*Currently working on finding a way to load all classes from the "java.lang" package
+*Created the WordyCompiler class as a front-end for the compilation part of Wordy.
+*Added maps for imported classes and Wordy source files in SymbolTable.
+ -Most of the import/java-interaction features are first being implemented in the compile-side
+  before the runtime-side. It'll make things easier.
+*Will be using Google Guava for reflection related classes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  

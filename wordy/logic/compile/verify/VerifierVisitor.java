@@ -61,9 +61,12 @@ public class VerifierVisitor implements NodeVisitor{
       if (!iden.content().equals(ReservedSymbols.THIS)) {
         if (variable == null) {
           if (className == null) {
-            throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
+            if (table.getFileStruct(iden.content()) == null) {
+              throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
+            }
           }
-          //System.out.println("***CHECKING CLASS");
+          
+          System.out.println("***CHECKING CLASS");
           ClassStruct struct = table.getClass(className.content());
           if (struct == null) {
             throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());

@@ -1,8 +1,12 @@
 package wordy.logic;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+
+import com.google.common.reflect.ClassPath;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
@@ -18,45 +22,14 @@ import wordy.logic.runtime.types.ValType;
 
 public class Main {
   
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
     String sourceFile = "src\\Sources\\Source1.w";    
 
-    Tokenizer tokenizer = new Tokenizer(sourceFile);
-    Token [] tokens = tokenizer.tokenize();
+    //WordyCompiler compiler = new WordyCompiler(sourceFile);
+    //Map<String, FileStructure> fileMap = compiler.compile();
     
-    System.out.println("------TOKENS------");
-    for (int i = 0; i < tokens.length; i++) {
-      System.out.println(tokens[i]);
-    }
-    System.out.println("------TOKENS_END------");
-    
-    Formatter formatter = new Formatter(Arrays.asList(tokens), sourceFile);
-    FileStructure structure = formatter.formatSource();
-    
-    ArrayList<FunctionKey> sysFuncs = new ArrayList<>();
-    sysFuncs.addAll(Arrays.asList(new FunctionKey("println", 1), new FunctionKey("print", 1)));
-
-    StructureVerifier verifier = new StructureVerifier(structure, sysFuncs);
-    verifier.verify();
-    
-    /*
-    System.out.println("--------PRE--------");
-    for(Variable variable: structure.getVariables()) {
-      System.out.println("--NAME: "+variable.getName());
-    }
-    System.out.println("---------------POST------------");
-
-    RuntimeBuilder builder = new RuntimeBuilder(structure);
-    RuntimeExecutor executor = builder.build();   
-    
-    System.out.println("--------PROGRAM EXECUTION--------");
-    executor.execute("main", 1, new Constant(ValType.STRING, "hello"));  
-    
-    */
-  }
-  
-
-  private static void announceError(Throwable throwable) {
-    System.err.println(throwable.getMessage());
+    final ClassLoader loader = ClassLoader.getSystemClassLoader();
+    System.out.println(loader.loadClass("java.lang.Object"));
+    System.out.println(ClassPath.from(loader).getTopLevelClasses("java.lang.").size());
   }
 }

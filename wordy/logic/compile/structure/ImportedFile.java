@@ -8,14 +8,12 @@ public class ImportedFile {
 
   private Token importKey;
   private String imported;
-  private boolean isJavaFile;
   
   private Token alias;
   
-  public ImportedFile(Token importKey, String imported, boolean systemImport) {
+  public ImportedFile(Token importKey, String imported) {
     this.importKey = importKey;
     this.imported = imported;
-    this.isJavaFile = systemImport;
   }
   
   public boolean equals(Object object) {
@@ -30,7 +28,7 @@ public class ImportedFile {
   }
   
   public int hashCode() {
-    return Objects.hash(getTypeNameImported(), isJavaFile);
+    return Objects.hash(getTypeNameImported());
   }
   
   public void setAlias(Token alias) {
@@ -53,8 +51,4 @@ public class ImportedFile {
     String [] typeNameArr = imported.split("\\.");
     return typeNameArr[typeNameArr.length-1];
   }
-
-  public boolean isAJavaFile() {
-    return isJavaFile;
-  } 
 }

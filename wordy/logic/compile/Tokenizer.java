@@ -8,20 +8,26 @@ import java.util.ArrayList;
 import wordy.logic.compile.Token.Type;
 import wordy.logic.compile.errors.ParseError;
 
+/**
+ * Groups and transforms the characters in a source file 
+ * into Tokens.
+ * @author Jose Guaro
+ *
+ */
 public class Tokenizer {
   
-  private String sourceFile; 
-  
-  public Tokenizer(String sourceFile) {
-    this.sourceFile = sourceFile;
-  }
-  
-  public Token[] tokenize() throws IOException {
+  /**
+   * Tokenizes the content of a source file
+   * @param sourceFile - the file path of the source file
+   * @return an array of Tokens representing the source file's contents
+   * @throws IOException - if an I/O error occurs
+   */
+  public static Token[] tokenize(String sourceFile) throws IOException {
     Token [] tokens = rawTokenize(sourceFile);    
     return tokens;
   }
   
-  private Token[] rawTokenize(String sourceFile) throws IOException{
+  private static Token[] rawTokenize(String sourceFile) throws IOException{
     ArrayList<Token> tokens = new ArrayList<>();
 
     /*

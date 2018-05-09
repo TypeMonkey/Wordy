@@ -7,10 +7,13 @@ import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.structure.ClassStruct;
+import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.structure.Function;
 import wordy.logic.compile.structure.Variable;
 
 public class SymbolTable {
+  
+  private Map<String, FileStructure> otherSources;
   
   private Map<String, ClassStruct> classes;
   private Map<String, Variable> variables;
@@ -18,7 +21,8 @@ public class SymbolTable {
   private List<FunctionKey> systemFuncs;
   private Map<String, Class<?>> systemClasses;
   
-  public SymbolTable() {
+  public SymbolTable(Map<String, FileStructure> otherSources) {
+    this.otherSources = otherSources;
     classes = new HashMap<>();
     variables = new HashMap<>();
     functions = new HashMap<>();
@@ -27,7 +31,7 @@ public class SymbolTable {
   }
   
   public SymbolTable clone() {
-    SymbolTable table = new SymbolTable();
+    SymbolTable table = new SymbolTable(otherSources);
     table.classes = new HashMap<>(classes);
     table.variables = new HashMap<>(variables);
     table.functions = new HashMap<>(functions);
@@ -106,6 +110,9 @@ public class SymbolTable {
     return false;
   }
   
+  public FileStructure getFileStruct(String name) {
+    return otherSources.get(name);
+  }
   
   public ClassStruct getClass(String name) {
     return classes.get(name);

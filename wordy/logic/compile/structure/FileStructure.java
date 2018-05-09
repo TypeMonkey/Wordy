@@ -12,6 +12,11 @@ import java.util.TreeSet;
 
 import wordy.logic.common.FunctionKey;
 
+/**
+ * Represents a Wordy source file
+ * @author Jose Guaro
+ *
+ */
 public class FileStructure {
   
   private String fileName;
@@ -21,6 +26,10 @@ public class FileStructure {
   private Map<FunctionKey, Function> functions; 
   private Map<String, Variable> variables;
   
+  /**
+   * Constructs a FileStructure
+   * @param fileName - the name of the source file (without the .w extension)
+   */
   public FileStructure(String fileName) {
     this.fileName = fileName;
     
