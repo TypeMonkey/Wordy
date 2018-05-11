@@ -1,4 +1,4 @@
 
 function main(a){
-	System.out.println();
+	System.out.println(a);
 }

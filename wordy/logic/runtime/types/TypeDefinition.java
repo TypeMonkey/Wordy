@@ -26,7 +26,7 @@ import wordy.logic.runtime.execution.FunctionMember;
  * @author Jose Guaro
  *
  */
-public class TypeDefinition {
+public class TypeDefinition{
   
   protected Map<String, Variable> variables;
   protected Map<FunctionKey, FunctionMember> functions;

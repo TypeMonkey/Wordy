@@ -16,7 +16,7 @@ import wordy.logic.runtime.types.TypeInstance;
  * @author Jose Guaro
  *
  */
-public class RuntimeExecutor {
+public class RuntimeTable {
 
   private Map<String, VariableMember> instanceVars;
   private Map<String, VariableMember> localVars;
@@ -24,7 +24,7 @@ public class RuntimeExecutor {
   private Map<FunctionKey, Callable> callables;
   private Map<FunctionKey, SystemFunction> systemFunctions;
 
-  public RuntimeExecutor() {
+  public RuntimeTable() {
     this.instanceVars = new HashMap<>();
     this.localVars = new HashMap<>();
     this.fileVars = new HashMap<>();
@@ -74,8 +74,8 @@ public class RuntimeExecutor {
     }
   }
 
-  public RuntimeExecutor clone() {
-    RuntimeExecutor executor = new RuntimeExecutor();
+  public RuntimeTable clone() {
+    RuntimeTable executor = new RuntimeTable();
     executor.callables = new HashMap<>(callables);
     executor.fileVars = new HashMap<>(fileVars);
     executor.localVars = new HashMap<>(localVars);

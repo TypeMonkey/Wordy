@@ -3,7 +3,7 @@ package wordy.logic.runtime.execution;
 import wordy.logic.compile.structure.Statement;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.RuntimeExecutor;
+import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.TypeDefinition;
 import wordy.logic.runtime.types.TypeInstance;
@@ -24,7 +24,7 @@ public class Constructor extends FunctionMember{
     this.definition = definition;
   }
   
-  public Constant call(GenVisitor visitor, RuntimeExecutor executor, Constant ... args) {
+  public Constant call(GenVisitor visitor, RuntimeTable executor, Constant ... args) {
     executor = executor.clone();
     visitor = new GenVisitor(executor);
     System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
@@ -47,7 +47,7 @@ public class Constructor extends FunctionMember{
       VariableMember varMem = new VariableMember(member.getName().content(), member.isConstant());
       System.out.println("----PLACING INSTANCE VAR: "+varMem.getName());
       if (member.getExpression() != null) {
-        member.getExpression().visit(visitor);
+        member.getExpression().accept(visitor);
         varMem.setValue(visitor.peekStack(), visitor.peekStack().getType());
       }
       typeInstance.placeVariable(varMem);

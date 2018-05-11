@@ -1,13 +1,18 @@
 package wordy.logic;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
@@ -24,6 +29,14 @@ import wordy.logic.compile.verify.StructureVerifier;
  *       prior to runtime. Since Wordy is dynamic, of course no type checking is done.
  */
 public class WordyCompiler {
+  public static final List<String> JAVA_CLASSES;
+  
+  static {
+    JAVA_CLASSES = Collections.unmodifiableList(getStandardJavaClasses());
+  }
+  
+  public static final String RUNTIME_JAR = "rt.jar";
+  public static final String CLASS_FILE = ".class";
   
   private String [] sources;
     
@@ -74,6 +87,44 @@ public class WordyCompiler {
     return structures;
   }
     
+  private static List<String> getStandardJavaClasses(){
+    ArrayList<String> classNames = new ArrayList<>();
+    String paths = ManagementFactory.getRuntimeMXBean().getBootClassPath();
+
+    String [] indiv = paths.split(File.pathSeparator);
+    File [] files = new File[indiv.length];
+
+    for(int i = 0; i < indiv.length; i++) {
+      files[i] = new File(indiv[i]);
+    }
+
+    File rtFile = null;
+    for(File file: files) {
+      if (file.getName().equals("rt.jar")) {
+        rtFile = file;
+        break;
+      }
+    }
+
+    try {
+      ZipInputStream inputStream = new ZipInputStream(new FileInputStream(rtFile));
+      
+      for(ZipEntry entry = inputStream.getNextEntry() ; entry != null; entry = inputStream.getNextEntry()) {
+        if (entry.getName().startsWith("java/lang/")) {
+          String className = entry.getName().replace('/', '.').replace(".class", "");
+          classNames.add(className);
+          System.out.println(className);
+        }
+      }
+      
+      inputStream.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    
+    return classNames;
+  }
+  
   private void announceError(Throwable throwable) {
     System.err.println(throwable.getMessage());
   }

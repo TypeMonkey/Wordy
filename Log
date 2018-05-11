@@ -91,6 +91,15 @@ Wordy | Date: 5/8/2018
 *Will be using Google Guava for reflection related classes
 
 
+Wordy | Date: 5/10/2018
+*Found a way to find all classes in the java.lang package which should make up all of the java standard library classes
+ - Have tied this in structure verifying and referred system classes are correctly checked.
+ - import aliases are also correctly checked
+
+*GOAL: Runtime interaction with java classes
+ -So far: have created the WordyRuntime class as a front end for the runtime aspect.
+ -Need to find a way to revamp identifier lookup to accomadate this new feature
+
 
 
 

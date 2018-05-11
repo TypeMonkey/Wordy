@@ -35,7 +35,7 @@ public abstract class ASTNode {
     this.tokens = tokens;
   }
   
-  public abstract void visit(NodeVisitor visitor);
+  public abstract void accept(NodeVisitor visitor);
   
   /**
    * Gets the tokens composing this node

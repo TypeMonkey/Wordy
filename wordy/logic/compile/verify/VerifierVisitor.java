@@ -39,9 +39,9 @@ public class VerifierVisitor implements NodeVisitor{
   public void visit(BinaryOpNode node) {
     System.out.println("----VISITOR OP: "+node.getOperator());
     System.out.println("---VISITING LEFT "+node.getLeftOperand().getClass().getName());
-    node.getLeftOperand().visit(this); 
+    node.getLeftOperand().accept(this); 
     System.out.println("---VISITNG RIGHT "+node.getRightOperand().getClass().getName());
-    node.getRightOperand().visit(this); 
+    node.getRightOperand().accept(this); 
     System.out.println("---OP DONE");
   }
 
@@ -62,19 +62,22 @@ public class VerifierVisitor implements NodeVisitor{
         if (variable == null) {
           if (className == null) {
             if (table.getFileStruct(iden.content()) == null) {
-              throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
+              if (!table.importedClassExists(iden.content())) {
+                throw new ParseError("Can't find identifier '"+iden.content()+"' ", iden.lineNumber());
+              }
             }
           }
-          
-          System.out.println("***CHECKING CLASS");
-          ClassStruct struct = table.getClass(className.content());
-          if (struct == null) {
-            throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
-          }
-          
-          variable = struct.getVariable(iden.content());
-          if (variable == null) {
-            throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
+          else {
+            System.out.println("***CHECKING CLASS");
+            ClassStruct struct = table.getClass(className.content());
+            if (struct == null) {
+              throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
+            }
+            
+            variable = struct.getVariable(iden.content());
+            if (variable == null) {
+              throw new ParseError("Can't find variable '"+iden.content()+"' ", iden.lineNumber());
+            }
           }
         }    
         //System.out.println("*-*VAR FOUND");
@@ -117,7 +120,7 @@ public class VerifierVisitor implements NodeVisitor{
   public void visit(MemberAccessNode node) {
     System.out.println("---MEMBER ACCESS: "+node.getMemberName()+" | "+prior);
     prior = Prior.MEM_ACC;
-    node.getCalle().visit(this);
+    node.getCalle().accept(this);
     
     /**
      * Ignore this as we can't really access object members
@@ -131,11 +134,11 @@ public class VerifierVisitor implements NodeVisitor{
     System.out.println("----VISITED FUNCTION CALL "+node.getCallee().getClass().getName()+" | "+prior);
     prior = Prior.FUNC;
     argAmnt = node.arguments().length;
-    node.getCallee().visit(this);
+    node.getCallee().accept(this);
     
     for(int i = 0; i < node.arguments().length; i++) {
       System.out.println("---ARG "+i+" ----");
-      node.arguments()[i].visit(this);
+      node.arguments()[i].accept(this);
       System.out.println("---ARG "+i+" END----");
     }
   }

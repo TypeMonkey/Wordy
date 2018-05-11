@@ -3,6 +3,7 @@ package wordy.logic.compile.verify;
 import java.util.List;
 import java.util.Map;
 
+import wordy.logic.WordyCompiler;
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.errors.ParseError;
@@ -13,6 +14,7 @@ import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.structure.ForLoopBlock;
 import wordy.logic.compile.structure.Function;
 import wordy.logic.compile.structure.IfBlock;
+import wordy.logic.compile.structure.ImportedFile;
 import wordy.logic.compile.structure.Statement;
 import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
@@ -50,6 +52,25 @@ public class StructureVerifier {
   
   public void verify() {
     SymbolTable table = new SymbolTable(otherFiles);
+    
+    /*
+     * Place system classes (Java standard classes) into the system class map
+     * along with imports (use alias in place if present) 
+     */
+    for(String standard: WordyCompiler.JAVA_CLASSES) {
+      String [] split = standard.split("\\.");
+      String simpleName = split[split.length-1];
+      table.placeImportedClass(simpleName);
+    }
+    
+    for(ImportedFile file : structure.getImports()) {
+      if(file.getAlias() != null) {
+        table.placeImportedClass(file.getAlias().content());
+      }
+      else {
+        table.placeImportedClass(file.getTypeNameImported());
+      }
+    }
     
     /*
      * Place constructors in function map
@@ -97,7 +118,7 @@ public class StructureVerifier {
       VerifierVisitor visitor = new VerifierVisitor(table, null);
       ASTNode value = variable.getExpression();
       if (value != null) {
-        value.visit(visitor);
+        value.accept(visitor);
       }
     }
     
@@ -120,7 +141,7 @@ public class StructureVerifier {
         table.placeVariable(classVar);
         if (classVar.getExpression() != null) {
           VerifierVisitor visitor = new VerifierVisitor(table, null);
-          classVar.getExpression().visit(visitor);          
+          classVar.getExpression().accept(visitor);          
         }
       }
       
@@ -145,7 +166,7 @@ public class StructureVerifier {
         Variable variable = (Variable) statement;
         funcTable.placeVariable(variable);
         if (variable.getExpression() != null) {
-          variable.getExpression().visit(visitor);
+          variable.getExpression().accept(visitor);
         }
       }
       else if (statement.getDescription() == StatementDescription.BLOCK) {
@@ -169,13 +190,13 @@ public class StructureVerifier {
                 ifWasEncountered  = false;
               }
               else {
-                ifBlock.getCondition().getExpression().visit(visitor);
+                ifBlock.getCondition().getExpression().accept(visitor);
                 ifWasEncountered = true;
               }
             }
           }
           else {
-            ifBlock.getCondition().getExpression().visit(visitor);
+            ifBlock.getCondition().getExpression().accept(visitor);
             ifWasEncountered = true;
           }
         }
@@ -187,28 +208,28 @@ public class StructureVerifier {
               Variable variable = (Variable) statement;
               blockTable.placeVariable(variable);
               if (variable.getExpression() != null) {
-                variable.getExpression().visit(visitor);
+                variable.getExpression().accept(visitor);
               }
             }
             else {
               if (init.getExpression() != null) {
-                init.getExpression().visit(visitor);
+                init.getExpression().accept(visitor);
               }
             }
           }
           if (forLoopBlock.getCheckStatement() != null) {
             Statement comp = forLoopBlock.getCheckStatement();
-            comp.getExpression().visit(visitor);
+            comp.getExpression().accept(visitor);
           }
           if(forLoopBlock.getChangeStatement() != null) {
             Statement change = forLoopBlock.getChangeStatement();
-            change.getExpression().visit(visitor);
+            change.getExpression().accept(visitor);
           }
           insideALoop = true;
         }
         else if (block.blockType() == BlockType.WHILE) {
           WhileLoopBlock whileLoop = (WhileLoopBlock) block;
-          whileLoop.getExpression().visit(visitor);
+          whileLoop.getExpression().accept(visitor);
           insideALoop = true;
         }
         else if (block.blockType() == BlockType.TRY) {
@@ -239,12 +260,12 @@ public class StructureVerifier {
         }
         else if (statement.getDescription() == StatementDescription.RETURN) {
           if (statement.getExpression() != null) {
-            statement.getExpression().visit(visitor);
+            statement.getExpression().accept(visitor);
           }
         }
         else {
           System.out.println("---IS A BREAK? "+statement.getDescription());       
-          statement.getExpression().visit(visitor);
+          statement.getExpression().accept(visitor);
         }
       }
     }
@@ -266,7 +287,7 @@ public class StructureVerifier {
         table.placeVariable((Variable) statement);
         Variable variable = (Variable) statement;
         if (variable.getExpression() != null) {
-          variable.getExpression().visit(visitor);
+          variable.getExpression().accept(visitor);
         }
       }
       else if (statement.getDescription() == StatementDescription.BLOCK) {
@@ -291,13 +312,13 @@ public class StructureVerifier {
                 ifWasEncountered  = false;
               }
               else {
-                ifBlock.getCondition().getExpression().visit(visitor);
+                ifBlock.getCondition().getExpression().accept(visitor);
                 ifWasEncountered = true;
               }
             }
           }
           else {
-            ifBlock.getCondition().getExpression().visit(visitor);
+            ifBlock.getCondition().getExpression().accept(visitor);
             ifWasEncountered = true;
           }
         }
@@ -309,28 +330,28 @@ public class StructureVerifier {
               Variable variable = (Variable) statement;
               blockTable.placeVariable(variable);
               if (variable.getExpression() != null) {
-                variable.getExpression().visit(visitor);
+                variable.getExpression().accept(visitor);
               }
             }
             else {
               if (init.getExpression() != null) {
-                init.getExpression().visit(visitor);
+                init.getExpression().accept(visitor);
               }
             }
           }
           if (forLoopBlock.getCheckStatement() != null) {
             Statement comp = forLoopBlock.getCheckStatement();
-            comp.getExpression().visit(visitor);
+            comp.getExpression().accept(visitor);
           }
           if(forLoopBlock.getChangeStatement() != null) {
             Statement change = forLoopBlock.getChangeStatement();
-            change.getExpression().visit(visitor);
+            change.getExpression().accept(visitor);
           }
           nestedInsideLoop = true;
         }
         else if (nestedBlock.blockType() == BlockType.WHILE) {
           WhileLoopBlock whileLoop = (WhileLoopBlock) nestedBlock;
-          whileLoop.getExpression().visit(visitor);
+          whileLoop.getExpression().accept(visitor);
           nestedInsideLoop = true;
         }
         else if (nestedBlock.blockType() == BlockType.TRY) {
@@ -359,7 +380,7 @@ public class StructureVerifier {
           }
         }
         else {
-          statement.getExpression().visit(visitor);
+          statement.getExpression().accept(visitor);
         }
       }
       

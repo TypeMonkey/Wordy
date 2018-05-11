@@ -39,7 +39,7 @@ public class RuntimeBuilder {
     sysFuncs = new ArrayList<>();
   }
   
-  public RuntimeExecutor build() {    
+  public RuntimeTable build() {    
     addSysFunctions();
     /*
      * Add class constructors to callable map
@@ -88,7 +88,7 @@ public class RuntimeBuilder {
       fileVars.add(variableMember);
     }    
     
-    RuntimeExecutor executor = new RuntimeExecutor();
+    RuntimeTable executor = new RuntimeTable();
     executor.initialize(null,null,fileVars, callables, sysFuncs);
     
     GenVisitor genVisitor = new GenVisitor(executor);
@@ -101,7 +101,7 @@ public class RuntimeBuilder {
       
       //null expressions are for when the variable isn't initialized
       if (expression != null) {
-        expression.visit(genVisitor);
+        expression.accept(genVisitor);
       }   
       genVisitor.resetStack();
     }
@@ -111,14 +111,14 @@ public class RuntimeBuilder {
   
   public void addSysFunctions() {
     SystemFunction println = new SystemFunction("println", 1, ValType.VOID) {
-      public Constant call(GenVisitor visitor, RuntimeExecutor executor, Constant... args) {
+      public Constant call(GenVisitor visitor, RuntimeTable executor, Constant... args) {
         System.out.println(args[0].getValue());
         return Constant.VOID;
       }
     };
     
     SystemFunction print = new SystemFunction("print", 1, ValType.VOID) {
-      public Constant call(GenVisitor visitor, RuntimeExecutor executor, Constant... args) {
+      public Constant call(GenVisitor visitor, RuntimeTable executor, Constant... args) {
         System.out.print(args[0].getValue());
         return Constant.VOID;
       }

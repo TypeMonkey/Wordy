@@ -36,7 +36,7 @@ public class UnaryNode extends ASTNode{
   }
 
   @Override
-  public void visit(NodeVisitor visitor) {
+  public void accept(NodeVisitor visitor) {
     visitor.visit(this);
   }
   

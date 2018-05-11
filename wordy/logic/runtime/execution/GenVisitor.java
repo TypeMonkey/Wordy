@@ -15,7 +15,7 @@ import wordy.logic.compile.nodes.MethodCallNode;
 import wordy.logic.compile.nodes.UnaryNode;
 import wordy.logic.compile.nodes.ASTNode.NodeType;
 import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.RuntimeExecutor;
+import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.TypeInstance;
 import wordy.logic.runtime.types.ValType;
@@ -23,11 +23,11 @@ import wordy.logic.runtime.types.ValType;
 public class GenVisitor implements NodeVisitor{
   
   private Stack<VariableMember> stack;
-  private RuntimeExecutor executor;
+  private RuntimeTable executor;
   
   private boolean pushVariable;
   
-  public GenVisitor(RuntimeExecutor executor) {
+  public GenVisitor(RuntimeTable executor) {
     this.stack = new Stack<>();
     this.executor = executor;
   }
@@ -36,10 +36,10 @@ public class GenVisitor implements NodeVisitor{
     System.out.println("----OPERATOR: "+binaryOpNode.getOperator()+" | LINE: "+binaryOpNode.tokens()[0].lineNumber());
     if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUALS)) {
       pushVariable = true;
-      binaryOpNode.getLeftOperand().visit(this);
+      binaryOpNode.getLeftOperand().accept(this);
       VariableMember settable = stack.pop();
       
-      binaryOpNode.getRightOperand().visit(this);
+      binaryOpNode.getRightOperand().accept(this);
       VariableMember value = stack.pop();
       
       if (value instanceof Constant) {
@@ -51,7 +51,7 @@ public class GenVisitor implements NodeVisitor{
       }
     }
     else {
-      binaryOpNode.getLeftOperand().visit(this);
+      binaryOpNode.getLeftOperand().accept(this);
       Constant leftConstant = null;
       if (stack.peek() instanceof Constant) {
         leftConstant = (Constant) stack.pop();
@@ -61,7 +61,7 @@ public class GenVisitor implements NodeVisitor{
         leftConstant = (Constant) left.getValue();
       }
       
-      binaryOpNode.getRightOperand().visit(this);
+      binaryOpNode.getRightOperand().accept(this);
       Constant rightConstant = null;
       if (stack.peek() instanceof Constant) {
         rightConstant = (Constant) stack.pop();
@@ -134,7 +134,7 @@ public class GenVisitor implements NodeVisitor{
   }
 
   public void visit(MemberAccessNode memberAccessNode) {
-    memberAccessNode.getCalle().visit(this);
+    memberAccessNode.getCalle().accept(this);
     System.out.println("---IS FOR FUNC: "+memberAccessNode.isForFunction()+" | "+memberAccessNode.getMemberName());
     
     if (memberAccessNode.getCalle().nodeType() == NodeType.LITERAL ||
@@ -174,7 +174,7 @@ public class GenVisitor implements NodeVisitor{
     
     //visit all arguments
     for(ASTNode nodeArg: callNode.arguments()) {
-      nodeArg.visit(this);
+      nodeArg.accept(this);
     }
     
     //pop all nodes
@@ -194,7 +194,7 @@ public class GenVisitor implements NodeVisitor{
     if (callNode.getCallee().nodeType() == NodeType.IDENTIFIER) {
       //normal function call
       
-      RuntimeExecutor frameExec = new RuntimeExecutor();
+      RuntimeTable frameExec = new RuntimeTable();
       frameExec.initialize(null, null, executor.getFileVars(), 
                                        executor.getCallables(), 
                                        executor.getSystemFunctions());
@@ -221,13 +221,13 @@ public class GenVisitor implements NodeVisitor{
       if (!pushVariable) {
         pushVariable = false;
       }
-      callNode.getCallee().visit(this);
+      callNode.getCallee().accept(this);
       Constant member = (Constant) stack.pop();
       TypeInstance instance = (TypeInstance) member.getValue();
       
       System.out.println("----INSTANCE FUNC CALL "+member.getType().getTypeName());
       
-      RuntimeExecutor frameExec = new RuntimeExecutor();
+      RuntimeTable frameExec = new RuntimeTable();
       frameExec.initialize(instance.getVariables(), null, executor.getFileVars(), 
                                        executor.getCallables(), 
                                        executor.getSystemFunctions());

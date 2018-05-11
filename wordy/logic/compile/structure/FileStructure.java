@@ -94,6 +94,10 @@ public class FileStructure {
   public Variable getVariable(String name) {
     return variables.get(name);
   }
+  
+  public Set<ImportedFile> getImports(){
+    return imports;
+  }
 
   public String getFileName() {
     return fileName;

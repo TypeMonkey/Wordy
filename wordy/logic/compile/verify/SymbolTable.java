@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.structure.ClassStruct;
@@ -19,7 +21,7 @@ public class SymbolTable {
   private Map<String, Variable> variables;
   private Map<FunctionKey, Function> functions;
   private List<FunctionKey> systemFuncs;
-  private Map<String, Class<?>> systemClasses;
+  private Set<String> systemClasses;
   
   public SymbolTable(Map<String, FileStructure> otherSources) {
     this.otherSources = otherSources;
@@ -27,7 +29,7 @@ public class SymbolTable {
     variables = new HashMap<>();
     functions = new HashMap<>();
     systemFuncs = new ArrayList<>();
-    systemClasses = new HashMap<>();
+    systemClasses = new TreeSet<>();
   }
   
   public SymbolTable clone() {
@@ -36,7 +38,7 @@ public class SymbolTable {
     table.variables = new HashMap<>(variables);
     table.functions = new HashMap<>(functions);
     table.systemFuncs = new ArrayList<>(systemFuncs);
-    table.systemClasses = new HashMap<>(systemClasses);
+    table.systemClasses = new TreeSet<>(systemClasses);
     return table;
   }
   
@@ -100,13 +102,14 @@ public class SymbolTable {
   /**
    * Places a System Class in this SymbolTable
    * @param key - the key to add
-   * @return true if this key has been added already
+   * @return true if this class name has been added already
    *         false if it hasn't
    */
-  public boolean placeSystemFunction(String className, Class<?> sysClass) {
-    if (systemClasses.put(className, sysClass) != null) {
+  public boolean placeImportedClass(String className) {
+    if (systemClasses.contains(className)) {
       return true;
     }
+    systemClasses.add(className);
     return false;
   }
   
@@ -126,8 +129,8 @@ public class SymbolTable {
     return systemFuncs.contains(new FunctionKey(name, argcCnt));
   }
   
-  public Class<?> getSystemClass(String name){
-    return systemClasses.get(name);
+  public boolean importedClassExists(String name){
+    return systemClasses.contains(name);
   }
   
   public Variable getVariable(String name) {

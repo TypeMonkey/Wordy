@@ -1,7 +1,7 @@
 package wordy.logic.runtime;
 
 /**
- * Represents a file member - be it a file variable, function, or a class.
+ * Represents a file member - be it a file variable or a function.
  * 
  * Every file member has a name to be identified with, and either
  * has the property of being "settable" - meaning a value can be associated

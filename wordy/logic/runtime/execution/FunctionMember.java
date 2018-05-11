@@ -11,7 +11,7 @@ import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
 import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.RuntimeExecutor;
+import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.TypeInstance;
 import wordy.logic.runtime.types.ValType;
@@ -40,14 +40,14 @@ public class FunctionMember extends Callable{
   /**
    * Invokes this function, passing in its required arguments
    */
-  public Constant call(GenVisitor visitor, RuntimeExecutor executor, Constant ... args) {    
+  public Constant call(GenVisitor visitor, RuntimeTable executor, Constant ... args) {    
     System.out.println("-----CALLED: "+getName());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
       System.out.println("------NEXT STATEMENT------ "+statements.length+" || "+statements[0].getClass().getName());
       visitor.resetStack();
       if (statement.getDescription() == StatementDescription.BLOCK) {
-        RuntimeExecutor blockExec = executor.clone();
+        RuntimeTable blockExec = executor.clone();
         BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec), blockExec, (StatementBlock) statement);
         if (result.gotBreak()) {
           break;
@@ -86,7 +86,7 @@ public class FunctionMember extends Callable{
           }     
           else {
             if (variable.getExpression() != null) {
-              variable.getExpression().visit(visitor);
+              variable.getExpression().accept(visitor);
               VariableMember value = visitor.peekStack();
               variableMember.setValue(value.getValue(), value.getType());
             }
@@ -101,7 +101,7 @@ public class FunctionMember extends Callable{
         else {
           //actually returning a value
           System.out.println("---EXEC RETURN EXPR: "+statement.getExpression().getClass().getName());
-          statement.getExpression().visit(visitor);
+          statement.getExpression().accept(visitor);
           VariableMember returned = visitor.peekStack();
           System.out.println("---EXEC RETURN EXPR Type: "+returned.getType().getTypeName());
           return new Constant(returned.getType(), returned.getValue());
@@ -109,13 +109,13 @@ public class FunctionMember extends Callable{
       }
       else {
         System.out.println("---EXEC NORM EXPR: "+statement.getExpression().getClass().getName());
-        statement.getExpression().visit(visitor);
+        statement.getExpression().accept(visitor);
       }  
     }
     return Constant.VOID;
   }
   
-  private BlockExecResult executeStatementBlock(GenVisitor visitor, RuntimeExecutor executor, StatementBlock block) {
+  private BlockExecResult executeStatementBlock(GenVisitor visitor, RuntimeTable executor, StatementBlock block) {
     if (block.blockType() == BlockType.FOR) {
       return executeForLoop(visitor, executor, (ForLoopBlock) block);
     }
@@ -130,7 +130,7 @@ public class FunctionMember extends Callable{
     }
   }
   
-  private BlockExecResult executeIf(GenVisitor visitor, RuntimeExecutor executor, IfBlock ifBlock) {
+  private BlockExecResult executeIf(GenVisitor visitor, RuntimeTable executor, IfBlock ifBlock) {
     if(ifBlock.isElseIf()) {
       if(lastIf == false){
          if(ifBlock.getCondition() == null) {
@@ -143,7 +143,7 @@ public class FunctionMember extends Callable{
            /*
             * Is just an else if block. A.k.a: else if( /condtion/ ){ }
             */
-           ifBlock.getExpression().visit(visitor);
+           ifBlock.getExpression().accept(visitor);
            lastIf = (boolean) visitor.peekStack().getValue();
            if(lastIf) {
              return executeBlock(visitor, executor, ifBlock.getStatements());
@@ -152,7 +152,7 @@ public class FunctionMember extends Callable{
        }
      }
      else {
-       ifBlock.getExpression().visit(visitor);
+       ifBlock.getExpression().accept(visitor);
        lastIf = (boolean) visitor.peekStack().getValue();;
        if(lastIf) {
          return executeBlock(visitor, executor, ifBlock.getStatements());
@@ -161,8 +161,8 @@ public class FunctionMember extends Callable{
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);   
   }
   
-  private BlockExecResult executeWhile(GenVisitor visitor, RuntimeExecutor executor, WhileLoopBlock whileLoop) {
-    whileLoop.getCondition().getExpression().visit(visitor);
+  private BlockExecResult executeWhile(GenVisitor visitor, RuntimeTable executor, WhileLoopBlock whileLoop) {
+    whileLoop.getCondition().getExpression().accept(visitor);
     boolean peeked = (boolean) visitor.peekStack().getValue();
     while(peeked) {      
       BlockExecResult result = executeBlock(visitor, executor, whileLoop.getStatements());
@@ -175,21 +175,21 @@ public class FunctionMember extends Callable{
       else if (result.gotReturn()) {
         return result;
       }
-      whileLoop.getExpression().visit(visitor);
+      whileLoop.getExpression().accept(visitor);
       peeked = (boolean) visitor.peekStack().getValue();
     }        
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);   
   }
   
-  private BlockExecResult executeForLoop(GenVisitor visitor, RuntimeExecutor executor, ForLoopBlock forLoop) {
+  private BlockExecResult executeForLoop(GenVisitor visitor, RuntimeTable executor, ForLoopBlock forLoop) {
     if (forLoop.getInitialization().getDescription() == StatementDescription.VAR_DEC) {
       Variable variable = (Variable) forLoop.getInitialization();
       VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
       executor.placeLocalVar(variableMember);
-      variable.getExpression().visit(visitor);
+      variable.getExpression().accept(visitor);
     }
     
-    forLoop.getCheckStatement().getExpression().visit(visitor);
+    forLoop.getCheckStatement().getExpression().accept(visitor);
     boolean peeked = (boolean) visitor.peekStack().getValue();
               
     while(peeked) {
@@ -203,14 +203,14 @@ public class FunctionMember extends Callable{
       else if (result.gotReturn()) {
         return result;
       }
-      forLoop.getChangeStatement().getExpression().visit(visitor);
-      forLoop.getCheckStatement().getExpression().visit(visitor);
+      forLoop.getChangeStatement().getExpression().accept(visitor);
+      forLoop.getCheckStatement().getExpression().accept(visitor);
       peeked = (boolean) visitor.peekStack().getValue();
     }       
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);
   }
   
-  private BlockExecResult executeBlock(GenVisitor visitor, RuntimeExecutor executor, List<Statement> statements) {
+  private BlockExecResult executeBlock(GenVisitor visitor, RuntimeTable executor, List<Statement> statements) {
     for(Statement loopStatement: statements) {
       visitor.resetStack();
       if (loopStatement.getDescription() == StatementDescription.BREAK) {
@@ -221,7 +221,7 @@ public class FunctionMember extends Callable{
       }
       else if (loopStatement.getDescription() == StatementDescription.RETURN) {
         if (loopStatement.getExpression() != null) {
-          loopStatement.getExpression().visit(visitor);
+          loopStatement.getExpression().accept(visitor);
           VariableMember member = visitor.peekStack();
           return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, new Constant(member.getType(), member.getValue()));
         }
@@ -238,7 +238,7 @@ public class FunctionMember extends Callable{
         }
         else {
           if (variable.getExpression() != null) {
-            variable.getExpression().visit(visitor);
+            variable.getExpression().accept(visitor);
             VariableMember member = visitor.peekStack();
             return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, new Constant(member.getType(), member.getValue()));
           }          
@@ -253,7 +253,7 @@ public class FunctionMember extends Callable{
         }
       }
       else {
-        loopStatement.getExpression().visit(visitor);
+        loopStatement.getExpression().accept(visitor);
       }
     }
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);   

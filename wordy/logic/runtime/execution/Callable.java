@@ -2,7 +2,7 @@ package wordy.logic.runtime.execution;
 
 import wordy.logic.runtime.Constant;
 import wordy.logic.runtime.Member;
-import wordy.logic.runtime.RuntimeExecutor;
+import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.TypeInstance;
 
@@ -29,7 +29,7 @@ public abstract class Callable extends Member{
    * @param visitor - the NodeVisitor to use to visit the nodes of this call
    * @param args - the arguments to this call
    */
-  public abstract Constant call(GenVisitor visitor, RuntimeExecutor executor, Constant ... args);
+  public abstract Constant call(GenVisitor visitor, RuntimeTable executor, Constant ... args);
   
   public final int requiredArgs() {
     return argAmnt;

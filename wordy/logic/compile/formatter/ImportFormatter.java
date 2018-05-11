@@ -30,7 +30,6 @@ public class ImportFormatter {
     Token alias = null;
     
     boolean expectAliasName = false;
-    boolean encounteredColon = false;
     Token current = null;
     while (iterator.hasNext()) {
       current = iterator.next();
@@ -43,14 +42,7 @@ public class ImportFormatter {
           expected.add(Type.IDENT);
         }
         else if(current.type() == Type.IDENT){
-          if (encounteredColon) {
-            imported += current.content();
-            encounteredColon = false;
-            expected.clear();
-            expected.addAll(Arrays.asList(Type.IDENT,Type.AS, 
-                                          Type.DOT, Type.NO_EXPECT));
-          }
-          else if (expectAliasName) {
+         if (expectAliasName) {
             alias = current;
             expected.clear();
             expected.add(Type.NO_EXPECT);
@@ -58,15 +50,8 @@ public class ImportFormatter {
           else{
             imported += current.content();
             expected.clear();
-            expected.addAll(Arrays.asList(Type.COLON, Type.AS, Type.NO_EXPECT));
+            expected.addAll(Arrays.asList(Type.AS, Type.DOT, Type.NO_EXPECT));
           }          
-        }
-        else if (current.type() == Type.COLON) {
-          encounteredColon = true;
-          imported = ""; //clear previous concatenations
-          
-          expected.clear();
-          expected.add(Type.IDENT);
         }
         else if (current.type() == Type.DOT) {
           imported += current.content();
