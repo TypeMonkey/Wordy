@@ -40,7 +40,7 @@ public class GenVisitor implements NodeVisitor{
   }
   
   public void visit(BinaryOpNode binaryOpNode) {
-    System.out.println("----OPERATOR: "+binaryOpNode.getOperator()+" | LINE: "+binaryOpNode.tokens()[0].lineNumber());
+    System.out.println("----OPERATOR: "+binaryOpNode.getOperator()+" | LINE: "+binaryOpNode.getRightOperand());
     if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUALS)) {
       pushVariable = true;
       binaryOpNode.getLeftOperand().accept(this);
@@ -51,11 +51,13 @@ public class GenVisitor implements NodeVisitor{
       
       if (value instanceof Constant) {
         Constant constant = (Constant) value;
-        settable.setValue(constant.getValue(), constant.getType());
+        settable.setValue(constant, constant.getType());
       }
       else {
         settable.setValue(value.getValue(), value.getType());
       }
+      
+      //System.out.println("--> EQUAL AFTER: "+settable.getValue().getClass());
     }
     else {
       binaryOpNode.getLeftOperand().accept(this);
@@ -66,8 +68,9 @@ public class GenVisitor implements NodeVisitor{
       else {
         VariableMember left = stack.pop();
         leftConstant = (Constant) left.getValue();
+        //System.out.println("---LEFT: "+leftConstant);
       }
-      
+            
       binaryOpNode.getRightOperand().accept(this);
       Constant rightConstant = null;
       if (stack.peek() instanceof Constant) {
@@ -94,6 +97,7 @@ public class GenVisitor implements NodeVisitor{
   }
 
   public void visit(ConstantNode constNode) {
+    //System.out.println("***VISITED CONSTANT*****");
     String value = constNode.getValue();
     
     if (constNode.getValue().equals(ReservedSymbols.NULL)) {
@@ -105,6 +109,7 @@ public class GenVisitor implements NodeVisitor{
     else {
       try {
         stack.push(new Constant(ValType.INTEGER, Integer.parseInt(value)));
+        //System.out.println("---PUSHED INTEGER "+peekStack().getValue());
       } catch (NumberFormatException e) {
         stack.push(new Constant(ValType.DOUBLE, Double.parseDouble(constNode.getValue())));
       }
@@ -126,23 +131,25 @@ public class GenVisitor implements NodeVisitor{
         }
       }
       
-      member = new VariableMember(instance.getDefinition().getName(), true);
+      member = new VariableMember(instance.getDefinition().getName(), false);
       member.setValue(instance, instance.getDefinition().getType());
       stack.push(member);
     }
     else {
+      //System.out.println("---FOUND VAR! "+identifierNode.name());
+      //System.out.println(member.getValue().getClass());
       stack.push(member);
     }
   }
 
   public void visit(LiteralNode literalNode) {
-    System.out.println("***PUSHING LITERAL: "+literalNode.getLiteralContent());
+   // System.out.println("***PUSHING LITERAL: "+literalNode.getLiteralContent());
     stack.push(new Constant(ValType.STRING, literalNode.getLiteralContent()));
   }
 
   public void visit(MemberAccessNode memberAccessNode) {
     memberAccessNode.getCalle().accept(this);
-    System.out.println("---IS FOR FUNC: "+memberAccessNode.isForFunction()+" | "+memberAccessNode.getMemberName());
+    //System.out.println("---IS FOR FUNC: "+memberAccessNode.isForFunction()+" | "+memberAccessNode.getMemberName());
     
     if (memberAccessNode.getCalle().nodeType() == NodeType.LITERAL ||
         memberAccessNode.getCalle().nodeType() == NodeType.CONSTANT) {
@@ -226,6 +233,7 @@ public class GenVisitor implements NodeVisitor{
       System.out.println("----INSTANCE FUNC CALL "+member.getType().getTypeName());
       
       RuntimeTable frameExec = table.clone();
+      frameExec.clearVarMap(0);
       GenVisitor frameVisitor = new GenVisitor(frameExec, runtime);
       
       Callable callable = instance.getDefinition().findFunction(funcName.content(), args.length);

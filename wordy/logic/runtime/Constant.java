@@ -17,6 +17,10 @@ public class Constant extends VariableMember{
     throw new RuntimeException("Cannot set the value of a constant");
   }
  
+  public String toString() {
+    return "Constant: "+value;
+  }
+  
   @Override
   public boolean isSettable() {
     return false;

@@ -173,7 +173,7 @@ public class StructureVerifier {
         SymbolTable blockTable = funcTable.clone();
         StatementBlock block = (StatementBlock) statement;
         boolean insideALoop = false;
-        System.out.println("---NEXT-F: "+block.blockType()+" | "+block.getBlockSig().lineNumber());
+        System.out.println("---NEXT-F: "+block.blockType()+" | "+block.getBlockSig());
         
         if(recentTryBlock != null && block.blockType() != BlockType.CATCH) {
           throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
@@ -205,11 +205,12 @@ public class StructureVerifier {
           if (forLoopBlock.getInitialization() != null) {
             Statement init = forLoopBlock.getInitialization();
             if(init.getDescription() == StatementDescription.VAR_DEC) {
-              Variable variable = (Variable) statement;
+              Variable variable = (Variable) init;
               blockTable.placeVariable(variable);
               if (variable.getExpression() != null) {
                 variable.getExpression().accept(visitor);
               }
+              
             }
             else {
               if (init.getExpression() != null) {
@@ -219,11 +220,11 @@ public class StructureVerifier {
           }
           if (forLoopBlock.getCheckStatement() != null) {
             Statement comp = forLoopBlock.getCheckStatement();
-            comp.getExpression().accept(visitor);
+            comp.getExpression().accept(new VerifierVisitor(blockTable, className));
           }
           if(forLoopBlock.getChangeStatement() != null) {
             Statement change = forLoopBlock.getChangeStatement();
-            change.getExpression().accept(visitor);
+            change.getExpression().accept(new VerifierVisitor(blockTable, className));
           }
           insideALoop = true;
         }

@@ -7,6 +7,7 @@ import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.types.TypeDefinition;
+import wordy.logic.runtime.types.TypeInstance;
 import wordy.logic.runtime.types.Instance;
 
 /**
@@ -34,7 +35,7 @@ public class Constructor extends FunctionMember{
     System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
     
     
-    Instance typeInstance = new Instance(definition);
+    TypeInstance typeInstance = new TypeInstance(definition);
     typeInstance.copyInstanceVars();
     
     /*

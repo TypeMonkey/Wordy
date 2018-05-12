@@ -49,7 +49,8 @@ public class ForLoopFormatter {
       }
       else if (compExpr.nodeType() == NodeType.OPERATOR) {
         BinaryOpNode opNode = (BinaryOpNode) compExpr;
-        if (ReservedSymbols.isABooleanOperator(opNode.getOperator()) == false) {
+        if ( (ReservedSymbols.isABooleanOperator(opNode.getOperator()) == false) && 
+             (ReservedSymbols.isAComparisonOp(opNode.getOperator())) == false) {
           throw new ParseError("For loop comparison expression doesn't evaluate to a boolean", forBlockSig.lineNumber());
         }
       }

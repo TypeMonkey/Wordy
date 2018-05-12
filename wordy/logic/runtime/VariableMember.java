@@ -22,6 +22,9 @@ public class VariableMember extends Component{
   }
 
   public void setValue(Object value, ValType type) {
+    if (isConstant) {
+      throw new IllegalStateException("Can't change the value of a constant variable");
+    }
     this.value = value;
     this.type = type;
   }

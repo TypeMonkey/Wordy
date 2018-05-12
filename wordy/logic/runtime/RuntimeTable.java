@@ -94,6 +94,10 @@ public class RuntimeTable {
     return varNameMaps[arrIndex].put(member.getName(), member) != null;
   }
   
+  public void clearVarMap(int arrIndex) {
+    varNameMaps[arrIndex].clear();
+  }
+  
   public Callable findCallable(String name, int argc) {
     return findCallable(new FunctionKey(name, argc));
   } 

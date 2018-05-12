@@ -1,5 +1,5 @@
 
-function other(){
-	println("in other");
-	return Flood.callMe();
+function other(b){
+    let a = 10;
+	println("HELL>>>>>>>>>>>>>>>>>>>>>O");
 }

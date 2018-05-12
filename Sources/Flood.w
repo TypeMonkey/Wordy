@@ -1,9 +1,7 @@
 
 function main(a){
-	a = Some.other();
-	println(a);
-}
-
-function callMe(){
-	return 10;
+	for(let  b = 5; b >= 0; b = b - 1){
+		Some.other(1);
+		println("----------------------WE HAVE: "+b);
+	}
 }

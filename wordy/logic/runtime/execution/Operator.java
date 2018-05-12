@@ -128,11 +128,12 @@ public class Operator {
    * @return the resulting Value of the operator
    */
   public static Constant arithemticComparison(Constant leftOperand, Constant rightOperand, Token operator) {
+    System.out.println("---LEFT OPERAND: "+leftOperand);
     if (leftOperand.getType().isChildOf(ValType.NUMBER) && 
         rightOperand.getType().isChildOf(ValType.NUMBER)) {
       Constant result = null;
-      double left = (double) leftOperand.getValue();
-      double right = (double) rightOperand.getValue();
+      double left = (double) Double.valueOf(leftOperand.getValue().toString());
+      double right = (double) Double.valueOf(rightOperand.getValue().toString());
       if (operator.content().equals(ReservedSymbols.GREAT)) {
         result = new Constant(ValType.BOOLEAN, left > right);
       }

@@ -45,7 +45,7 @@ public class FunctionMember extends Callable{
     System.out.println("-----CALLED: "+getName());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
-      System.out.println("------NEXT STATEMENT------ "+statements.length+" || "+statements[0].getClass().getName());
+      //System.out.println("------NEXT STATEMENT------ "+statements.length+" || "+statements[0].getClass().getName());
       visitor.resetStack();
       if (statement.getDescription() == StatementDescription.BLOCK) {
         RuntimeTable blockExec = table.clone();
@@ -63,7 +63,7 @@ public class FunctionMember extends Callable{
       else if (statement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) statement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-        System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " );
+        //System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " );
         if(table.placeVariable(0, variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
                                        variable.getName().lineNumber());
@@ -81,15 +81,21 @@ public class FunctionMember extends Callable{
            *  of a function as that functions arguments
            */
           if (argCnt > 0) {
-            VariableMember value = args[argAmnt - argCnt];
-            variableMember.setValue(value.getValue(), value.getType());
+            Constant value = args[argAmnt - argCnt];
+            variableMember.setValue(value, value.getType());
             argCnt--;
           }     
           else {
             if (variable.getExpression() != null) {
               variable.getExpression().accept(visitor);
               VariableMember value = visitor.peekStack();
-              variableMember.setValue(value.getValue(), value.getType());
+              if (value instanceof Constant) {
+                variableMember.setValue(value, value.getType());
+              }
+              else {
+                variableMember.setValue(value.getValue(), value.getType());
+              }
+              //System.out.println("----GOT: "+variableMember.getValue().getClass());
             }
           }
         }       
@@ -101,10 +107,10 @@ public class FunctionMember extends Callable{
         }
         else {
           //actually returning a value
-          System.out.println("---EXEC RETURN EXPR: "+statement.getExpression().getClass().getName());
+          //System.out.println("---EXEC RETURN EXPR: "+statement.getExpression().getClass().getName());
           statement.getExpression().accept(visitor);
           VariableMember returned = visitor.peekStack();
-          System.out.println("---EXEC RETURN EXPR Type: "+returned.getType().getTypeName());
+          //System.out.println("---EXEC RETURN EXPR Type: "+returned.getType().getTypeName());
           return new Constant(returned.getType(), returned.getValue());
         }
       }
@@ -183,16 +189,35 @@ public class FunctionMember extends Callable{
   }
   
   private BlockExecResult executeForLoop(GenVisitor visitor, RuntimeTable executor, ForLoopBlock forLoop) {
+    //System.out.println("----FOR LOOP: "+forLoop.getInitialization().getDescription());
     if (forLoop.getInitialization().getDescription() == StatementDescription.VAR_DEC) {
       Variable variable = (Variable) forLoop.getInitialization();
       VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
       executor.placeVariable(0,variableMember);
-      variable.getExpression().accept(visitor);
+      
+      if (variable.getExpression() != null) {
+        //System.out.println("---INITIALIZATION"+variable.getExpression().tokens()[0]);
+        variable.getExpression().accept(visitor);
+        VariableMember peeked = visitor.peekStack();
+        if (peeked instanceof Constant) {
+          variableMember.setValue(peeked, peeked.getType());
+        }
+        else {
+          variableMember.setValue(peeked.getValue(), peeked.getType());
+        }
+        //System.out.println("---DONE!!! "+variableMember.getValue().toString()+ " || "+peeked.getValue()+" , "+peeked.getType());
+        
+        //TODO: remove!!!
+        //System.exit(0);
+      }
     }
     
+    //System.out.println("^^^^CHECK STATEMENT!!! "+forLoop.getCheckStatement());
     forLoop.getCheckStatement().getExpression().accept(visitor);
+    //System.out.println("^^^^CHECK DONE!!!");
     boolean peeked = (boolean) visitor.peekStack().getValue();
               
+        
     while(peeked) {
       BlockExecResult result = executeBlock(visitor, executor, forLoop.getStatements());
       if (result.gotBreak()) {
@@ -204,8 +229,15 @@ public class FunctionMember extends Callable{
       else if (result.gotReturn()) {
         return result;
       }
+      
+      //System.out.println("**********CHANGE*************");
       forLoop.getChangeStatement().getExpression().accept(visitor);
+      //System.out.println("**********CHANGE DONE*************");
+
+      //System.out.println("^^^^CHECK STATEMENT!!! "+forLoop.getCheckStatement());
       forLoop.getCheckStatement().getExpression().accept(visitor);
+      //System.out.println("^^^^CHECK DONE!!!");
+
       peeked = (boolean) visitor.peekStack().getValue();
     }       
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);

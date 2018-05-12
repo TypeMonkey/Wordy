@@ -41,6 +41,10 @@ public class ValType {
     return typeName;
   }
   
+  public String toString() {
+    return typeName;
+  }
+  
   public boolean equals(Object type) {
     if (type instanceof ValType) {
       ValType check = (ValType) type;

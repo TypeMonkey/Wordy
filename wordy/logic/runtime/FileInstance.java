@@ -10,4 +10,5 @@ public class FileInstance extends Instance{
     instanceVars = baseClass.getVariables();
   }
 
+  
 }
