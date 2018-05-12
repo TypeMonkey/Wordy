@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import wordy.logic.compile.structure.FileStructure;
+import wordy.logic.runtime.execution.FunctionMember;
+import wordy.logic.runtime.execution.GenVisitor;
 
 /**
  * Front-end for executing a Wordy program
@@ -36,6 +38,8 @@ public class WordyRuntime {
    * @param file - the file name whose main function to invoke
    * @param argc - the amount of arguments this function accepts
    * @param constants - the arguments to pass to the main function
+   * 
+   * @return the return value of the main function, or null if no return
    */
   public Object execute(String file, int argc,  Constant ... constants) {
     if (runtimeInitialized == false) {
@@ -46,7 +50,30 @@ public class WordyRuntime {
                                 + "amount of arguments the main function accepts");
     }
     else {
-      return null;
+      FileInstance fileInstance = files.get(file);
+      if (fileInstance == null) {
+        throw new RuntimeException("Cannot find the file '"+file+"' !");
+      }
+      
+      FunctionMember main = fileInstance.getDefinition().findFunction("main", argc);
+      if (main == null) {
+        throw new RuntimeException("The file '"+file+"' doesn't contain a main function "+
+                                   "that takes in "+argc+" arguments");
+      }
+      
+      RuntimeFile orgFile = (RuntimeFile) fileInstance.getDefinition();
+      
+      Map [] varMaps = {orgFile.getVariables()};
+      Map [] funcMaps = {orgFile.getFunctions()};
+      
+      RuntimeTable table = new RuntimeTable(varMaps, funcMaps, orgFile.getJavaClassMap() );
+      GenVisitor visitor = new GenVisitor(table, this);
+      Constant ret = main.call(visitor, table, constants);
+      
+      if (ret != null) {
+        return ret.getValue();
+      }
+      return ret;
     }
   }
   

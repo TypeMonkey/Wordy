@@ -1,6 +1,7 @@
 package wordy.logic.runtime;
 
 import wordy.logic.runtime.types.Instance;
+import wordy.logic.runtime.types.TypeDefinition;
 
 public class FileInstance extends Instance{
 

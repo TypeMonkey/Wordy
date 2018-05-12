@@ -98,6 +98,10 @@ public class FileStructure {
   public Set<ImportedFile> getImports(){
     return imports;
   }
+  
+  public String toString() {
+    return "SOURCE FILE: "+fileName;
+  }
 
   public String getFileName() {
     return fileName;

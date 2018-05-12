@@ -11,15 +11,16 @@ import wordy.logic.runtime.types.ValType;
 public class Main {
   
   public static void main(String[] args) throws Exception {
-    String sourceFile = "src\\Sources\\Source1.w";    
+    String [] sourceFile = {"src\\Sources\\Flood.w", "src\\Sources\\Some.w"};    
 
-    
+
     WordyCompiler compiler = new WordyCompiler(sourceFile);
     Map<String, FileStructure> fileMap = compiler.compile();
-   
-   // WordyRuntime runtime = new WordyRuntime();
-    //runtime.initialize(fileMap);
-   // runtime.execute("Source1", 1, new Constant(ValType.STRING, "hello"));
+
+    System.out.println("!!!!!!!!!!!!---EXECUTION---!!!!!!!!!!!!");
     
+    WordyRuntime runtime = new WordyRuntime();
+    runtime.initialize(fileMap);
+    runtime.execute("Flood", 1, new Constant(ValType.STRING, "hello"));
   }
 }

@@ -1,6 +1,7 @@
 package wordy.logic.compile.verify;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,5 +140,9 @@ public class SymbolTable {
 
   public List<FunctionKey> getSystemFunctions(){
     return systemFuncs;
+  }
+  
+  public Collection<FileStructure> getFiles(){
+    return otherSources.values();
   }
 }

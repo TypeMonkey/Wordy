@@ -63,7 +63,7 @@ public class WordyCompiler {
       Formatter formatter = new Formatter(Arrays.asList(fileTokens), new File(currentFile).getName().split("\\.")[0]);
       FileStructure structure = formatter.formatSource();
       
-      structures.put(currentFile, structure);
+      structures.put(structure.getFileName(), structure);
       
       System.out.println("---DONE FOR SOURCE: "+currentFile+" ---");
     }
@@ -77,6 +77,7 @@ public class WordyCompiler {
     sysFuncs.addAll(Arrays.asList(new FunctionKey("println", 1), new FunctionKey("print", 1)));
     
     Collection<FileStructure> files = structures.values();
+    System.out.println("STRUCUTRE: "+files);
     for(FileStructure structure: files) {
       StructureVerifier verifier = new StructureVerifier(structure, sysFuncs, structures);
       verifier.verify();
@@ -111,7 +112,6 @@ public class WordyCompiler {
         if (entry.getName().startsWith("java/lang/")) {
           String className = entry.getName().replace('/', '.').replace(".class", "");
           classNames.add(className);
-          System.out.println(className);
         }
       }
       

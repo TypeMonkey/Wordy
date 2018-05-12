@@ -207,11 +207,10 @@ public class GenVisitor implements NodeVisitor{
       
       Callable callable = table.findCallable(funcName.content(), args.length);
       if (callable == null) {
-        Constant result = callable.call(frameVisitor, frameExec, args);
-        stack.push(result);
+        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+            funcName.lineNumber());
       }
-      else {
-        
+      else {    
         Constant result = callable.call(frameVisitor, frameExec, args);   
         stack.push(result);
       }

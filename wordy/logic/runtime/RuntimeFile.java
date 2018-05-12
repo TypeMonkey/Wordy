@@ -119,6 +119,10 @@ public class RuntimeFile extends TypeDefinition{
     return typeDefs;
   } 
   
+  public Map<String, String> getJavaClassMap(){
+    return javaClasses;
+  }
+  
   public String toString() {
     return "Source File: "+getName();
   }
