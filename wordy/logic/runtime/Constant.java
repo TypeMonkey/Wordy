@@ -17,4 +17,8 @@ public class Constant extends VariableMember{
     throw new RuntimeException("Cannot set the value of a constant");
   }
  
+  @Override
+  public boolean isSettable() {
+    return false;
+  }
 }

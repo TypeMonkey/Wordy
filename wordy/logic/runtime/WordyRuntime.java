@@ -1,5 +1,6 @@
 package wordy.logic.runtime;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import wordy.logic.compile.structure.FileStructure;
@@ -10,17 +11,22 @@ import wordy.logic.compile.structure.FileStructure;
  *
  */
 public class WordyRuntime {
-
-  private Map<String, FileStructure> sources;
+  
+  private Map<String, FileInstance> files;
   private boolean runtimeInitialized;
   
-  public WordyRuntime(Map<String, FileStructure> sources) {
-    this.sources = sources;
+  public WordyRuntime() {
+    files = new HashMap<>();
   }
   
-  public void initialize() {
+  public void initialize(Map<String, FileStructure> sources) {
     if (!runtimeInitialized) {
-      
+      for(FileStructure structure : sources.values()) {
+        RuntimeFile file = new RuntimeFile(structure.getFileName());
+        FileInstance instance = file.initialize(structure, this);
+        
+        files.put(file.getName(), instance);
+      }
       runtimeInitialized = true;
     }
   }
@@ -42,5 +48,9 @@ public class WordyRuntime {
     else {
       return null;
     }
+  }
+  
+  public FileInstance findFile(String name) {
+    return files.get(name);
   }
 }

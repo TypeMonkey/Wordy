@@ -3,9 +3,9 @@ package wordy.logic.compile.verify;
 import java.util.List;
 import java.util.Map;
 
-import wordy.logic.WordyCompiler;
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
+import wordy.logic.compile.WordyCompiler;
 import wordy.logic.compile.errors.ParseError;
 import wordy.logic.compile.nodes.ASTNode;
 import wordy.logic.compile.structure.CatchBlock;

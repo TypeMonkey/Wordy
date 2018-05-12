@@ -1,4 +1,4 @@
-package wordy.logic;
+package wordy.logic.compile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,8 +15,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import wordy.logic.common.FunctionKey;
-import wordy.logic.compile.Token;
-import wordy.logic.compile.Tokenizer;
 import wordy.logic.compile.formatter.Formatter;
 import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.verify.StructureVerifier;

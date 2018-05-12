@@ -1,10 +1,10 @@
 package wordy.logic.runtime;
 
 import wordy.logic.compile.nodes.ASTNode;
-import wordy.logic.runtime.types.TypeInstance;
+import wordy.logic.runtime.types.Instance;
 import wordy.logic.runtime.types.ValType;
 
-public class VariableMember extends Member{
+public class VariableMember extends Component{
 
   protected ASTNode expr;
   protected Object value;

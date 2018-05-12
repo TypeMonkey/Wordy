@@ -13,23 +13,30 @@ import wordy.logic.compile.nodes.LiteralNode;
 import wordy.logic.compile.nodes.MemberAccessNode;
 import wordy.logic.compile.nodes.MethodCallNode;
 import wordy.logic.compile.nodes.UnaryNode;
+import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.nodes.ASTNode.NodeType;
 import wordy.logic.runtime.Constant;
+import wordy.logic.runtime.FileInstance;
+import wordy.logic.runtime.RuntimeFile;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
-import wordy.logic.runtime.types.TypeInstance;
+import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.types.Instance;
 import wordy.logic.runtime.types.ValType;
 
 public class GenVisitor implements NodeVisitor{
-  
+ 
   private Stack<VariableMember> stack;
-  private RuntimeTable executor;
+  
+  private WordyRuntime runtime;
+  private RuntimeTable table;
   
   private boolean pushVariable;
   
-  public GenVisitor(RuntimeTable executor) {
+  public GenVisitor(RuntimeTable executor, WordyRuntime runtime) {
     this.stack = new Stack<>();
-    this.executor = executor;
+    this.table = executor;
+    this.runtime = runtime;
   }
   
   public void visit(BinaryOpNode binaryOpNode) {
@@ -105,23 +112,23 @@ public class GenVisitor implements NodeVisitor{
   }
 
   public void visit(IdentifierNode identifierNode) {
-    VariableMember member = executor.findLocalVariable(identifierNode.name());
+    VariableMember member = table.findVariable(identifierNode.name());
     if (member == null) {
-      member = executor.findInstanceVariable(identifierNode.name());
-      if (member == null) {
-        member = executor.findFileVariable(identifierNode.name());
-        System.out.println("instance vars: "+executor.getInstanceVars());
-        if (member == null) {
-          throw new RuntimeException("Can't find variable '"+identifierNode.name()+"' at line "+
-                                       identifierNode.tokens()[0].lineNumber());
+      FileInstance instance = runtime.findFile(identifierNode.name());
+      if (instance == null) {
+        String className = table.findBinaryName(identifierNode.name());
+        if (className == null) {
+          throw new RuntimeException("Can't find identifier '"+identifierNode.name()+"' at line "+
+              identifierNode.tokens()[0].lineNumber());
         }
         else {
-          stack.push(member);
+          //TODO: How do we wrap Java object to interact with the Wordy environment?
         }
       }
-      else {
-        stack.push(member);
-      }
+      
+      member = new VariableMember(instance.getDefinition().getName(), true);
+      member.setValue(instance, instance.getDefinition().getType());
+      stack.push(member);
     }
     else {
       stack.push(member);
@@ -143,14 +150,15 @@ public class GenVisitor implements NodeVisitor{
            memberAccessNode.tokens()[0].lineNumber());
     }
     
-    if (memberAccessNode.isForFunction()) {
-      VariableMember member = stack.pop();
-      stack.push(new Constant(member.getType(), member.getValue()));
+    
+    if (memberAccessNode.isForFunction()) { 
+        VariableMember member = stack.pop();
+        stack.push(new Constant(member.getType(), member.getValue()));
     }
     else {
       VariableMember member = stack.pop();
-      if (member.getValue() instanceof TypeInstance) {
-        TypeInstance instance = (TypeInstance) member.getValue();
+      if (member.getValue() instanceof Instance) {
+        Instance instance = (Instance) member.getValue();
         VariableMember instanceMem = instance.retrieveVariable(memberAccessNode.getMemberName().content());
         if (instanceMem == null) {
           throw new RuntimeException("Cannot find property '"+memberAccessNode.getMemberName().content()+"' "+
@@ -192,22 +200,13 @@ public class GenVisitor implements NodeVisitor{
     }
     
     if (callNode.getCallee().nodeType() == NodeType.IDENTIFIER) {
-      //normal function call
+      //normal function call. Like : println()
       
-      RuntimeTable frameExec = new RuntimeTable();
-      frameExec.initialize(null, null, executor.getFileVars(), 
-                                       executor.getCallables(), 
-                                       executor.getSystemFunctions());
-      GenVisitor frameVisitor = new GenVisitor(frameExec);
+      RuntimeTable frameExec = table.clone();
+      GenVisitor frameVisitor = new GenVisitor(frameExec, runtime);
       
-      Callable callable = executor.findCallable(funcName.content(), args.length);
+      Callable callable = table.findCallable(funcName.content(), args.length);
       if (callable == null) {
-        callable = executor.findSystemFunction(funcName.content(), args.length);
-        if (callable == null) {
-          throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-              funcName.lineNumber());
-        }
-        
         Constant result = callable.call(frameVisitor, frameExec, args);
         stack.push(result);
       }
@@ -223,34 +222,17 @@ public class GenVisitor implements NodeVisitor{
       }
       callNode.getCallee().accept(this);
       Constant member = (Constant) stack.pop();
-      TypeInstance instance = (TypeInstance) member.getValue();
+      Instance instance = (Instance) member.getValue();
       
       System.out.println("----INSTANCE FUNC CALL "+member.getType().getTypeName());
       
-      RuntimeTable frameExec = new RuntimeTable();
-      frameExec.initialize(instance.getVariables(), null, executor.getFileVars(), 
-                                       executor.getCallables(), 
-                                       executor.getSystemFunctions());
-      GenVisitor frameVisitor = new GenVisitor(frameExec);
+      RuntimeTable frameExec = table.clone();
+      GenVisitor frameVisitor = new GenVisitor(frameExec, runtime);
       
       Callable callable = instance.getDefinition().findFunction(funcName.content(), args.length);
       if (callable == null) {
-        callable = executor.findCallable(funcName.content(), args.length);
-        if (callable == null) {
-          callable = executor.findSystemFunction(funcName.content(), args.length);
-          if (callable == null) {
-            throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-                funcName.lineNumber());
-          }
-          else {            
-            Constant result = callable.call(frameVisitor, frameExec, args);
-            stack.push(result);
-          }
-        }
-        else {
-          Constant result = callable.call(frameVisitor, frameExec, args);
-          stack.push(result);
-        }
+        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+            funcName.lineNumber());
       }
       else {
         Constant result = callable.call(frameVisitor, frameExec, args);

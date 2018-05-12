@@ -13,7 +13,8 @@ import wordy.logic.compile.structure.StatementBlock.BlockType;
 import wordy.logic.runtime.Constant;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
-import wordy.logic.runtime.types.TypeInstance;
+import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.types.Instance;
 import wordy.logic.runtime.types.ValType;
 
 /**
@@ -32,23 +33,23 @@ public class FunctionMember extends Callable{
    * @param argumentAmnt - the amount of argument this function expects
    * @param statements - the Statements in this function
    */
-  public FunctionMember(String name, int argumentAmnt, Statement ... statements) {
-    super(name, argumentAmnt);
+  public FunctionMember(String name, int argumentAmnt, WordyRuntime runtime, Statement ... statements) {
+    super(name, argumentAmnt, runtime);
     this.statements = statements;
   }
   
   /**
    * Invokes this function, passing in its required arguments
    */
-  public Constant call(GenVisitor visitor, RuntimeTable executor, Constant ... args) {    
+  public Constant call(GenVisitor visitor, RuntimeTable table, Constant ... args) {    
     System.out.println("-----CALLED: "+getName());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
       System.out.println("------NEXT STATEMENT------ "+statements.length+" || "+statements[0].getClass().getName());
       visitor.resetStack();
       if (statement.getDescription() == StatementDescription.BLOCK) {
-        RuntimeTable blockExec = executor.clone();
-        BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec), blockExec, (StatementBlock) statement);
+        RuntimeTable blockExec = table.clone();
+        BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec, runtime), blockExec, (StatementBlock) statement);
         if (result.gotBreak()) {
           break;
         }
@@ -62,8 +63,8 @@ public class FunctionMember extends Callable{
       else if (statement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) statement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-        System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " +executor.getLocalVars());
-        if(executor.placeLocalVar(variableMember)) {
+        System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " );
+        if(table.placeVariable(0, variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
                                        variable.getName().lineNumber());
         }
@@ -185,7 +186,7 @@ public class FunctionMember extends Callable{
     if (forLoop.getInitialization().getDescription() == StatementDescription.VAR_DEC) {
       Variable variable = (Variable) forLoop.getInitialization();
       VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-      executor.placeLocalVar(variableMember);
+      executor.placeVariable(0,variableMember);
       variable.getExpression().accept(visitor);
     }
     
@@ -232,7 +233,7 @@ public class FunctionMember extends Callable{
       else if (loopStatement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) loopStatement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-        if(executor.placeLocalVar(variableMember)) {
+        if(executor.placeVariable(0,variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
               variable.getExpression().tokens()[0].lineNumber());
         }
@@ -247,7 +248,7 @@ public class FunctionMember extends Callable{
       else if (loopStatement.getDescription() == StatementDescription.BLOCK) {
         StatementBlock block = (StatementBlock) loopStatement;
         executor = executor.clone();
-        BlockExecResult result = executeStatementBlock(new GenVisitor(executor), executor, block);
+        BlockExecResult result = executeStatementBlock(new GenVisitor(executor, runtime), executor, block);
         if (result.wasNormalEnd() == false) {
           return result;
         }

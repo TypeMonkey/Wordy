@@ -12,6 +12,7 @@ import wordy.logic.compile.structure.ClassStruct;
 import wordy.logic.compile.structure.Function;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.VariableMember;
+import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.execution.Constructor;
 import wordy.logic.runtime.execution.FunctionMember;
 
@@ -28,13 +29,13 @@ import wordy.logic.runtime.execution.FunctionMember;
  */
 public class TypeDefinition{
   
-  protected Map<String, Variable> variables;
+  protected Map<String, VariableMember> variables;
   protected Map<FunctionKey, FunctionMember> functions;
   protected ValType type;
   protected String name;
   
   protected TypeDefinition(String name, 
-                           Map<String, Variable> variables, 
+                           Map<String, VariableMember> variables, 
                            Map<FunctionKey, FunctionMember> functions) {
     this.name = name;
     this.variables = variables;
@@ -61,16 +62,16 @@ public class TypeDefinition{
     return functions.get(key);
   }
   
-  public Variable findVariable(String name) {
+  public VariableMember findVariable(String name) {
     return variables.get(name);
   }
   
-  public List<FunctionMember> getFunctions() {
-    return new ArrayList<>(functions.values());
+  public Map<FunctionKey, FunctionMember> getFunctions() {
+    return new HashMap<>(functions);
   }
   
-  public List<Variable> getVariables(){
-    return new ArrayList<>(variables.values());
+  public Map<String, VariableMember> getVariables(){
+    return new LinkedHashMap<>(variables);
   }
   
   public ValType getType() {
@@ -82,12 +83,17 @@ public class TypeDefinition{
    * @param struct - the ClassStruct to base off this TypeDefinition
    * @return the TypeDefinition based of struct
    */
-  public static TypeDefinition constructDefinition(ClassStruct struct) {
+  public static TypeDefinition constructDefinition(ClassStruct struct, WordyRuntime runtime) {
     TypeDefinition definition = new TypeDefinition(struct.getName().content());
     
     for(Variable member: struct.getVariables()) {
-      definition.variables.put(member.getName().content(), member);
+      VariableMember mem = new VariableMember(member.getName().content(), 
+                                              member.getExpression(), 
+                                              member.isConstant());
+      definition.variables.put(member.getName().content(),mem);
     }
+    
+    boolean constructorFound = false;
     
     for(Function function: struct.getFunctions()) {
       String funcName = function.getName().content();
@@ -95,14 +101,24 @@ public class TypeDefinition{
       FunctionMember functionMember = null;
       System.out.println("BUILDING TYPE: "+struct.getName().content()+" | "+function);
       if (function.isConstructor()) {
-        functionMember = new Constructor(funcName, argc, function.getStatements(), definition);
+        functionMember = new Constructor(funcName, argc, function.getStatements(), definition, runtime);
+        constructorFound = true;
       }
       else {
         functionMember = new FunctionMember(function.getName().content(), 
                                             argc, 
+                                            runtime,
                                             function.getStatements());
       }
       definition.functions.put(new FunctionKey(funcName, argc), functionMember);
+    }
+    
+    /*
+     * No constructor was found. So add default constructror 
+     */
+    if (!constructorFound) {
+      Constructor defaultCons = new Constructor(struct.getName().content(), 0, null, definition, runtime);
+      definition.functions.put(new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs()), defaultCons);
     }
     
     return definition;

@@ -1,27 +1,29 @@
 package wordy.logic.runtime.execution;
 
 import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.Member;
+import wordy.logic.runtime.Component;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
-import wordy.logic.runtime.types.TypeInstance;
+import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.types.Instance;
 
 /**
  * Represents a callable file member (or a member that can be invoked)
  * @author Jose Guaro
  *
  */
-public abstract class Callable extends Member{
+public abstract class Callable extends Component{
   
   protected int argAmnt;
-  
+  protected WordyRuntime runtime;
   /**
    * Constructs a Callable
    * @param name - the name of this member
    */
-  public Callable(String name, int argRequired) {
+  public Callable(String name, int argRequired, WordyRuntime runtime) {
     super(name);
     this.argAmnt = argRequired;
+    this.runtime = runtime;
   }
   
   /**
@@ -29,7 +31,7 @@ public abstract class Callable extends Member{
    * @param visitor - the NodeVisitor to use to visit the nodes of this call
    * @param args - the arguments to this call
    */
-  public abstract Constant call(GenVisitor visitor, RuntimeTable executor, Constant ... args);
+  public abstract Constant call(GenVisitor visitor, RuntimeTable table, Constant ... args);
   
   public final int requiredArgs() {
     return argAmnt;

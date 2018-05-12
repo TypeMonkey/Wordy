@@ -1,182 +1,132 @@
 package wordy.logic.runtime;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.runtime.execution.Callable;
+import wordy.logic.runtime.execution.FunctionMember;
 import wordy.logic.runtime.execution.GenVisitor;
-import wordy.logic.runtime.types.TypeInstance;
+import wordy.logic.runtime.types.ValType;
 
 /**
- * Holds runtime information for program execution, such
- * as variable and function names and definition
+ * Acts as a dictionary for identifiers
  * @author Jose Guaro
  *
  */
 public class RuntimeTable {
-
-  private Map<String, VariableMember> instanceVars;
-  private Map<String, VariableMember> localVars;
-  private Map<String, VariableMember> fileVars;
-  private Map<FunctionKey, Callable> callables;
-  private Map<FunctionKey, SystemFunction> systemFunctions;
-
-  public RuntimeTable() {
-    this.instanceVars = new HashMap<>();
-    this.localVars = new HashMap<>();
-    this.fileVars = new HashMap<>();
-    this.callables = new HashMap<>();
-    this.systemFunctions = new HashMap<>();
-  }
-
-  public void initialize(List<VariableMember> instanceVars,
-                         List<VariableMember> lclVars, 
-                         List<VariableMember> filVar, 
-                         List<Callable> fileFus, 
-                         List<SystemFunction> sysFus) {
-    
-   
-    
-    if (instanceVars != null) {
-      for(VariableMember instance: instanceVars) {
-        this.instanceVars.put(instance.getName(), instance);
-      }
-    }
-    
-    if (lclVars != null) {
-      for(VariableMember member: lclVars) {
-        localVars.put(member.getName(), member);
-      }
-
-    }
-
-    if (filVar != null) {
-      for(VariableMember member: filVar) {
-        fileVars.put(member.getName(), member);
-      }
-    }
-
-    if (fileFus != null) {
-      for(Callable callable: fileFus) {
-        callables.put(new FunctionKey(callable.getName(), callable.requiredArgs()), callable);
-      }
-
-    }
-
-    if (sysFus != null) {
-      for(SystemFunction sysFun: sysFus) {
-        System.out.println("---SYS FUNC: "+sysFun.getName()+" | "+sysFun.requiredArgs());
-        systemFunctions.put(new FunctionKey(sysFun.getName(), sysFun.requiredArgs()), sysFun);
-      }
-    }
-  }
-
-  public RuntimeTable clone() {
-    RuntimeTable executor = new RuntimeTable();
-    executor.callables = new HashMap<>(callables);
-    executor.fileVars = new HashMap<>(fileVars);
-    executor.localVars = new HashMap<>(localVars);
-    executor.systemFunctions = new HashMap<>(systemFunctions);
-    return executor; 
-  }
   
+  private static final Map<FunctionKey, EmbeddedFunction> embeddedFunctions;
+  
+  static {
+    embeddedFunctions = loadEmbeddedFunctions();
+  }
+
+  private Map<String, VariableMember>[] varNameMaps;
+  private Map<FunctionKey, FunctionMember>[] funcNameMaps;
+  private Map<String, String> javaClassMap;
+
+
   /**
-   * Executes the program
-   * @param function - the function's name at which to start execution at
+   * Constructs a RuntimeTable
+   * @param vars - the array of Maps to use when looking for variables
+   * @param funcs - the array of Maps to use when looking for functions
    */
-  public void execute(String function, int argc,  Constant ... constants) {
-    Callable starter = findCallable(function, argc);
-    if (starter == null) {
-      throw new RuntimeException("Couldn't find the function '"+function+"'");
-    }
-    else {     
-      starter.call(new GenVisitor(this), this, constants);
-    }
+  public RuntimeTable(Map<String,  VariableMember> [] vars, 
+                      Map<FunctionKey, FunctionMember> [] funcs,
+                      Map<String, String> javaClassMap) {
+    varNameMaps = vars;
+    funcNameMaps = funcs;
+    this.javaClassMap = javaClassMap;
   }
 
   /**
-   * Places the given VariableMember in this executor's local
-   * variable map
-   * @param variableMember - the VariableMember to add
-   * @return true - if this VariableMember's name has already been mapped
-   *                to an existing variable.
-   *         false - if else.
+   * Finds a variable in this table's variable maps
+   * 
+   * The function first queries the first map in the variable map array provided
+   * when the constructor was invoked. It then sequentially queries the following maps
+   * in the array until it finds a VariableMember
+   * 
+   * @param name - the name of the variable
+   * @return the corresponding VariableMember, or null if no VariableMember was found
    */
-  public boolean placeLocalVar(VariableMember variableMember) {
-    if (localVars.containsKey(variableMember.getName())) {
-      return true;
+  public VariableMember findVariable(String name) {
+    for(int i = 0; i < varNameMaps.length; i++) {
+      Map<String, VariableMember> current = varNameMaps[i];
+      if (current.containsKey(name)) {
+        return current.get(name);
+      }
     }
-    else {
-      localVars.put(variableMember.getName(), variableMember);
-      return false;
-    }
+    
+    return null;
   }
   
   /**
-   * Places the given VariableMember in this executor's file variable map
-   * @param variableMember - the VariableMember to add
-   * @return true - if this VariableMember's name has already been mapped
-   *                to an existing variable.
-   *         false - if else.
+   * Finds a function in this table's function maps
+   * 
+   * The function first queries the first map in the function map array provided
+   * when the constructor was invoked. It then sequentially queries the following maps
+   * in the array until it finds a FunctionMember
+   * 
+   * @param key - the FunctionKey of the function to look for
+   * @return the corresponding FunctionMember, or null if none was found
    */
-  public boolean placeFileVar(VariableMember variableMember) {
-    if (fileVars.containsKey(variableMember.getName())) {
-      return true;
-    }
-    else {
-      fileVars.put(variableMember.getName(), variableMember);
-      return false;
-    } 
-  }
-  
   public Callable findCallable(FunctionKey key) {
-    return callables.get(key);
+    for(int i = 0; i < funcNameMaps.length; i++) {
+      Map<FunctionKey, FunctionMember> current = funcNameMaps[i];
+      if (current.containsKey(key)) {
+        return current.get(key);
+      }
+    }
+    
+    if (embeddedFunctions.containsKey(key)) {
+      return embeddedFunctions.get(key);
+    }
+    return null;
   }
   
-  public SystemFunction findSystemFunction(FunctionKey key) {
-    return systemFunctions.get(key);
+  public String findBinaryName(String name) {
+    return javaClassMap.get(name);
   }
-
+  
+  public boolean placeVariable(int arrIndex, VariableMember member) {
+    return varNameMaps[arrIndex].put(member.getName(), member) != null;
+  }
+  
   public Callable findCallable(String name, int argc) {
     return findCallable(new FunctionKey(name, argc));
+  } 
+  
+  public RuntimeTable clone() {
+    Map<String, VariableMember>[] cloneVarMap = Arrays.copyOf(varNameMaps, varNameMaps.length);
+    Map<FunctionKey, FunctionMember>[] cloneFuncNameMaps = Arrays.copyOf(funcNameMaps, funcNameMaps.length);
+    
+    return new RuntimeTable(cloneVarMap, cloneFuncNameMaps, new HashMap<>(javaClassMap));
   }
   
-  public SystemFunction findSystemFunction(String name, int argc) {
-    return findSystemFunction(new FunctionKey(name, argc));
+  private static Map<FunctionKey, EmbeddedFunction> loadEmbeddedFunctions(){
+    HashMap<FunctionKey, EmbeddedFunction> map = new HashMap<>();
+    
+    EmbeddedFunction println = new EmbeddedFunction("println", 1, ValType.VOID) {
+      public Constant call(GenVisitor visitor, RuntimeTable executor, Constant... args) {
+        System.out.println(args[0].getValue());
+        return Constant.VOID;
+      }
+
+    };
+    map.put(new FunctionKey(println.getName(), println.requiredArgs()), println);
+    
+    EmbeddedFunction print = new EmbeddedFunction("print", 1, ValType.VOID) {
+      public Constant call(GenVisitor visitor, RuntimeTable executor, Constant... args) {
+        System.out.print(args[0].getValue());
+        return Constant.VOID;
+      }
+    };    
+    map.put(new FunctionKey(print.getName(), print.requiredArgs()), print);
+
+    
+    return map;
   }
   
-  public VariableMember findFileVariable(String name) {
-    return fileVars.get(name);
-  }
-
-  public VariableMember findLocalVariable(String name) {
-    return localVars.get(name);
-  }
-  
-  public VariableMember findInstanceVariable(String name) {
-    return instanceVars.get(name);
-  }
-
-  public List<VariableMember> getLocalVars() {
-    return new ArrayList<>(localVars.values());
-  }
-
-  public List<VariableMember> getInstanceVars() {
-    return new ArrayList<>(instanceVars.values());
-  }
-  
-  public List<VariableMember> getFileVars() {
-    return new ArrayList<>(fileVars.values());
-  }
-
-  public List<Callable> getCallables() {
-    return new ArrayList<>(callables.values());
-  }
-
-  public List<SystemFunction> getSystemFunctions() {
-    return new ArrayList<>(systemFunctions.values());
-  }
 }

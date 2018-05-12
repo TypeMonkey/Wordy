@@ -7,8 +7,9 @@ import java.util.List;
 public class ValType {
   
   public static final ValType OBJECT = new ValType("Object");
+  
   static {
-    //to prevent recursive type checking
+    //to prevent an infinite recursive type check when checking Object
     OBJECT.parents.clear();
   }
   public static final ValType PRIMITVE = new ValType("Primitve");

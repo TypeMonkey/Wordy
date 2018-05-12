@@ -5,8 +5,9 @@ import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.Constant;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
+import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.types.TypeDefinition;
-import wordy.logic.runtime.types.TypeInstance;
+import wordy.logic.runtime.types.Instance;
 
 /**
  * Represents a class constructor that when invoked
@@ -19,42 +20,35 @@ public class Constructor extends FunctionMember{
 
   private TypeDefinition definition;
   
-  public Constructor(String name, int argumentAmnt, Statement[] statements, TypeDefinition definition) {
-    super(name, argumentAmnt, statements);
+  public Constructor(String name, int argumentAmnt, 
+                                  Statement[] statements, 
+                                  TypeDefinition definition, 
+                                  WordyRuntime runtime) {
+    super(name, argumentAmnt, runtime, statements);
     this.definition = definition;
   }
   
-  public Constant call(GenVisitor visitor, RuntimeTable executor, Constant ... args) {
-    executor = executor.clone();
-    visitor = new GenVisitor(executor);
+  public Constant call(GenVisitor visitor, RuntimeTable table, Constant ... args) {
+    table = table.clone();
+    visitor = new GenVisitor(table, runtime);
     System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
     
     
-    TypeInstance typeInstance = new TypeInstance(definition);
-    
-    /*
-     * Place the "this" variable
-     */
-    VariableMember thisVar = new VariableMember("this", true);
-    System.out.println("****PLACING THIS*****");
-    thisVar.setValue(typeInstance, typeInstance.getDefinition().getType());
-    typeInstance.placeVariable(thisVar);
+    Instance typeInstance = new Instance(definition);
+    typeInstance.copyInstanceVars();
     
     /*
      * Initialize the instance variables
      */
-    for(Variable member: definition.getVariables()) {
-      VariableMember varMem = new VariableMember(member.getName().content(), member.isConstant());
-      System.out.println("----PLACING INSTANCE VAR: "+varMem.getName());
-      if (member.getExpression() != null) {
-        member.getExpression().accept(visitor);
-        varMem.setValue(visitor.peekStack(), visitor.peekStack().getType());
+    for(VariableMember member: definition.getVariables().values()) {
+      System.out.println("----PLACING INSTANCE VAR: "+member.getName());
+      if (member.getExpr() != null) {
+        member.getExpr().accept(visitor);
+        VariableMember result = visitor.peekStack();
+        member.setValue(result, result.getType());
       }
-      typeInstance.placeVariable(varMem);
     }
-    
-    executor.initialize(typeInstance.getVariables(), null, null, null, null);
-    
+        
     /*
      * Then execute the actual statements of this constructor
      */
@@ -63,12 +57,12 @@ public class Constructor extends FunctionMember{
        * Null check as the default constructor has no statements, other than
        * initializations.
        */
-      super.call(visitor, executor, args);  
+      super.call(visitor, table, args);  
     }
     /*
      * Then return a new instance based on the provided TypeDefinition
      */
-    System.out.println("----!!POST COMNSTRUCTOR "+definition.getName()+"!!----");
+    System.out.println("----!!POST CONSTRUCTOR "+definition.getName()+"!!----");
     return new Constant(typeInstance.getDefinition().getType(), typeInstance);
   }
 

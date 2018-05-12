@@ -1,17 +1,20 @@
 package wordy.logic.runtime;
 
 /**
- * Represents a file member - be it a file variable or a function.
+ * Represents a component of the runtime environment - be it a variable, function, constant or source file.
  * 
- * Every file member has a name to be identified with, and either
+ * Every component has a name to be identified with, and either
  * has the property of being "settable" - meaning a value can be associated
  * with the member - or "callable" - meaning the member can be invoked
  * for execution.
  * 
+ * The exception to this are constants, which are purely values and cannot be set, called and cannot
+ * be identified with a name
+ * 
  * @author Jose Guaro
  *
  */
-public abstract class Member {
+public abstract class Component {
   
   private final String name;
   
@@ -19,7 +22,7 @@ public abstract class Member {
    * Constructs a Member
    * @param name - the String name to be associated with the Member
    */
-  public Member(String name) {
+  public Component(String name) {
     this.name = name;
   }
   
