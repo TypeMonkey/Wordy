@@ -12,10 +12,13 @@ import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.structure.Function;
 import wordy.logic.compile.structure.ImportedFile;
 import wordy.logic.compile.structure.Variable;
+import wordy.logic.runtime.components.FileInstance;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.FunctionMember;
+import wordy.logic.runtime.execution.GenVisitor;
 import wordy.logic.runtime.types.TypeDefinition;
-import wordy.logic.runtime.types.ValType;
 
 /**
  * Represents a Wordy source file.
@@ -102,7 +105,24 @@ public class RuntimeFile extends TypeDefinition{
         VariableMember member = new VariableMember(fileVar.getName().content(), 
                                                    fileVar.getExpression(), 
                                                    fileVar.isConstant());
-        
+        if (member.getExpr() != null) {
+          Map [] varMaps = {variables};
+          Map [] funcMaps = {functions};
+          variables.put(member.getName(), member);
+          RuntimeTable table = new RuntimeTable(varMaps, funcMaps, javaClasses);
+          
+          GenVisitor visitor = new GenVisitor(table, runtime);
+          member.getExpr().accept(visitor);
+          
+          StackComponent peeked = visitor.peekStack();
+          if (peeked.isAnInstance()) {
+            member.setValue((Instance) peeked);
+          }
+          else {
+            VariableMember peekedVar = (VariableMember) peeked;
+            member.setValue(peekedVar.getValue());
+          }
+        }
       }
       
       initialized = true;

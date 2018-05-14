@@ -2,8 +2,8 @@ package wordy.logic.runtime.execution;
 
 import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
-import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.types.ValType;
+import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.types.JavaClassDefinition;
 
 /**
  * A utility class for arithmetic (+,-,/,*)  operations on two
@@ -20,101 +20,102 @@ public class Operator {
    * @param operator - the operator for the two operands
    * @return the resulting Value of the operator
    */
-  public static Constant simpleArithmetic(Constant leftOperand, Constant rightOperand, Token operator) {
-    if (leftOperand.getType().isChildOf(ValType.NUMBER) && 
-        rightOperand.getType().isChildOf(ValType.NUMBER)) {
-      Constant result = null;
-      if (leftOperand.getType().equals(ValType.INTEGER) && 
-          rightOperand.getType().equals(ValType.DOUBLE)) {
-        int leftOp = (int) leftOperand.getValue();
-        double rightOp = (double) rightOperand.getValue();
+  public static JavaInstance simpleArithmetic(JavaInstance leftOperand, JavaInstance rightOperand, Token operator) {
+    if (leftOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class)) && 
+        rightOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class))) {
+      JavaInstance result = null;
+      if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) && 
+          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
+        Integer leftOp = (Integer) leftOperand.getInstance();
+        Double rightOp = (Double) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = new Constant(ValType.DOUBLE, leftOp + rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = new Constant(ValType.DOUBLE, leftOp - rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = new Constant(ValType.DOUBLE, leftOp * rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = new Constant(ValType.DOUBLE, leftOp / rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = new Constant(ValType.DOUBLE, leftOp % rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
         }   
       }
-      else if (leftOperand.getType().equals(ValType.DOUBLE) && 
-          rightOperand.getType().equals(ValType.INTEGER)) {
-        double leftOp = (double) leftOperand.getValue();
-        int rightOp = (int) rightOperand.getValue();
+      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
+          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
+        Double leftOp = (Double) leftOperand.getInstance();
+        Integer rightOp = (Integer) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = new Constant(ValType.DOUBLE, leftOp + rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = new Constant(ValType.DOUBLE, leftOp - rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = new Constant(ValType.DOUBLE, leftOp * rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = new Constant(ValType.DOUBLE, leftOp / rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = new Constant(ValType.DOUBLE, leftOp % rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
         }   
       }
-      else if (leftOperand.getType().equals(ValType.INTEGER) && 
-          rightOperand.getType().equals(ValType.INTEGER)) {
-        int leftOp = (int) leftOperand.getValue();
-        int rightOp = (int) rightOperand.getValue();
+      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) && 
+          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
+        Integer leftOp = (Integer) leftOperand.getInstance();
+        Integer rightOp = (Integer) rightOperand.getInstance();
+        System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = new Constant(ValType.INTEGER, leftOp + rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = new Constant(ValType.INTEGER, leftOp - rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = new Constant(ValType.INTEGER, leftOp * rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = new Constant(ValType.INTEGER, leftOp / rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = new Constant(ValType.INTEGER, leftOp % rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp % rightOp));
         }   
       }
-      else if (leftOperand.getType().equals(ValType.DOUBLE) && 
-          rightOperand.getType().equals(ValType.DOUBLE)) {
-        double leftOp = (double) leftOperand.getValue();
-        double rightOp = (double) rightOperand.getValue();
+      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
+          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
+        Double leftOp = (Double) leftOperand.getInstance();
+        Double rightOp = (Double) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = new Constant(ValType.DOUBLE, leftOp + rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = new Constant(ValType.DOUBLE, leftOp - rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = new Constant(ValType.DOUBLE, leftOp * rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = new Constant(ValType.DOUBLE, leftOp / rightOp);
+          result = JavaInstance.wrapInstance(new Double(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = new Constant(ValType.DOUBLE, leftOp % rightOp);
-        }    
+          result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
+        }   
       }
       return result;
     }
-    if (leftOperand.getType().equals(ValType.STRING) || 
-        rightOperand.getType().equals(ValType.STRING)) {
-      String leftStr = leftOperand.getValue().toString();
-      String rightStr = rightOperand.getValue().toString();
+    if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(String.class)) || 
+        rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(String.class))) {
+      String leftStr = leftOperand.getInstance().toString();
+      String rightStr = rightOperand.getInstance().toString();
       if (!operator.content().equals(ReservedSymbols.PLUS)) {
         throw new RuntimeException("Invalid operation for string at line "+operator.lineNumber());
       }
       else {
-        return new Constant(ValType.STRING, leftStr.concat(rightStr));        
+        return JavaInstance.wrapInstance(leftStr.concat(rightStr));        
       }
     }
     throw new RuntimeException("Invalid types for arithmetic operation at line "+operator.lineNumber());
@@ -127,27 +128,27 @@ public class Operator {
    * @param operator - the operator for the two operands
    * @return the resulting Value of the operator
    */
-  public static Constant arithemticComparison(Constant leftOperand, Constant rightOperand, Token operator) {
+  public static JavaInstance arithemticComparison(JavaInstance leftOperand, JavaInstance rightOperand, Token operator) {
     System.out.println("---LEFT OPERAND: "+leftOperand);
-    if (leftOperand.getType().isChildOf(ValType.NUMBER) && 
-        rightOperand.getType().isChildOf(ValType.NUMBER)) {
-      Constant result = null;
-      double left = (double) Double.valueOf(leftOperand.getValue().toString());
-      double right = (double) Double.valueOf(rightOperand.getValue().toString());
+    if (leftOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class)) && 
+        rightOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class))) {
+      JavaInstance result = null;
+      Double left = new Double(leftOperand.getInstance().toString());
+      Double right = new Double(rightOperand.getInstance().toString());
       if (operator.content().equals(ReservedSymbols.GREAT)) {
-        result = new Constant(ValType.BOOLEAN, left > right);
+        result = JavaInstance.wrapInstance(left > right);
       }
       else if (operator.content().equals(ReservedSymbols.GREATE)) {
-        result = new Constant(ValType.BOOLEAN, left >= right);
+        result = JavaInstance.wrapInstance(left >= right);
       }
       else if (operator.content().equals(ReservedSymbols.LESS)) {
-        result = new Constant(ValType.BOOLEAN, left < right);
+        result = JavaInstance.wrapInstance(left < right);
       }
       else if (operator.content().equals(ReservedSymbols.LESSE)) {
-        result = new Constant(ValType.BOOLEAN, left <= right);
+        result = JavaInstance.wrapInstance(left <= right);
       }
       else if (operator.content().equals(ReservedSymbols.EQUAL_EQ)) {
-        result = new Constant(ValType.BOOLEAN, left == right);
+        result = JavaInstance.wrapInstance(left == right);
       }    
       return result;
     }
@@ -161,20 +162,20 @@ public class Operator {
    * @param operator - the operator for the two operands
    * @return the resulting Value of the operator
    */
-  public static Constant booleanOperations(Constant leftOperand, Constant rightOperand, Token operator) {
-    if (leftOperand.getType().equals(ValType.BOOLEAN) && 
-        rightOperand.getType().equals(ValType.BOOLEAN)) {
-      Constant result = null;
-      boolean left = (boolean) leftOperand.getValue();
-      boolean right = (boolean) rightOperand.getValue();
+  public static JavaInstance booleanOperations(JavaInstance leftOperand, JavaInstance rightOperand, Token operator) {
+    if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Boolean.class)) && 
+        rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Boolean.class))) {
+      JavaInstance result = null;
+      Boolean left = (Boolean) leftOperand.getInstance();
+      Boolean right = (Boolean) rightOperand.getInstance();
       if (operator.content().equals(ReservedSymbols.BOOL_AND)) {
-        result = new Constant(ValType.BOOLEAN, left && right);
+        result = JavaInstance.wrapInstance(left && right);
       }
       else if (operator.content().equals(ReservedSymbols.BOOL_OR)) {
-        result = new Constant(ValType.BOOLEAN, left || right);
+        result = JavaInstance.wrapInstance( left || right);
       }
       else if (operator.content().equals(ReservedSymbols.EQUAL_EQ)) {
-        result = new Constant(ValType.BOOLEAN, left == right);
+        result = JavaInstance.wrapInstance(left == right);
       }
       return result;
     }

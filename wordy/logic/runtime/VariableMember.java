@@ -1,15 +1,16 @@
 package wordy.logic.runtime;
 
 import wordy.logic.compile.nodes.ASTNode;
-import wordy.logic.runtime.types.Instance;
-import wordy.logic.runtime.types.ValType;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.StackComponent;
+import wordy.logic.runtime.types.TypeDefinition;
 
-public class VariableMember extends Component{
+public class VariableMember extends StackComponent{
 
   protected ASTNode expr;
-  protected Object value;
+  protected Instance value;
   protected boolean isConstant;
-  protected ValType type; 
+  protected TypeDefinition type; 
   
   public VariableMember(String name, boolean isConstant) {
     this(name, null, isConstant);
@@ -21,28 +22,23 @@ public class VariableMember extends Component{
     this.isConstant = isConstant;
   }
 
-  public void setValue(Object value, ValType type) {
+  public void setValue(Instance constant) {
     if (isConstant) {
       throw new IllegalStateException("Can't change the value of a constant variable");
     }
-    this.value = value;
-    this.type = type;
+    this.value = constant;
   }
   
-  public ValType getType() {
+  public TypeDefinition getType() {
     return type;
   }
   
-  public Object getValue() {
+  public Instance getValue() {
     return value;
   }
   
   public ASTNode getExpr() {
     return expr;
-  }
-  
-  public boolean isConstant() {
-    return isConstant;
   }
   
   public VariableMember clone() {
@@ -58,17 +54,12 @@ public class VariableMember extends Component{
   
   @Override
   public boolean isSettable() {
-    if (isConstant) {
-      return false;
-    }
-    return true;
+    return isConstant;
   }
 
   @Override
-  public boolean isCallable() {
+  public boolean isAnInstance() {
     return false;
   }
-  
-  
   
 }

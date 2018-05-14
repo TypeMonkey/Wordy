@@ -246,7 +246,7 @@ public class Formatter{
     List<Token> body = gatherBlock(iterator, current.lineNumber());
     body.remove(body.size()-1);
     
-    ClassStruct struct = new ClassStruct(name);
+    ClassStruct struct = new ClassStruct(fileName, name);
     struct.setParent(parent);
     if (body.isEmpty()) {
       System.out.println("---CLASS PRINT: "+struct.getParentClass());

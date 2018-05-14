@@ -10,12 +10,12 @@ import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
-import wordy.logic.runtime.Constant;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
-import wordy.logic.runtime.types.Instance;
-import wordy.logic.runtime.types.ValType;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.components.StackComponent;
 
 /**
  * Represents a callable function.
@@ -41,7 +41,7 @@ public class FunctionMember extends Callable{
   /**
    * Invokes this function, passing in its required arguments
    */
-  public Constant call(GenVisitor visitor, RuntimeTable table, Constant ... args) {    
+  public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) {    
     System.out.println("-----CALLED: "+getName());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
@@ -64,7 +64,7 @@ public class FunctionMember extends Callable{
         Variable variable = (Variable) statement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
         //System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " );
-        if(table.placeVariable(0, variableMember)) {
+        if(table.placeLocalVar(variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
                                        variable.getName().lineNumber());
         }
@@ -81,19 +81,20 @@ public class FunctionMember extends Callable{
            *  of a function as that functions arguments
            */
           if (argCnt > 0) {
-            Constant value = args[argAmnt - argCnt];
-            variableMember.setValue(value, value.getType());
+            Instance value = args[argAmnt - argCnt];
+            variableMember.setValue(value);
             argCnt--;
           }     
           else {
             if (variable.getExpression() != null) {
               variable.getExpression().accept(visitor);
-              VariableMember value = visitor.peekStack();
-              if (value instanceof Constant) {
-                variableMember.setValue(value, value.getType());
+              StackComponent value = visitor.peekStack();
+              if (value instanceof Instance) {
+                variableMember.setValue((Instance) value);
               }
               else {
-                variableMember.setValue(value.getValue(), value.getType());
+                VariableMember peekedVar = (VariableMember) value;
+                variableMember.setValue(peekedVar.getValue());
               }
               //System.out.println("----GOT: "+variableMember.getValue().getClass());
             }
@@ -103,15 +104,20 @@ public class FunctionMember extends Callable{
       else if (statement.getDescription() == StatementDescription.RETURN) {
         if (statement.getExpression() == null) {
           //an "empty" return
-          return Constant.VOID;
+          return null;
         }
         else {
           //actually returning a value
           //System.out.println("---EXEC RETURN EXPR: "+statement.getExpression().getClass().getName());
           statement.getExpression().accept(visitor);
-          VariableMember returned = visitor.peekStack();
-          //System.out.println("---EXEC RETURN EXPR Type: "+returned.getType().getTypeName());
-          return new Constant(returned.getType(), returned.getValue());
+          StackComponent checkPeeked = visitor.peekStack();
+          if (checkPeeked instanceof Instance) {
+            return (Instance) checkPeeked;
+          }
+          else {
+            VariableMember peekedVar = (VariableMember) checkPeeked;
+            return peekedVar.getValue();
+          }      
         }
       }
       else {
@@ -119,7 +125,8 @@ public class FunctionMember extends Callable{
         statement.getExpression().accept(visitor);
       }  
     }
-    return Constant.VOID;
+    
+    return null;
   }
   
   private BlockExecResult executeStatementBlock(GenVisitor visitor, RuntimeTable executor, StatementBlock block) {
@@ -151,7 +158,15 @@ public class FunctionMember extends Callable{
             * Is just an else if block. A.k.a: else if( /condtion/ ){ }
             */
            ifBlock.getExpression().accept(visitor);
-           lastIf = (boolean) visitor.peekStack().getValue();
+           StackComponent checkPeeked = visitor.peekStack();
+           if (checkPeeked instanceof JavaInstance) {
+             lastIf = (boolean) ((JavaInstance) checkPeeked).getInstance();
+           }
+           else {
+             VariableMember peekedVar = (VariableMember) checkPeeked;
+             JavaInstance instance = (JavaInstance) peekedVar.getValue();
+             lastIf = (boolean) instance.getInstance();
+           }      
            if(lastIf) {
              return executeBlock(visitor, executor, ifBlock.getStatements());
            }
@@ -160,7 +175,16 @@ public class FunctionMember extends Callable{
      }
      else {
        ifBlock.getExpression().accept(visitor);
-       lastIf = (boolean) visitor.peekStack().getValue();;
+       StackComponent checkPeeked = visitor.peekStack();
+       if (checkPeeked instanceof JavaInstance) {
+         lastIf = (boolean) ((JavaInstance) checkPeeked).getInstance();
+       }
+       else {
+         VariableMember peekedVar = (VariableMember) checkPeeked;
+         JavaInstance instance = (JavaInstance) peekedVar.getValue();
+         lastIf = (boolean) instance.getInstance();
+       }      
+       
        if(lastIf) {
          return executeBlock(visitor, executor, ifBlock.getStatements());
        }
@@ -170,7 +194,17 @@ public class FunctionMember extends Callable{
   
   private BlockExecResult executeWhile(GenVisitor visitor, RuntimeTable executor, WhileLoopBlock whileLoop) {
     whileLoop.getCondition().getExpression().accept(visitor);
-    boolean peeked = (boolean) visitor.peekStack().getValue();
+    boolean peeked = false;
+    StackComponent checkPeeked = visitor.peekStack();
+    if (checkPeeked instanceof JavaInstance) {
+      peeked = (boolean) ((JavaInstance) checkPeeked).getInstance();
+    }
+    else {
+      VariableMember peekedVar = (VariableMember) checkPeeked;
+      JavaInstance instance = (JavaInstance) peekedVar.getValue();
+      peeked = (boolean) instance.getInstance();
+    }      
+    
     while(peeked) {      
       BlockExecResult result = executeBlock(visitor, executor, whileLoop.getStatements());
       if (result.gotBreak()) {
@@ -182,41 +216,68 @@ public class FunctionMember extends Callable{
       else if (result.gotReturn()) {
         return result;
       }
+
       whileLoop.getExpression().accept(visitor);
-      peeked = (boolean) visitor.peekStack().getValue();
+      
+      StackComponent boolPeeked = visitor.peekStack();
+      if (checkPeeked instanceof JavaInstance) {
+        peeked = (boolean) ((JavaInstance) boolPeeked).getInstance();
+      }
+      else {
+        VariableMember peekedVar = (VariableMember) boolPeeked;
+        JavaInstance instance = (JavaInstance) peekedVar.getValue();
+        peeked = (boolean) instance.getInstance();
+      }          
     }        
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);   
   }
   
   private BlockExecResult executeForLoop(GenVisitor visitor, RuntimeTable executor, ForLoopBlock forLoop) {
     //System.out.println("----FOR LOOP: "+forLoop.getInitialization().getDescription());
-    if (forLoop.getInitialization().getDescription() == StatementDescription.VAR_DEC) {
-      Variable variable = (Variable) forLoop.getInitialization();
-      VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-      executor.placeVariable(0,variableMember);
-      
-      if (variable.getExpression() != null) {
-        //System.out.println("---INITIALIZATION"+variable.getExpression().tokens()[0]);
-        variable.getExpression().accept(visitor);
-        VariableMember peeked = visitor.peekStack();
-        if (peeked instanceof Constant) {
-          variableMember.setValue(peeked, peeked.getType());
-        }
-        else {
-          variableMember.setValue(peeked.getValue(), peeked.getType());
-        }
-        //System.out.println("---DONE!!! "+variableMember.getValue().toString()+ " || "+peeked.getValue()+" , "+peeked.getType());
+    if (forLoop.getInitialization() != null) {
+      if (forLoop.getInitialization().getDescription() == StatementDescription.VAR_DEC) {
+        Variable variable = (Variable) forLoop.getInitialization();
+        VariableMember variableMember = new VariableMember(variable.getName().content(), 
+                                                           variable.getExpression(),
+                                                           variable.isConstant());
+        executor.placeLocalVar(variableMember);
         
-        //TODO: remove!!!
-        //System.exit(0);
+        if (variable.getExpression() != null) {
+          //System.out.println("---INITIALIZATION"+variable.getExpression().tokens()[0]);
+          variable.getExpression().accept(visitor);
+          StackComponent peeked = visitor.peekStack();
+          if (peeked instanceof Instance) {
+            variableMember.setValue((Instance) peeked);
+          }
+          else {
+            VariableMember peekedVar = (VariableMember) peeked;
+            variableMember.setValue(peekedVar.getValue());
+          }
+          //System.out.println("---DONE!!! "+variableMember.getValue().toString()+ " || "+peeked.getValue()+" , "+peeked.getType());
+          
+          //TODO: remove!!!
+          //System.exit(0);
+        }
+      }
+      else {
+        forLoop.getInitialization().getExpression().accept(visitor);
       }
     }
     
-    //System.out.println("^^^^CHECK STATEMENT!!! "+forLoop.getCheckStatement());
-    forLoop.getCheckStatement().getExpression().accept(visitor);
-    //System.out.println("^^^^CHECK DONE!!!");
-    boolean peeked = (boolean) visitor.peekStack().getValue();
-              
+    
+    boolean peeked = true;
+    if (forLoop.getCheckStatement() != null) {
+      forLoop.getCheckStatement().getExpression().accept(visitor);
+      StackComponent checkPeeked = visitor.peekStack();
+      if (checkPeeked instanceof JavaInstance) {
+        peeked = (boolean) ((JavaInstance) checkPeeked).getInstance();
+      }
+      else {
+        VariableMember peekedVar = (VariableMember) checkPeeked;
+        JavaInstance instance = (JavaInstance) peekedVar.getValue();
+        peeked = (boolean) instance.getInstance();
+      }      
+    }        
         
     while(peeked) {
       BlockExecResult result = executeBlock(visitor, executor, forLoop.getStatements());
@@ -229,16 +290,26 @@ public class FunctionMember extends Callable{
       else if (result.gotReturn()) {
         return result;
       }
-      
-      //System.out.println("**********CHANGE*************");
-      forLoop.getChangeStatement().getExpression().accept(visitor);
-      //System.out.println("**********CHANGE DONE*************");
+            
+      //execute change statement
+      if (forLoop.getChangeStatement() != null) {
+        forLoop.getChangeStatement().getExpression().accept(visitor);
+      }
 
-      //System.out.println("^^^^CHECK STATEMENT!!! "+forLoop.getCheckStatement());
-      forLoop.getCheckStatement().getExpression().accept(visitor);
-      //System.out.println("^^^^CHECK DONE!!!");
-
-      peeked = (boolean) visitor.peekStack().getValue();
+      //execute check statement and change peeked value
+      if (forLoop.getCheckStatement() != null) {
+        forLoop.getCheckStatement().getExpression().accept(visitor);
+            
+        StackComponent checkPeeked = visitor.peekStack();
+        if (checkPeeked instanceof JavaInstance) {
+          peeked = (boolean) ((JavaInstance) checkPeeked).getInstance();
+        }
+        else {
+          VariableMember peekedVar = (VariableMember) checkPeeked;
+          JavaInstance instance = (JavaInstance) peekedVar.getValue();
+          peeked = (boolean) instance.getInstance();
+        }      
+      }
     }       
     return new BlockExecResult(BlockExecResult.NORMAL_END, null);
   }
@@ -255,25 +326,37 @@ public class FunctionMember extends Callable{
       else if (loopStatement.getDescription() == StatementDescription.RETURN) {
         if (loopStatement.getExpression() != null) {
           loopStatement.getExpression().accept(visitor);
-          VariableMember member = visitor.peekStack();
-          return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, new Constant(member.getType(), member.getValue()));
+          StackComponent member = visitor.peekStack();
+          if (member.isAnInstance()) {
+            return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, (Instance) member);
+          }
+          else {
+            VariableMember peekedVar = (VariableMember) member;          
+            return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, peekedVar.getValue());
+          }
         }
         else {
-          return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, Constant.VOID);
+          return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, null);
         }
       }
       else if (loopStatement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) loopStatement;
         VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
-        if(executor.placeVariable(0,variableMember)) {
+        if(executor.placeLocalVar(variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
               variable.getExpression().tokens()[0].lineNumber());
         }
         else {
           if (variable.getExpression() != null) {
-            variable.getExpression().accept(visitor);
-            VariableMember member = visitor.peekStack();
-            return new BlockExecResult(BlockExecResult.RETURN_ENCOUNTERED, new Constant(member.getType(), member.getValue()));
+            variableMember.getExpr().accept(visitor);
+            StackComponent member = visitor.peekStack();
+            if (member.isAnInstance()) {
+              variableMember.setValue((Instance) member);
+            }
+            else {
+              VariableMember peekedVar = (VariableMember) member;          
+              variableMember.setValue(peekedVar.getValue());
+            }
           }          
         }       
       }
@@ -309,14 +392,14 @@ public class FunctionMember extends Callable{
     static final int CONTINUE_ENCOUNTERED = 2;
 
     private final int encounter;
-    private Constant got;
+    private Instance got;
     
-    public BlockExecResult(int encounter, Constant got) {
+    public BlockExecResult(int encounter, Instance got) {
       this.encounter = encounter;
       this.got = got;
     }
     
-    public Constant getReturnedObject() {
+    public Instance getReturnedObject() {
       return got;
     }
     

@@ -7,17 +7,20 @@ import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
+import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
 
 public class ClassStruct {
   
+  private String fileName;
   private Token name;
   private Map<FunctionKey, Function> functions; 
   private Map<String, Variable> variables;
   
   private Token parentClass;
   
-  public ClassStruct(Token name) {
+  public ClassStruct(String fileName, Token name) {
+    this.fileName = fileName;
     this.name = name;
     this.functions = new HashMap<>();
     this.variables = new LinkedHashMap<>();
@@ -54,6 +57,10 @@ public class ClassStruct {
   
   public void setParent(Token parentClass) {
     this.parentClass = parentClass;
+  }
+  
+  public String getFullName() {
+    return fileName+ReservedSymbols.DOT+name.content();
   }
   
   public Token getName() {

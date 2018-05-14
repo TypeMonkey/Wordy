@@ -64,7 +64,11 @@ public class VerifierVisitor implements NodeVisitor{
             System.out.println("---FINDING: "+iden.content()+" | "+table.getFiles()+" | "+table.getFileStruct(iden.content()));
             if (table.getFileStruct(iden.content()) == null) {
               if (!table.importedClassExists(iden.content())) {
-                throw new ParseError("Can't find identifier '"+iden.content()+"' ", iden.lineNumber());
+                try {
+                  Class.forName(iden.content());
+                } catch (Exception e) {
+                  throw new ParseError("Can't find identifier '"+iden.content()+"' ", iden.lineNumber());
+                }
               }
             }
           }

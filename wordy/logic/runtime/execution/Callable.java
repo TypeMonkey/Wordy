@@ -1,11 +1,10 @@
 package wordy.logic.runtime.execution;
 
-import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.Component;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
-import wordy.logic.runtime.types.Instance;
+import wordy.logic.runtime.components.Component;
+import wordy.logic.runtime.components.Instance;
 
 /**
  * Represents a callable file member (or a member that can be invoked)
@@ -31,7 +30,7 @@ public abstract class Callable extends Component{
    * @param visitor - the NodeVisitor to use to visit the nodes of this call
    * @param args - the arguments to this call
    */
-  public abstract Constant call(GenVisitor visitor, RuntimeTable table, Constant ... args);
+  public abstract Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args);
   
   public final int requiredArgs() {
     return argAmnt;

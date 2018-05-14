@@ -4,7 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import wordy.logic.compile.structure.FileStructure;
-import wordy.logic.runtime.execution.FunctionMember;
+import wordy.logic.runtime.components.FileInstance;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.GenVisitor;
 
 /**
@@ -41,7 +44,7 @@ public class WordyRuntime {
    * 
    * @return the return value of the main function, or null if no return
    */
-  public Object execute(String file, int argc,  Constant ... constants) {
+  public Object execute(String file, int argc,  Instance ... constants) {
     if (runtimeInitialized == false) {
       throw new RuntimeException("Runtime hasn't been initialized!");
     }
@@ -55,23 +58,28 @@ public class WordyRuntime {
         throw new RuntimeException("Cannot find the file '"+file+"' !");
       }
       
-      FunctionMember main = fileInstance.getDefinition().findFunction("main", argc);
+      Callable main = fileInstance.getDefinition().findFunction("main", argc);
       if (main == null) {
         throw new RuntimeException("The file '"+file+"' doesn't contain a main function "+
                                    "that takes in "+argc+" arguments");
       }
       
       RuntimeFile orgFile = (RuntimeFile) fileInstance.getDefinition();
-      
+            
       Map [] varMaps = {orgFile.getVariables()};
       Map [] funcMaps = {orgFile.getFunctions()};
       
+      System.out.println(">INITIALIZE: "+varMaps[0].size());
+      
       RuntimeTable table = new RuntimeTable(varMaps, funcMaps, orgFile.getJavaClassMap() );
       GenVisitor visitor = new GenVisitor(table, this);
-      Constant ret = main.call(visitor, table, constants);
+      Instance ret = main.call(visitor, table, constants);
       
       if (ret != null) {
-        return ret.getValue();
+        if (ret instanceof JavaInstance) {
+          JavaInstance instance = (JavaInstance) ret;
+          return instance.getInstance();
+        }
       }
       return ret;
     }

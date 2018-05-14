@@ -2,13 +2,13 @@ package wordy.logic.runtime.execution;
 
 import wordy.logic.compile.structure.Statement;
 import wordy.logic.compile.structure.Variable;
-import wordy.logic.runtime.Constant;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.StackComponent;
+import wordy.logic.runtime.components.TypeInstance;
 import wordy.logic.runtime.types.TypeDefinition;
-import wordy.logic.runtime.types.TypeInstance;
-import wordy.logic.runtime.types.Instance;
 
 /**
  * Represents a class constructor that when invoked
@@ -17,11 +17,11 @@ import wordy.logic.runtime.types.Instance;
  * @author Jose Guaro
  *
  */
-public class Constructor extends FunctionMember{
+public class ConstructorFunction extends FunctionMember{
 
   private TypeDefinition definition;
   
-  public Constructor(String name, int argumentAmnt, 
+  public ConstructorFunction(String name, int argumentAmnt, 
                                   Statement[] statements, 
                                   TypeDefinition definition, 
                                   WordyRuntime runtime) {
@@ -29,14 +29,13 @@ public class Constructor extends FunctionMember{
     this.definition = definition;
   }
   
-  public Constant call(GenVisitor visitor, RuntimeTable table, Constant ... args) {
+  public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) {
     table = table.clone();
     visitor = new GenVisitor(table, runtime);
     System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
     
     
-    TypeInstance typeInstance = new TypeInstance(definition);
-    typeInstance.copyInstanceVars();
+    TypeInstance typeInstance = TypeInstance.newInstance(definition);
     
     /*
      * Initialize the instance variables
@@ -45,8 +44,10 @@ public class Constructor extends FunctionMember{
       System.out.println("----PLACING INSTANCE VAR: "+member.getName());
       if (member.getExpr() != null) {
         member.getExpr().accept(visitor);
-        VariableMember result = visitor.peekStack();
-        member.setValue(result, result.getType());
+        StackComponent result = visitor.peekStack();
+        if (result.isAnInstance()) {
+          member.setValue((Instance)result);
+        }
       }
     }
         
@@ -64,7 +65,7 @@ public class Constructor extends FunctionMember{
      * Then return a new instance based on the provided TypeDefinition
      */
     System.out.println("----!!POST CONSTRUCTOR "+definition.getName()+"!!----");
-    return new Constant(typeInstance.getDefinition().getType(), typeInstance);
+    return typeInstance;
   }
 
   /**

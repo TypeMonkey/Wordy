@@ -101,7 +101,28 @@ Wordy | Date: 5/10/2018
  -Need to find a way to revamp identifier lookup to accomadate this new feature
 
 
+Wordy | Date: 5/13/2018
+*Implemented one way Java interaction. (Meaning Wordy code can call Java methods, and retrieve
+ Java variables. Java code cannot yet interact with Wordy code in a beautiful manner)
+*Smoother multi-file reference support
+*Runtime has been majorly changed. The type tree is as is:
 
+Component -> StackComponent -> VariableMember
+          -> Instance  -> FileInstance
+                       -> Instance
+                       -> JavaInstance
+                       
+*All constants and literals are now JavaInstances (using the wrapper classes for primitives)
+
+*TODO: 
+ -TEST CASES: external file references, Java interaction, loops, conditions and other constructs.
+ -Type check for inheritance and better enforcement of type behavior.
+   *example: if Class A's parent is an abstract class, make sure A implements all abstract methods
+   -Also, methods on objects should first call methods on base class. If not present, then call
+    parent implementation. (this may mean calling super class' constructors and getting the 
+    intersection of methods)
+ -Implement error handling (try/catch) in runtime
+ -Work on bidirectional interaction between Wordy and Java code
 
 
 

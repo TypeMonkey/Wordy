@@ -13,7 +13,9 @@ import wordy.logic.compile.structure.Function;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
-import wordy.logic.runtime.execution.Constructor;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.execution.Callable;
+import wordy.logic.runtime.execution.ConstructorFunction;
 import wordy.logic.runtime.execution.FunctionMember;
 
 /**
@@ -28,30 +30,44 @@ import wordy.logic.runtime.execution.FunctionMember;
  *
  */
 public class TypeDefinition{
-  
+    
   protected Map<String, VariableMember> variables;
   protected Map<FunctionKey, FunctionMember> functions;
-  protected ValType type;
+  protected List<TypeDefinition> parents;
   protected String name;
   
-  protected TypeDefinition(String name, 
+  protected TypeDefinition(String name,
+                           List<TypeDefinition> parents,
                            Map<String, VariableMember> variables, 
                            Map<FunctionKey, FunctionMember> functions) {
     this.name = name;
     this.variables = variables;
     this.functions = functions;
-    this.type = new ValType(name);
+    this.parents = parents;
   }
   
   protected TypeDefinition(String name) {
     variables = new LinkedHashMap<>();
     functions = new HashMap<>();
+    parents = new ArrayList<>();
     this.name = name;
-    this.type = new ValType(name);
   }
   
   public String getName() {
     return name;
+  }
+  
+  public boolean equals(Object object) {
+    if (object instanceof TypeDefinition) {
+      TypeDefinition definition = (TypeDefinition) object;
+      return name.equals(definition.getName());
+    }
+    return false;
+  }
+  
+  public String getSimpleName() {
+    String [] splitted = name.split("\\.");
+    return splitted[splitted.length-1];
   }
   
   public FunctionMember findFunction(String name, int argc) {
@@ -74,8 +90,27 @@ public class TypeDefinition{
     return new LinkedHashMap<>(variables);
   }
   
-  public ValType getType() {
-    return type;
+  public List<TypeDefinition> getParent() {
+    return parents;
+  }
+  
+  /**
+   * Checks if the given TypeDefinition is a child of this TypeDefinition
+   * @param definition
+   * @return
+   */
+  public boolean isChildOf(TypeDefinition definition) {
+    if (parents.contains(definition)) {
+      return true;
+    }
+    else {
+      for(TypeDefinition par: parents) {
+        if (par.isChildOf(definition)) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
   
   /**
@@ -84,7 +119,7 @@ public class TypeDefinition{
    * @return the TypeDefinition based of struct
    */
   public static TypeDefinition constructDefinition(ClassStruct struct, WordyRuntime runtime) {
-    TypeDefinition definition = new TypeDefinition(struct.getName().content());
+    TypeDefinition definition = new TypeDefinition(struct.getFullName());
     
     for(Variable member: struct.getVariables()) {
       VariableMember mem = new VariableMember(member.getName().content(), 
@@ -101,7 +136,7 @@ public class TypeDefinition{
       FunctionMember functionMember = null;
       System.out.println("BUILDING TYPE: "+struct.getName().content()+" | "+function);
       if (function.isConstructor()) {
-        functionMember = new Constructor(funcName, argc, function.getStatements(), definition, runtime);
+        functionMember = new ConstructorFunction(funcName, argc, function.getStatements(), definition, runtime);
         constructorFound = true;
       }
       else {
@@ -117,7 +152,7 @@ public class TypeDefinition{
      * No constructor was found. So add default constructror 
      */
     if (!constructorFound) {
-      Constructor defaultCons = new Constructor(struct.getName().content(), 0, null, definition, runtime);
+      ConstructorFunction defaultCons = new ConstructorFunction(struct.getName().content(), 0, null, definition, runtime);
       definition.functions.put(new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs()), defaultCons);
     }
     

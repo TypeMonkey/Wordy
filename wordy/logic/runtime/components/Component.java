@@ -1,10 +1,9 @@
-package wordy.logic.runtime;
+package wordy.logic.runtime.components;
 
 /**
  * Represents a component of the runtime environment - be it a variable, function, constant or source file.
  * 
- * Every component has a name to be identified with, and either
- * has the property of being "settable" - meaning a value can be associated
+ * Every component the property of being "settable" - meaning a value can be associated
  * with the member - or "callable" - meaning the member can be invoked
  * for execution.
  * 
@@ -16,7 +15,14 @@ package wordy.logic.runtime;
  */
 public abstract class Component {
   
-  private final String name;
+  protected final String name;
+  
+  /**
+   * Constructs a Member
+   */
+  public Component() {
+    this(null);
+  }
   
   /**
    * Constructs a Member

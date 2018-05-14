@@ -1,5 +1,6 @@
 package wordy.logic.runtime.execution;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import wordy.logic.common.NodeVisitor;
@@ -15,22 +16,24 @@ import wordy.logic.compile.nodes.MethodCallNode;
 import wordy.logic.compile.nodes.UnaryNode;
 import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.nodes.ASTNode.NodeType;
-import wordy.logic.runtime.Constant;
-import wordy.logic.runtime.FileInstance;
 import wordy.logic.runtime.RuntimeFile;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
-import wordy.logic.runtime.types.Instance;
-import wordy.logic.runtime.types.ValType;
+import wordy.logic.runtime.components.FileInstance;
+import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.components.StackComponent;
 
 public class GenVisitor implements NodeVisitor{
  
-  private Stack<VariableMember> stack;
+  private Stack<StackComponent> stack;
   
   private WordyRuntime runtime;
   private RuntimeTable table;
   
+  //if the next content is a variable, then push the actual variable,
+  //not the value it holds
   private boolean pushVariable;
   
   public GenVisitor(RuntimeTable executor, WordyRuntime runtime) {
@@ -44,45 +47,45 @@ public class GenVisitor implements NodeVisitor{
     if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUALS)) {
       pushVariable = true;
       binaryOpNode.getLeftOperand().accept(this);
-      VariableMember settable = stack.pop();
+      VariableMember settable = (VariableMember) stack.pop();
       
       binaryOpNode.getRightOperand().accept(this);
-      VariableMember value = stack.pop();
+      StackComponent value = stack.pop();
       
-      if (value instanceof Constant) {
-        Constant constant = (Constant) value;
-        settable.setValue(constant, constant.getType());
+      if (value instanceof Instance) {
+        settable.setValue((Instance) value);
       }
       else {
-        settable.setValue(value.getValue(), value.getType());
+        VariableMember leftVal = (VariableMember) value;
+        settable.setValue(leftVal.getValue());
       }
       
       //System.out.println("--> EQUAL AFTER: "+settable.getValue().getClass());
     }
     else {
       binaryOpNode.getLeftOperand().accept(this);
-      Constant leftConstant = null;
-      if (stack.peek() instanceof Constant) {
-        leftConstant = (Constant) stack.pop();
+      JavaInstance leftConstant = null;
+      if (stack.peek() instanceof JavaInstance) {
+        leftConstant = (JavaInstance) stack.pop();
       }
       else {
-        VariableMember left = stack.pop();
-        leftConstant = (Constant) left.getValue();
+        VariableMember left = (VariableMember) stack.pop();
+        leftConstant = (JavaInstance) left.getValue();
         //System.out.println("---LEFT: "+leftConstant);
       }
             
       binaryOpNode.getRightOperand().accept(this);
-      Constant rightConstant = null;
-      if (stack.peek() instanceof Constant) {
-        rightConstant = (Constant) stack.pop();
+      JavaInstance rightConstant = null;
+      if (stack.peek() instanceof JavaInstance) {
+        rightConstant = (JavaInstance) stack.pop();
       }
       else {
-        VariableMember right = stack.pop();
-        rightConstant = (Constant) right.getValue();
+        VariableMember right = (VariableMember) stack.pop();
+        rightConstant = (JavaInstance) right.getValue();
       }
       
       if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUAL_EQ)) {
-        stack.push(new Constant(ValType.BOOLEAN, leftConstant.getValue() == rightConstant.getValue()));
+        stack.push(JavaInstance.wrapInstance(leftConstant.equality(rightConstant)));
       }
       else if (ReservedSymbols.isAComparisonOp(binaryOpNode.getOperator())) {
         stack.push(Operator.arithemticComparison(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
@@ -101,39 +104,47 @@ public class GenVisitor implements NodeVisitor{
     String value = constNode.getValue();
     
     if (constNode.getValue().equals(ReservedSymbols.NULL)) {
-      stack.push(new Constant(ValType.OBJECT, null));
+      stack.push(null);
     }
     else if (ReservedSymbols.isABooleanVal(constNode.getValue())) {
-      stack.push(new Constant(ValType.BOOLEAN, Boolean.parseBoolean(constNode.getValue())));
+      stack.push(JavaInstance.wrapInstance(new Boolean(value)));
     }
     else {
       try {
-        stack.push(new Constant(ValType.INTEGER, Integer.parseInt(value)));
+        stack.push(JavaInstance.wrapInstance(new Integer(value)));
         //System.out.println("---PUSHED INTEGER "+peekStack().getValue());
       } catch (NumberFormatException e) {
-        stack.push(new Constant(ValType.DOUBLE, Double.parseDouble(constNode.getValue())));
+        stack.push(JavaInstance.wrapInstance(new Double(value)));
       }
     }
   }
 
   public void visit(IdentifierNode identifierNode) {
+    System.out.println("----IDENT: "+identifierNode.name());
     VariableMember member = table.findVariable(identifierNode.name());
     if (member == null) {
       FileInstance instance = runtime.findFile(identifierNode.name());
       if (instance == null) {
         String className = table.findBinaryName(identifierNode.name());
+        System.out.println("--- FOUND CLASS: "+className);
         if (className == null) {
           throw new RuntimeException("Can't find identifier '"+identifierNode.name()+"' at line "+
               identifierNode.tokens()[0].lineNumber());
         }
         else {
-          //TODO: How do we wrap Java object to interact with the Wordy environment?
+          try {
+            System.out.println("--- STAT INSTANCE: |"+className);
+            JavaInstance staticRef = JavaInstance.createStaticInstance(Class.forName(className));
+            System.out.println("---pushed--- "+(staticRef == null));
+            stack.push(staticRef);
+          } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Cannot find the class '"+className+"'");
+          }
         }
       }
-      
-      member = new VariableMember(instance.getDefinition().getName(), false);
-      member.setValue(instance, instance.getDefinition().getType());
-      stack.push(member);
+      else {
+        stack.push(instance);
+      }
     }
     else {
       //System.out.println("---FOUND VAR! "+identifierNode.name());
@@ -144,28 +155,22 @@ public class GenVisitor implements NodeVisitor{
 
   public void visit(LiteralNode literalNode) {
    // System.out.println("***PUSHING LITERAL: "+literalNode.getLiteralContent());
-    stack.push(new Constant(ValType.STRING, literalNode.getLiteralContent()));
+    stack.push(JavaInstance.wrapInstance(literalNode.getLiteralContent()));
   }
 
   public void visit(MemberAccessNode memberAccessNode) {
     memberAccessNode.getCalle().accept(this);
     //System.out.println("---IS FOR FUNC: "+memberAccessNode.isForFunction()+" | "+memberAccessNode.getMemberName());
     
-    if (memberAccessNode.getCalle().nodeType() == NodeType.LITERAL ||
-        memberAccessNode.getCalle().nodeType() == NodeType.CONSTANT) {
-      throw new RuntimeException("Value types, like numbers and strings, don't have members at line "+
-           memberAccessNode.tokens()[0].lineNumber());
-    }
-    
-    
     if (memberAccessNode.isForFunction()) { 
-        VariableMember member = stack.pop();
-        stack.push(new Constant(member.getType(), member.getValue()));
+        //Pass along
+        StackComponent component = stack.pop();
+        stack.push(component);
     }
     else {
-      VariableMember member = stack.pop();
-      if (member.getValue() instanceof Instance) {
-        Instance instance = (Instance) member.getValue();
+      StackComponent member = stack.pop();
+      if (member instanceof Instance) {
+        Instance instance = (Instance) member;
         VariableMember instanceMem = instance.retrieveVariable(memberAccessNode.getMemberName().content());
         if (instanceMem == null) {
           throw new RuntimeException("Cannot find property '"+memberAccessNode.getMemberName().content()+"' "+
@@ -177,7 +182,7 @@ public class GenVisitor implements NodeVisitor{
             stack.push(instanceMem);
           }
           else {
-            stack.push(new Constant(instanceMem.getType(), instanceMem.getValue()));
+            stack.push(instanceMem.getValue());
           }
         }
       }
@@ -189,19 +194,22 @@ public class GenVisitor implements NodeVisitor{
     
     //visit all arguments
     for(ASTNode nodeArg: callNode.arguments()) {
+      System.out.println("****ARGS");
       nodeArg.accept(this);
+      System.out.println("***ARGS DONE");
     }
     
     //pop all nodes
-    Constant [] args = new Constant[callNode.arguments().length];
+    Instance [] args = new Instance[callNode.arguments().length];
     int index = args.length - 1;
     while (index >= 0) {
-      VariableMember popped = stack.pop();
-      if (popped instanceof Constant) {
-        args[index] = (Constant) popped;
+      StackComponent popped = stack.pop();
+      if (popped instanceof Instance) {
+        args[index] = (Instance) popped;
       }
       else {
-        args[index] = new Constant(popped.getType(), popped.getValue());
+        VariableMember poppedVar = (VariableMember) popped;
+        args[index] = poppedVar.getValue();
       }
       index--;
     }
@@ -209,7 +217,10 @@ public class GenVisitor implements NodeVisitor{
     if (callNode.getCallee().nodeType() == NodeType.IDENTIFIER) {
       //normal function call. Like : println()
       
+      System.out.println("---CALLING: "+funcName.content());
       RuntimeTable frameExec = table.clone();
+      frameExec.clearLocalVars();
+      System.out.println("---ABOUT TO CALL");
       GenVisitor frameVisitor = new GenVisitor(frameExec, runtime);
       
       Callable callable = table.findCallable(funcName.content(), args.length);
@@ -218,8 +229,10 @@ public class GenVisitor implements NodeVisitor{
             funcName.lineNumber());
       }
       else {    
-        Constant result = callable.call(frameVisitor, frameExec, args);   
+        System.out.println("---FUNC ARGS: "+args.length);
+        Instance result = callable.call(frameVisitor, frameExec, args);   
         stack.push(result);
+        System.out.println("-----BACK FROM CAL TO: "+funcName.content()+" | ");
       }
     }
     else {
@@ -227,23 +240,39 @@ public class GenVisitor implements NodeVisitor{
         pushVariable = false;
       }
       callNode.getCallee().accept(this);
-      Constant member = (Constant) stack.pop();
-      Instance instance = (Instance) member.getValue();
       
-      System.out.println("----INSTANCE FUNC CALL "+member.getType().getTypeName());
+      Instance instance = null;
+      if (stack.peek() instanceof VariableMember) {
+        VariableMember member = (VariableMember) stack.pop();
+        instance = member.getValue();
+      }
+      else {
+        instance = (Instance) stack.pop();
+      }
+      
+      System.out.println("----INSTANCE FUNC CALL "+instance.getClass()+" | "+args.length);
       
       RuntimeTable frameExec = table.clone();
-      frameExec.clearVarMap(0);
+      frameExec.clearLocalVars();
       GenVisitor frameVisitor = new GenVisitor(frameExec, runtime);
       
       Callable callable = instance.getDefinition().findFunction(funcName.content(), args.length);
-      if (callable == null) {
-        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-            funcName.lineNumber());
+      if (callable instanceof JavaCallable) {
+        Instance [] javaArgs = new Instance[args.length + 1]; //put first element as the java Instance
+        javaArgs[0] = instance;
+        System.arraycopy(args, 0, javaArgs, 1, args.length);
+        Instance result = callable.call(frameVisitor, frameExec, javaArgs);
+        stack.push(result);
       }
       else {
-        Constant result = callable.call(frameVisitor, frameExec, args);
-        stack.push(result);
+        if (callable == null) {
+          throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+              funcName.lineNumber());
+        }
+        else {
+          Instance result = callable.call(frameVisitor, frameExec, args);
+          stack.push(result);
+        }
       }
     }
   }
@@ -256,7 +285,7 @@ public class GenVisitor implements NodeVisitor{
     stack.clear();
   }
   
-  public VariableMember peekStack() {
+  public StackComponent peekStack() {
     return stack.peek();
   }
 }
