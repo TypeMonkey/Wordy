@@ -65,7 +65,7 @@ public class RuntimeTable {
    */
   public VariableMember findVariable(String name) {
     for(Map<String, VariableMember> current : varNameMaps) {
-      System.out.println(current == null);
+      //System.out.println(current == null);
       if (current.containsKey(name)) {
         return current.get(name);
       }

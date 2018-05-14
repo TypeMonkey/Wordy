@@ -254,7 +254,7 @@ public class GenVisitor implements NodeVisitor{
             funcName.lineNumber());
       }
       else {    
-        System.out.println("---FUNC ARGS: "+args.length+" | "+callable.getName()+" | "+callNode.getName().lineNumber());
+        //System.out.println("---FUNC ARGS: "+args.length+" | "+callable.getName()+" | "+callNode.getName().lineNumber());
         Instance result = callable.call(frameVisitor,frameExec, args);   
         stack.push(result);
         //System.out.println("-----BACK FROM CAL TO: "+funcName.content()+" | ");
@@ -292,9 +292,9 @@ public class GenVisitor implements NodeVisitor{
           Instance [] javaArgs = new Instance[args.length + 1]; //put first element as the java Instance
           javaArgs[0] = instance;
           System.arraycopy(args, 0, javaArgs, 1, args.length);
-          System.out.println("----CALLING: "+javaCallable.getName());
+          //System.out.println("----CALLING: "+javaCallable.getName());
           result = javaCallable.call(frameVisitor, frameExec, javaArgs);
-          System.out.println("---AFTER CALL: "+javaCallable.getName());
+          //System.out.println("---AFTER CALL: "+javaCallable.getName());
         }
         stack.push(result);
       }

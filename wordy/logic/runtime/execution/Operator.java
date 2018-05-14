@@ -74,7 +74,7 @@ public class Operator {
                 rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)))) {
         Long leftOp = new Long(leftOperand.getInstance().toString());
         Long rightOp =  new Long(rightOperand.getInstance().toString());
-        System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
+        //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
         if (operator.content().equals(ReservedSymbols.PLUS)) {
           result = JavaInstance.wrapInstance(new Long(leftOp + rightOp));
         }
@@ -135,7 +135,7 @@ public class Operator {
    * @return the resulting Value of the operator
    */
   public static JavaInstance arithemticComparison(JavaInstance leftOperand, JavaInstance rightOperand, Token operator) {
-    System.out.println("---LEFT OPERAND: "+leftOperand);
+    //System.out.println("---LEFT OPERAND: "+leftOperand);
     if (leftOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class)) && 
         rightOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class))) {
       JavaInstance result = null;
