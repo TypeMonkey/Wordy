@@ -10,7 +10,7 @@ public class TypeInstance extends Instance{
   private TypeInstance(TypeDefinition baseClass) {
     super(baseClass);
     
-    VariableMember thisVar = new VariableMember("this", true);
+    VariableMember thisVar = new VariableMember("this", false);
     thisVar.setValue(this);
     instanceVars.put(thisVar.getName(), thisVar);
   }

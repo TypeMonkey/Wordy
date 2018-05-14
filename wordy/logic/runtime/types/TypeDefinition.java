@@ -13,6 +13,7 @@ import wordy.logic.compile.structure.Function;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.ConstructorFunction;
@@ -63,6 +64,10 @@ public class TypeDefinition{
       return name.equals(definition.getName());
     }
     return false;
+  }
+  
+  public String toString() {
+    return name;
   }
   
   public String getSimpleName() {
@@ -118,7 +123,9 @@ public class TypeDefinition{
    * @param struct - the ClassStruct to base off this TypeDefinition
    * @return the TypeDefinition based of struct
    */
-  public static TypeDefinition constructDefinition(ClassStruct struct, WordyRuntime runtime) {
+  public static TypeDefinition constructDefinition(ClassStruct struct, 
+                                                   WordyRuntime runtime, 
+                                                   FileInstance currentFile) {
     TypeDefinition definition = new TypeDefinition(struct.getFullName());
     
     for(Variable member: struct.getVariables()) {
@@ -134,15 +141,21 @@ public class TypeDefinition{
       String funcName = function.getName().content();
       int argc = function.argAmount();
       FunctionMember functionMember = null;
-      System.out.println("BUILDING TYPE: "+struct.getName().content()+" | "+function);
+      //System.out.println("BUILDING TYPE: "+struct.getName().content()+" | "+function);
       if (function.isConstructor()) {
-        functionMember = new ConstructorFunction(funcName, argc, function.getStatements(), definition, runtime);
+        functionMember = new ConstructorFunction(funcName, 
+                                                 argc, 
+                                                 function.getStatements(), 
+                                                 definition, 
+                                                 currentFile, 
+                                                 runtime);
         constructorFound = true;
       }
       else {
         functionMember = new FunctionMember(function.getName().content(), 
                                             argc, 
                                             runtime,
+                                            currentFile,
                                             function.getStatements());
       }
       definition.functions.put(new FunctionKey(funcName, argc), functionMember);
@@ -152,7 +165,12 @@ public class TypeDefinition{
      * No constructor was found. So add default constructror 
      */
     if (!constructorFound) {
-      ConstructorFunction defaultCons = new ConstructorFunction(struct.getName().content(), 0, null, definition, runtime);
+      ConstructorFunction defaultCons = new ConstructorFunction(struct.getName().content(), 
+                                                                0, 
+                                                                null, 
+                                                                definition, 
+                                                                currentFile, 
+                                                                runtime);
       definition.functions.put(new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs()), defaultCons);
     }
     

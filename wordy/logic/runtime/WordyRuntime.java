@@ -67,12 +67,12 @@ public class WordyRuntime {
       RuntimeFile orgFile = (RuntimeFile) fileInstance.getDefinition();
             
       Map [] varMaps = {orgFile.getVariables()};
-      Map [] funcMaps = {orgFile.getFunctions()};
+      Map [] funcMaps = {orgFile.getFunctions(), fileInstance.getDefinition().getJavaConstructors()};
       
-      System.out.println(">INITIALIZE: "+varMaps[0].size());
+      //System.out.println(">INITIALIZE: "+varMaps[0].size());
       
       RuntimeTable table = new RuntimeTable(varMaps, funcMaps, orgFile.getJavaClassMap() );
-      GenVisitor visitor = new GenVisitor(table, this);
+      GenVisitor visitor = new GenVisitor(table, fileInstance, this);
       Instance ret = main.call(visitor, table, constants);
       
       if (ret != null) {

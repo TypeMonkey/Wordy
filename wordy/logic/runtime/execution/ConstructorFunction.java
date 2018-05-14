@@ -5,6 +5,7 @@ import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.components.TypeInstance;
@@ -23,16 +24,18 @@ public class ConstructorFunction extends FunctionMember{
   
   public ConstructorFunction(String name, int argumentAmnt, 
                                   Statement[] statements, 
-                                  TypeDefinition definition, 
+                                  TypeDefinition definition,
+                                  FileInstance currentFile,
                                   WordyRuntime runtime) {
-    super(name, argumentAmnt, runtime, statements);
+    super(name, argumentAmnt, runtime, currentFile, statements);
     this.definition = definition;
   }
   
-  public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) {
+  public Instance call(GenVisitor visitor,  RuntimeTable table, Instance ... args) {
     table = table.clone();
-    visitor = new GenVisitor(table, runtime);
-    System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
+    table.addFuncMap(currentFile.getDefinition().getFunctions());
+    visitor = new GenVisitor(table, currentFile, runtime);
+    //System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
     
     
     TypeInstance typeInstance = TypeInstance.newInstance(definition);
@@ -40,13 +43,19 @@ public class ConstructorFunction extends FunctionMember{
     /*
      * Initialize the instance variables
      */
-    for(VariableMember member: definition.getVariables().values()) {
-      System.out.println("----PLACING INSTANCE VAR: "+member.getName());
+    for(VariableMember member: typeInstance.varMap().values()) {
+      //System.out.println("!!!PLACING INSTANCE VAR: "+member.getName());
+      table.placeLocalVar(member);
       if (member.getExpr() != null) {
         member.getExpr().accept(visitor);
         StackComponent result = visitor.peekStack();
         if (result.isAnInstance()) {
           member.setValue((Instance)result);
+        }
+        else {
+          VariableMember variableMember = (VariableMember) result;
+          System.out.println("!- "+variableMember.getValue());
+          member.setValue(variableMember.getValue());
         }
       }
     }
@@ -64,7 +73,7 @@ public class ConstructorFunction extends FunctionMember{
     /*
      * Then return a new instance based on the provided TypeDefinition
      */
-    System.out.println("----!!POST CONSTRUCTOR "+definition.getName()+"!!----");
+    //System.out.println("----!!POST CONSTRUCTOR "+definition.getName()+"!!----");
     return typeInstance;
   }
 

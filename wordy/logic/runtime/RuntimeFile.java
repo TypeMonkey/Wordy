@@ -1,8 +1,10 @@
 package wordy.logic.runtime;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
@@ -18,6 +20,7 @@ import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.FunctionMember;
 import wordy.logic.runtime.execution.GenVisitor;
+import wordy.logic.runtime.execution.JavaCallable;
 import wordy.logic.runtime.types.TypeDefinition;
 
 /**
@@ -37,7 +40,7 @@ import wordy.logic.runtime.types.TypeDefinition;
  *
  */
 public class RuntimeFile extends TypeDefinition{
-  
+    
   private FileInstance instance;
   private boolean initialized;
   private String name;
@@ -51,23 +54,36 @@ public class RuntimeFile extends TypeDefinition{
    * The key to this map will be the class' simple name, and value is it's fully qualified name
    */
   private Map<String, String> javaClasses; //imported java classes
+  private Map<FunctionKey, JavaCallable> javaConstructors;
   private Map<String, TypeDefinition> typeDefs; //file classes
   
   public RuntimeFile(String name) {
     super(name);
     this.name = name;
     javaClasses = new HashMap<>();
+    javaConstructors = new HashMap<>();
     typeDefs = new HashMap<>();
   }
   
   public FileInstance initialize(FileStructure structure, WordyRuntime runtime) {
     if (!initialized) {
+      instance = new FileInstance(this);
       
       //Load imported classes first  
       //start with the standards (java.lang)
       for(String standard: WordyCompiler.JAVA_CLASSES) {
         String [] split = standard.split("\\.");
         javaClasses.put(split[split.length-1], standard);
+        
+        try {
+          Class<?> curClass = Class.forName(standard);
+          for(Constructor<?> constructor : curClass.getConstructors()) {
+            FunctionKey consKey = new FunctionKey(curClass.getSimpleName(), constructor.getParameterCount());
+            javaConstructors.put(consKey, new JavaCallable(constructor));
+          }
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException("Cannot load the class "+standard);
+        }
       }
       
       //then the actual imports
@@ -78,19 +94,31 @@ public class RuntimeFile extends TypeDefinition{
         }
         
         javaClasses.put(key, file.getImported());
+        
+        try {
+          Class<?> curClass = Class.forName(file.getImported());
+          for(Constructor<?> constructor : curClass.getConstructors()) {
+            FunctionKey consKey = new FunctionKey(curClass.getSimpleName(), constructor.getParameterCount());
+            javaConstructors.put(consKey, new JavaCallable(constructor));
+          }
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException("Cannot load the class "+file.getImported());
+        }
       }
       
       //now initialize the functions
       for(Function func: structure.getFunctions()) {
         FunctionMember functionMember = new FunctionMember(func.getName().content(), 
                                                            func.argAmount(), 
-                                                           runtime, func.getStatements());
+                                                           runtime, 
+                                                           instance, 
+                                                           func.getStatements());
         functions.put(new FunctionKey(functionMember.getName(), functionMember.requiredArgs()), functionMember);
       }
       
       //now add the classes, and add their constructors to the function map
       for(ClassStruct classStruct : structure.getClasses()) {
-        TypeDefinition definition = TypeDefinition.constructDefinition(classStruct, runtime);
+        TypeDefinition definition = TypeDefinition.constructDefinition(classStruct, runtime, instance);
         typeDefs.put(definition.getName(), definition);
         
         for(FunctionMember classFunc : definition.getFunctions().values()) {
@@ -107,11 +135,11 @@ public class RuntimeFile extends TypeDefinition{
                                                    fileVar.isConstant());
         if (member.getExpr() != null) {
           Map [] varMaps = {variables};
-          Map [] funcMaps = {functions};
+          Map [] funcMaps = {functions, javaConstructors};
           variables.put(member.getName(), member);
           RuntimeTable table = new RuntimeTable(varMaps, funcMaps, javaClasses);
           
-          GenVisitor visitor = new GenVisitor(table, runtime);
+          GenVisitor visitor = new GenVisitor(table, instance, runtime);
           member.getExpr().accept(visitor);
           
           StackComponent peeked = visitor.peekStack();
@@ -126,13 +154,16 @@ public class RuntimeFile extends TypeDefinition{
       }
       
       initialized = true;
-      instance = new FileInstance(this);
     }
     return instance;
   }
   
   public FileInstance getInstance() {
     return instance;
+  }
+  
+  public Map<FunctionKey, JavaCallable> getJavaConstructors(){
+    return javaConstructors;
   }
   
   public Map<String, TypeDefinition> getTypeDefs(){

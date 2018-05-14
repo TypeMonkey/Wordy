@@ -43,7 +43,6 @@ public class RuntimeTable {
                       Map<FunctionKey, FunctionMember> [] funcs,
                       Map<String, String> javaClassMap) {
     varNameMaps = new ArrayList<>();
-    System.out.println("---CREATING: "+Arrays.asList(vars));
     varNameMaps.addAll(Arrays.asList(vars));
     
     funcNameMaps = new ArrayList<>(Arrays.asList(funcs));
@@ -119,28 +118,32 @@ public class RuntimeTable {
     varNameMaps.get(0).clear();
   }
   
+  public void addFuncMap(Map<FunctionKey, FunctionMember> funcMap) {
+    funcNameMaps.add(funcMap);
+  }
+  
   public Callable findCallable(String name, int argc) {
     return findCallable(new FunctionKey(name, argc));
   } 
   
   @SuppressWarnings("unchecked")
   public RuntimeTable clone() {
-    System.out.println("----ABOUT TO CLONE");
+    //System.out.println("----ABOUT TO CLONE");
     Map<String, VariableMember>[] cloneVarMap = new Map[varNameMaps.size()];
     
     cloneVarMap[0] = new HashMap<>();
     for(int i = 1; i < cloneVarMap.length; i++) {
-      System.out.println("CLONING: "+(varNameMaps.get(i) == null));
+      //System.out.println("CLONING: "+(varNameMaps.get(i) == null));
       cloneVarMap[i] = new HashMap<>(varNameMaps.get(i));
     }
     
     Map<FunctionKey, FunctionMember>[] cloneFuncNameMaps = new Map[funcNameMaps.size() ];    
     for(int i = 0; i < cloneFuncNameMaps.length; i++) {
-      System.out.println("CLONING FUNCS: "+(funcNameMaps.get(i) == null));
+      //System.out.println("CLONING FUNCS: "+(funcNameMaps.get(i) == null));
       cloneFuncNameMaps[i] = new HashMap<>(funcNameMaps.get(i));
     }
     
-    System.out.println("----DONE CLONE "+cloneVarMap.length);
+    //System.out.println("----DONE CLONE "+cloneVarMap.length);
     return new RuntimeTable(cloneVarMap, cloneFuncNameMaps, new HashMap<>(javaClassMap));
   }
   

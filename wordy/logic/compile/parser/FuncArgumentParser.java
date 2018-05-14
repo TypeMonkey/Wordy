@@ -157,7 +157,7 @@ public class FuncArgumentParser {
   }
   
   private ASTNode primary() {
-    if (match(Type.BOOL, Type.NUMBER)) {
+    if (match(Type.BOOL, Type.NUMBER, Type.NULL)) {
       System.out.println("PRIMARY-F: "+previous().content());
       return new ConstantNode(previous());
     }
@@ -178,7 +178,7 @@ public class FuncArgumentParser {
       return expr;
     }
     
-    throw new RuntimeException("Unknown token '"+previous().content()+"'");
+    throw new RuntimeException("Unknown token '"+previous()+"'");
   }
   
   private Token consume(Type type, String message) {

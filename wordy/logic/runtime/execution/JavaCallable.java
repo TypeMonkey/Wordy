@@ -16,12 +16,12 @@ public class JavaCallable extends FunctionMember{
   private Constructor<?> constructor;
   
   public JavaCallable(Method method) {
-    super(method.getName(), method.getParameters().length, null);
+    super(method.getName(), method.getParameters().length, null, null, null);
     this.method = method;
   }
   
   public JavaCallable(Constructor<?> constructor) {
-    super(constructor.getDeclaringClass().getName(), constructor.getParameterCount(), null);
+    super(constructor.getDeclaringClass().getSimpleName(), constructor.getParameterCount(), null,  null, null, null);
     this.constructor = constructor;
   }
 
@@ -33,8 +33,9 @@ public class JavaCallable extends FunctionMember{
    *             (this parameter is ignored when calling a Java Method)
    * @param args - the arguments to pass to this method. All arguments must be JavaInstances
    *           (NOTE: if the java method is an instance method, the first Instance is interpreted
-   *                  to be a JavaInstance that this method is being invoked on._
-   * @return
+   *                  to be a JavaInstance that this method is being invoked on.
+   *                  Otherwise, all arguments are passed as a normal call)
+   * @return the result of 
    */
   @Override
   public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) {
@@ -43,7 +44,7 @@ public class JavaCallable extends FunctionMember{
     Object [] realArgs = new Object[args.length];
     for(int i = 0; i < realArgs.length; i++) {
       if (args[i] instanceof JavaInstance == false) {
-        throw new RuntimeException("All arguments to a Java method must be JavaInstances");
+        throw new RuntimeException("All arguments to a Java method must be JavaInstances "+args[i].getDefinition());
       }
       else {
         JavaInstance jArgs = (JavaInstance) args[i];
@@ -56,9 +57,8 @@ public class JavaCallable extends FunctionMember{
       try {
         result = constructor.newInstance(realArgs);
       } catch (Exception e) {
-        throw new RuntimeException("An exception was thrown when calling the constructor for"+method.getName()+": "
-                                    +System.lineSeparator()+
-                                     e);
+        throw new RuntimeException("An exception was thrown when calling the constructor for"+constructor.getDeclaringClass().getName()+": "
+                                    +System.lineSeparator()+e);
       }
     }
     else {
@@ -66,7 +66,7 @@ public class JavaCallable extends FunctionMember{
         try {
           result = method.invoke(null, realArgs);
         } catch (Exception e) {
-          throw new RuntimeException("An exception was thrown when calling "+method.getName()+": "+System.lineSeparator()+
+          throw new RuntimeException("An exception was thrown when calling "+name+": "+System.lineSeparator()+
                                      e);
         }
       }
@@ -74,7 +74,7 @@ public class JavaCallable extends FunctionMember{
         try {
           result = method.invoke(realArgs[0], Arrays.copyOfRange(realArgs, 1, args.length));
         } catch (Exception e) {
-          throw new RuntimeException("An exception was thrown when calling "+method.getName()+": "+System.lineSeparator()+
+          throw new RuntimeException("An exception was thrown when calling "+name+": "+System.lineSeparator()+
                                      e);
         }
       }

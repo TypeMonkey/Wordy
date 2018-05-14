@@ -2,12 +2,14 @@ package wordy.logic.runtime.execution;
 
 import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
+import wordy.logic.compile.Token.Type;
+import wordy.logic.compile.nodes.UnaryNode;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.types.JavaClassDefinition;
 
 /**
  * A utility class for arithmetic (+,-,/,*)  operations on two
- * operands
+ * operands, along with unary operations
  * @author Jose Guaro
  *
  */
@@ -24,9 +26,10 @@ public class Operator {
     if (leftOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class)) && 
         rightOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class))) {
       JavaInstance result = null;
-      if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) && 
+      if ((leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
+           leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) && 
           rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
-        Integer leftOp = (Integer) leftOperand.getInstance();
+        Long leftOp = (Long) leftOperand.getInstance();
         Double rightOp = (Double) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
           result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
@@ -45,9 +48,10 @@ public class Operator {
         }   
       }
       else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
-          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
+              (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
+               rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)))) {
         Double leftOp = (Double) leftOperand.getInstance();
-        Integer rightOp = (Integer) rightOperand.getInstance();
+        Long rightOp = (Long) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
           result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
         }
@@ -64,25 +68,27 @@ public class Operator {
           result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
         }   
       }
-      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) && 
-          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
-        Integer leftOp = (Integer) leftOperand.getInstance();
-        Integer rightOp = (Integer) rightOperand.getInstance();
+      else if ((leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
+                leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) && 
+               (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
+                rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)))) {
+        Long leftOp = new Long(leftOperand.getInstance().toString());
+        Long rightOp =  new Long(rightOperand.getInstance().toString());
         System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp + rightOp));
+          result = JavaInstance.wrapInstance(new Long(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp - rightOp));
+          result = JavaInstance.wrapInstance(new Long(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp * rightOp));
+          result = JavaInstance.wrapInstance(new Long(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp / rightOp));
+          result = JavaInstance.wrapInstance(new Long(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp % rightOp));
+          result = JavaInstance.wrapInstance(new Long(leftOp % rightOp));
         }   
       }
       else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
@@ -180,5 +186,18 @@ public class Operator {
       return result;
     }
     throw new RuntimeException("Invalid types for boolean operation at line "+operator.lineNumber());
+  }
+  
+  public static JavaInstance performUnaryOperation(JavaInstance instance, Token operator) {
+    JavaInstance result = null;
+    if (operator.type() == Type.BANG) {
+      Boolean bool = (Boolean) instance.getInstance();
+      result = JavaInstance.wrapInstance(!bool);
+    }
+    else if (operator.type() == Type.MINUS) {
+      Double doubleVal = new Double(instance.getInstance().toString());
+      result = JavaInstance.wrapInstance(-doubleVal);
+    }
+    return result;
   }
 }

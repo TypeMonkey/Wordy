@@ -10,5 +10,7 @@ public class FileInstance extends Instance{
     instanceVars = baseClass.getVariables();
   }
 
-  
+  public RuntimeFile getDefinition() {
+    return (RuntimeFile) definition;
+  }
 }

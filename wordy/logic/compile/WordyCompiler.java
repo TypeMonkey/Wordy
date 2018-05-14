@@ -30,7 +30,9 @@ public class WordyCompiler {
   public static final List<String> JAVA_CLASSES;
   
   static {
-    JAVA_CLASSES = Collections.unmodifiableList(getStandardJavaClasses());
+    List<String> classes = new ArrayList<>(getStandardJavaClasses());
+    classes.add("wordy.standard.Array");
+    JAVA_CLASSES = Collections.unmodifiableList(classes);
   }
   
   public static final String RUNTIME_JAR = "rt.jar";

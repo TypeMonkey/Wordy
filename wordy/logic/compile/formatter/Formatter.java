@@ -318,7 +318,7 @@ public class Formatter{
         }
       }
       
-      System.out.println("---CLASS PRINT: "+struct.getParentClass().content());
+      System.out.println("---CLASS PRINT: "+struct.getFullName());
       for(Function function: struct.getFunctions()) {
         System.out.println("FUNC: "+function.getName()+" || "+function.isConstructor());
       }

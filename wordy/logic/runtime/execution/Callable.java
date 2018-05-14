@@ -4,6 +4,7 @@ import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.Component;
+import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 
 /**

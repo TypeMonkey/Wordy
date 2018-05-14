@@ -104,7 +104,11 @@ Wordy | Date: 5/10/2018
 Wordy | Date: 5/13/2018
 *Implemented one way Java interaction. (Meaning Wordy code can call Java methods, and retrieve
  Java variables. Java code cannot yet interact with Wordy code in a beautiful manner)
+  -Can call Java constructors and methods
 *Smoother multi-file reference support
+*The package "wordy.standard" will be for standard library classes and functionalities
+  -Added array functionality using the Array class
+*Added long support
 *Runtime has been majorly changed. The type tree is as is:
 
 Component -> StackComponent -> VariableMember
@@ -123,7 +127,8 @@ Component -> StackComponent -> VariableMember
     intersection of methods)
  -Implement error handling (try/catch) in runtime
  -Work on bidirectional interaction between Wordy and Java code
-
+ -Smoother type comparison between primitives (longs, ints, and doubles), along with computations
+   *Right now, I'm converting ints to longs, and using doubles for comparisons
 
 
 

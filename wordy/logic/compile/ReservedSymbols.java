@@ -60,6 +60,7 @@ public final class ReservedSymbols {
   public static final String BREAK = "break";
   public static final String CONTINUE = "continue";
   
+  public static final String THROW = "throw";
   public static final String TRY = "try";
   public static final String CATCH = "catch";
   

@@ -17,16 +17,22 @@ public class VariableMember extends StackComponent{
   }
   
   public VariableMember(String name, ASTNode expr, boolean isConstant) {
+    this(name, null, expr, isConstant);
+  }
+
+  public VariableMember(String name, Instance value, ASTNode expr, boolean isConstant) {
     super(name);
+    this.value = value;
     this.expr = expr;
     this.isConstant = isConstant;
   }
-
+  
   public void setValue(Instance constant) {
     if (isConstant) {
       throw new IllegalStateException("Can't change the value of a constant variable");
     }
     this.value = constant;
+    type = constant.getDefinition();
   }
   
   public TypeDefinition getType() {

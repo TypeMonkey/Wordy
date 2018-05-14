@@ -1,5 +1,6 @@
 package wordy.logic.runtime.execution;
 
+import java.util.Arrays;
 import java.util.List;
 
 import wordy.logic.compile.structure.ForLoopBlock;
@@ -10,9 +11,11 @@ import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
+import wordy.logic.runtime.RuntimeFile;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
+import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
@@ -25,6 +28,7 @@ import wordy.logic.runtime.components.StackComponent;
 public class FunctionMember extends Callable{
 
   protected Statement [] statements;
+  protected FileInstance currentFile;
   private boolean lastIf;
   
   /**
@@ -33,23 +37,31 @@ public class FunctionMember extends Callable{
    * @param argumentAmnt - the amount of argument this function expects
    * @param statements - the Statements in this function
    */
-  public FunctionMember(String name, int argumentAmnt, WordyRuntime runtime, Statement ... statements) {
+  public FunctionMember(String name, 
+                        int argumentAmnt, 
+                        WordyRuntime runtime, 
+                        FileInstance currentFile, 
+                        Statement ... statements) {
     super(name, argumentAmnt, runtime);
     this.statements = statements;
+    this.currentFile = currentFile;
   }
   
   /**
    * Invokes this function, passing in its required arguments
    */
   public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) {    
-    System.out.println("-----CALLED: "+getName());
+    //System.out.println("*****---CALLED: "+getName()+" | ");
+    table.addFuncMap(currentFile.getDefinition().getFunctions());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
-      //System.out.println("------NEXT STATEMENT------ "+statements.length+" || "+statements[0].getClass().getName());
+      //System.out.println("------NEXT STATEMENT------ || "+currentFile.getName());
       visitor.resetStack();
       if (statement.getDescription() == StatementDescription.BLOCK) {
         RuntimeTable blockExec = table.clone();
-        BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec, runtime), blockExec, (StatementBlock) statement);
+        BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec, currentFile, runtime), 
+                                                       blockExec, 
+                                                       (StatementBlock) statement);
         if (result.gotBreak()) {
           break;
         }
@@ -82,6 +94,7 @@ public class FunctionMember extends Callable{
            */
           if (argCnt > 0) {
             Instance value = args[argAmnt - argCnt];
+            //System.out.println("-----FUNC PARAM: "+value+" | "+variableMember.getName());
             variableMember.setValue(value);
             argCnt--;
           }     
@@ -121,11 +134,12 @@ public class FunctionMember extends Callable{
         }
       }
       else {
-        System.out.println("---EXEC NORM EXPR: "+statement.getExpression().getClass().getName());
+        //System.out.println("---EXEC NORM EXPR: "+statement.getExpression().getClass().getName());
         statement.getExpression().accept(visitor);
       }  
     }
     
+    //System.out.println("*****^^ FINISH CALL "+name+" | ");
     return null;
   }
   
@@ -363,7 +377,7 @@ public class FunctionMember extends Callable{
       else if (loopStatement.getDescription() == StatementDescription.BLOCK) {
         StatementBlock block = (StatementBlock) loopStatement;
         executor = executor.clone();
-        BlockExecResult result = executeStatementBlock(new GenVisitor(executor, runtime), executor, block);
+        BlockExecResult result = executeStatementBlock(new GenVisitor(executor, currentFile, runtime), executor, block);
         if (result.wasNormalEnd() == false) {
           return result;
         }
@@ -390,7 +404,8 @@ public class FunctionMember extends Callable{
     static final int RETURN_ENCOUNTERED = 0;
     static final int BREAK_ENCOUNTERED = 1;
     static final int CONTINUE_ENCOUNTERED = 2;
-
+    static final int THROWABLE_THROWN = 4;
+    
     private final int encounter;
     private Instance got;
     

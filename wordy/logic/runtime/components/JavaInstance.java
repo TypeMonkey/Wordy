@@ -49,6 +49,9 @@ public class JavaInstance extends Instance{
   }
   
   public String toString() {
+    if (object == null) {
+      return "null";
+    }
     return object.toString();
   }
   
@@ -78,8 +81,17 @@ public class JavaInstance extends Instance{
       throw new IllegalArgumentException("The provided object wasn't a Java object");
     }
     else {
+      
+      if (instance == null) {
+        return getNullRep();
+      }
+      
       JavaClassDefinition definition = JavaClassDefinition.defineClass(instance.getClass());
       return new JavaInstance(instance, definition, false);
     }
+  }
+  
+  public static JavaInstance getNullRep() {
+    return new JavaInstance(null, JavaClassDefinition.defineClass(Object.class), false);
   }
 }

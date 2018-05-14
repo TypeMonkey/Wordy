@@ -41,6 +41,7 @@ public class JavaVariableMember extends VariableMember{
     JavaInstance instance = (JavaInstance) constant;
     try {
       field.set(target, instance.getInstance());
+      type = instance.getDefinition();
     } catch (Exception e) {
       throw new RuntimeException("Error occured while setting "+name+" : "+System.lineSeparator()+e.getMessage());
     }

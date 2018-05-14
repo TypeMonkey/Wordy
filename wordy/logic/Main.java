@@ -13,8 +13,7 @@ public class Main {
   
   public static void main(String[] args) throws Exception {
     String [] sourceFile = {"src\\Sources\\Flood.w", "src\\Sources\\Dry.w"};    
-    
-    
+        
     WordyCompiler compiler = new WordyCompiler(sourceFile);
     Map<String, FileStructure> fileMap = compiler.compile();
      

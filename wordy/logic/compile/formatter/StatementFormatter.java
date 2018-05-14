@@ -2,6 +2,7 @@ package wordy.logic.compile.formatter;
 
 import java.util.List;
 
+import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.Token.Type;
 import wordy.logic.compile.errors.ParseError;
@@ -56,11 +57,16 @@ public class StatementFormatter {
       }
     }
     else {
+      StatementDescription description = StatementDescription.REGULAR;
+      if (tokens.get(0).content().equals(ReservedSymbols.THROW)) {
+        tokens.remove(0);
+        description = StatementDescription.THROW;
+      }
       if (tokens.size() == 1) {
         throw new ParseError("Invalid statement", tokens.get(0).lineNumber());
       }
       Parser parser = new Parser(tokens);
-      return new Statement(parser.parse(), StatementDescription.REGULAR);
+      return new Statement(parser.parse(), description);
     }
   }
 }
