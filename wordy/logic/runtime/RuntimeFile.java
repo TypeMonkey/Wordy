@@ -2,12 +2,15 @@ package wordy.logic.runtime;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
+import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.compile.WordyCompiler;
 import wordy.logic.compile.structure.ClassStruct;
 import wordy.logic.compile.structure.FileStructure;
@@ -98,7 +101,11 @@ public class RuntimeFile extends TypeDefinition{
         try {
           Class<?> curClass = Class.forName(file.getImported());
           for(Constructor<?> constructor : curClass.getConstructors()) {
-            FunctionKey consKey = new FunctionKey(curClass.getSimpleName(), constructor.getParameterCount());
+            JavaFunctionKey consKey = JavaFunctionKey.spawnKey(curClass.getSimpleName(), constructor.getParameterTypes());
+            if (file.getAlias() != null) {
+              consKey = JavaFunctionKey.spawnKey(file.getAlias().content(), constructor.getParameterTypes());
+            }
+            System.out.println("--PLACED JVA CONSTRUCTOR: "+consKey.name+ " | "+Arrays.toString(constructor.getParameterTypes()));
             javaConstructors.put(consKey, new JavaCallable(constructor));
           }
         } catch (ClassNotFoundException e) {
@@ -136,7 +143,6 @@ public class RuntimeFile extends TypeDefinition{
         if (member.getExpr() != null) {
           Map [] varMaps = {variables};
           Map [] funcMaps = {functions, javaConstructors};
-          variables.put(member.getName(), member);
           RuntimeTable table = new RuntimeTable(varMaps, funcMaps, javaClasses);
           
           GenVisitor visitor = new GenVisitor(table, instance, runtime);
@@ -151,6 +157,7 @@ public class RuntimeFile extends TypeDefinition{
             member.setValue(peekedVar.getValue());
           }
         }
+        variables.put(member.getName(), member);
       }
       
       initialized = true;
@@ -172,6 +179,10 @@ public class RuntimeFile extends TypeDefinition{
   
   public Map<String, String> getJavaClassMap(){
     return javaClasses;
+  }
+  
+  public Map<String, VariableMember> getVariables(){
+    return variables;
   }
   
   public String toString() {

@@ -32,7 +32,7 @@ public class ConstructorFunction extends FunctionMember{
   }
   
   public Instance call(GenVisitor visitor,  RuntimeTable table, Instance ... args) {
-    table = table.clone();
+    table = table.clone(false);
     table.addFuncMap(currentFile.getDefinition().getFunctions());
     visitor = new GenVisitor(table, currentFile, runtime);
     //System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");

@@ -58,7 +58,7 @@ public class FunctionMember extends Callable{
       //System.out.println("------NEXT STATEMENT------ || "+currentFile.getName());
       visitor.resetStack();
       if (statement.getDescription() == StatementDescription.BLOCK) {
-        RuntimeTable blockExec = table.clone();
+        RuntimeTable blockExec = table.clone(true);
         BlockExecResult result = executeStatementBlock(new GenVisitor(blockExec, currentFile, runtime), 
                                                        blockExec, 
                                                        (StatementBlock) statement);
@@ -376,7 +376,7 @@ public class FunctionMember extends Callable{
       }
       else if (loopStatement.getDescription() == StatementDescription.BLOCK) {
         StatementBlock block = (StatementBlock) loopStatement;
-        executor = executor.clone();
+        executor = executor.clone(true);
         BlockExecResult result = executeStatementBlock(new GenVisitor(executor, currentFile, runtime), executor, block);
         if (result.wasNormalEnd() == false) {
           return result;

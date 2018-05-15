@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Stack;
 
+import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.common.NodeVisitor;
 import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
@@ -115,7 +116,6 @@ public class GenVisitor implements NodeVisitor{
     else {
       try {
         stack.push(JavaInstance.wrapInstance(new Integer(value)));
-        //System.out.println("---PUSHED INTEGER "+peekStack().getValue());
       } catch (NumberFormatException e) {
         try {
           stack.push(JavaInstance.wrapInstance(new Long(value)));
@@ -243,15 +243,23 @@ public class GenVisitor implements NodeVisitor{
       //normal function call. Like : println()
       
       //System.out.println("---CALLING: "+funcName.content());
-      RuntimeTable frameExec = table.clone();
+      RuntimeTable frameExec = table.clone(false);
       frameExec.clearLocalVars();
       //System.out.println("---ABOUT TO CALL");
       GenVisitor frameVisitor = new GenVisitor(frameExec, currentFile, runtime);
       
       Callable callable = table.findCallable(funcName.content(), args.length);
       if (callable == null) {
-        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-            funcName.lineNumber());
+        callable = table.findCallable(JavaFunctionKey.spawnKey(funcName.content(), args));
+        System.out.println("---TRYING: "+JavaFunctionKey.spawnKey(funcName.content(), args));
+        if (callable == null) {
+          throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+              funcName.lineNumber());
+        }
+        else {
+          Instance result = callable.call(frameVisitor,frameExec, args);   
+          stack.push(result);
+        }
       }
       else {    
         //System.out.println("---FUNC ARGS: "+args.length+" | "+callable.getName()+" | "+callNode.getName().lineNumber());
@@ -277,7 +285,7 @@ public class GenVisitor implements NodeVisitor{
       
       //System.out.println("----INSTANCE FUNC CALL "+instance.getClass()+" | "+args.length);
       
-      RuntimeTable frameExec = table.clone();
+      RuntimeTable frameExec = table.clone(false);
       frameExec.clearLocalVars();
       GenVisitor frameVisitor = new GenVisitor(frameExec, currentFile, runtime);
       

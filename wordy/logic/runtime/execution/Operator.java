@@ -68,27 +68,46 @@ public class Operator {
           result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
         }   
       }
-      else if ((leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
-                leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) && 
-               (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
-                rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)))) {
-        Long leftOp = new Long(leftOperand.getInstance().toString());
-        Long rightOp =  new Long(rightOperand.getInstance().toString());
+      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) && 
+               rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
+        Integer leftOp = (Integer) leftOperand.getInstance();
+        Integer rightOp =   (Integer) rightOperand.getInstance();
         //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp + rightOp));
+          result = JavaInstance.wrapInstance(leftOp + rightOp);
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp - rightOp));
+          result = JavaInstance.wrapInstance(leftOp - rightOp);
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp * rightOp));
+          result = JavaInstance.wrapInstance(leftOp * rightOp);
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp / rightOp));
+          result = JavaInstance.wrapInstance(leftOp / rightOp);
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp % rightOp));
+          result = JavaInstance.wrapInstance(leftOp % rightOp);
+        }   
+      }
+      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) &&
+               rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class))) {
+        Long leftOp = (Long) leftOperand.getInstance();
+        Long rightOp =  (Long) rightOperand.getInstance();
+        //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
+        if (operator.content().equals(ReservedSymbols.PLUS)) {
+          result = JavaInstance.wrapInstance(leftOp + rightOp);
+        }
+        else if (operator.content().equals(ReservedSymbols.MINUS)) {
+          result = JavaInstance.wrapInstance(leftOp - rightOp);
+        }
+        else if (operator.content().equals(ReservedSymbols.MULT)) {
+          result = JavaInstance.wrapInstance(leftOp * rightOp);
+        }
+        else if (operator.content().equals(ReservedSymbols.DIV)) {
+          result = JavaInstance.wrapInstance(leftOp / rightOp);
+        }
+        else if (operator.content().equals(ReservedSymbols.MOD)) {
+          result = JavaInstance.wrapInstance(leftOp % rightOp);
         }   
       }
       else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
@@ -115,8 +134,8 @@ public class Operator {
     }
     if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(String.class)) || 
         rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(String.class))) {
-      String leftStr = leftOperand.getInstance().toString();
-      String rightStr = rightOperand.getInstance().toString();
+      String leftStr = leftOperand.toString();
+      String rightStr = rightOperand.toString();
       if (!operator.content().equals(ReservedSymbols.PLUS)) {
         throw new RuntimeException("Invalid operation for string at line "+operator.lineNumber());
       }

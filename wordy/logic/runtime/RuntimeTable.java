@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
+import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.execution.Callable;
@@ -118,6 +119,10 @@ public class RuntimeTable {
     varNameMaps.get(0).clear();
   }
   
+  public void addVariableMap(Map<String, VariableMember> varMap) {
+    varNameMaps.add(varMap);
+  }
+  
   public void addFuncMap(Map<FunctionKey, FunctionMember> funcMap) {
     funcNameMaps.add(funcMap);
   }
@@ -127,11 +132,17 @@ public class RuntimeTable {
   } 
   
   @SuppressWarnings("unchecked")
-  public RuntimeTable clone() {
+  public RuntimeTable clone(boolean keepLocalVar) {
     //System.out.println("----ABOUT TO CLONE");
     Map<String, VariableMember>[] cloneVarMap = new Map[varNameMaps.size()];
     
-    cloneVarMap[0] = new HashMap<>();
+    if (keepLocalVar) {
+      cloneVarMap[0] = new HashMap<>(varNameMaps.get(0));
+    }
+    else {
+      cloneVarMap[0] = new HashMap<>();
+    }
+    
     for(int i = 1; i < cloneVarMap.length; i++) {
       //System.out.println("CLONING: "+(varNameMaps.get(i) == null));
       cloneVarMap[i] = new HashMap<>(varNameMaps.get(i));

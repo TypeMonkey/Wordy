@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import wordy.logic.common.FunctionKey;
+import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.JavaVariableMember;
 import wordy.logic.runtime.execution.JavaCallable;
@@ -78,12 +79,14 @@ public class JavaClassDefinition extends TypeDefinition{
 
       for(Constructor<?> constructor: respClass.getConstructors()) {
         JavaCallable callable = new JavaCallable(constructor);
-        definition.functions.put(new FunctionKey(callable.getName(), callable.requiredArgs()), callable);
+        JavaFunctionKey functionKey = JavaFunctionKey.spawnKey(respClass.getSimpleName(), constructor.getParameterTypes()); 
+        definition.functions.put(functionKey, callable);
       }
 
       for(Method method : respClass.getMethods()) {
         JavaCallable callable = new JavaCallable(method);
-        definition.functions.put(new FunctionKey(callable.getName(), callable.requiredArgs()), callable);
+        JavaFunctionKey functionKey = JavaFunctionKey.spawnKey(method.getName(), method.getParameterTypes());
+        definition.functions.put(functionKey, callable);
       }
 
       for(Field field : respClass.getFields()) {

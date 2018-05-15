@@ -1,5 +1,9 @@
 
-let k = 90;
+let a = 90;
+let b;
+let c;
+let d;
+let e;
 
 class Ob{
 	
@@ -20,5 +24,5 @@ function change(b){
 }
 
 function get(){
-	return k;
+	return e;
 }

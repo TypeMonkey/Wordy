@@ -43,21 +43,23 @@ public class JavaCallable extends FunctionMember{
     
     Object [] realArgs = new Object[args.length];
     for(int i = 0; i < realArgs.length; i++) {
-      if (args[i] instanceof JavaInstance == false) {
-        throw new RuntimeException("All arguments to a Java method must be JavaInstances "+args[i].getDefinition());
-      }
-      else {
+      System.out.println("*PASSED TYPE: "+args[i].getDefinition());
+      if (args[i] instanceof JavaInstance) {
         JavaInstance jArgs = (JavaInstance) args[i];
         realArgs[i] = jArgs.getInstance();
+      }
+      else {
+        realArgs[i] = args[i];
       }
     }
     
     if (constructor != null) {
-      //this callable is a function
       try {
         result = constructor.newInstance(realArgs);
       } catch (Exception e) {
-        throw new RuntimeException("An exception was thrown when calling the constructor for"+constructor.getDeclaringClass().getName()+": "
+        System.out.println(" first arg type: "+realArgs[0].getClass());
+        System.out.println("---ARG TYPES: "+Arrays.toString(constructor.getParameterTypes())+" | "+realArgs.length);
+        throw new RuntimeException("An exception was thrown when calling the constructor for "+constructor.getDeclaringClass().getName()+": "
                                     +System.lineSeparator()+e);
       }
     }
@@ -73,11 +75,18 @@ public class JavaCallable extends FunctionMember{
       else {
         try {
           result = method.invoke(realArgs[0], Arrays.copyOfRange(realArgs, 1, args.length));
-        } catch (Exception e) {
+        } catch (Exception e) {         
+          //System.out.println(" first arg type: "+realArgs[1].getClass());
+          //System.out.println("---ARG TYPES: "+Arrays.toString(method.getParameterTypes())+" | "+realArgs.length);
           throw new RuntimeException("An exception was thrown when calling "+name+": "+System.lineSeparator()+
                                      e);
         }
       }
+    }
+    //System.out.println("---CALLED: "+name);
+    
+    if (result instanceof Instance) {
+      return (Instance) result;
     }
     return JavaInstance.wrapInstance(result);
   }

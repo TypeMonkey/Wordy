@@ -1,33 +1,29 @@
-import wordy.logic.Main;
+import wordy.standard.Reflection; 
+import java.io.File as Socky;
 
 function main(a){
-  a = Dry.Ob(30);
-  Dry.re(a).k = 20;
-  println("result: "+a.k);
+  println(">>>REFLECTION<<<");
+  let ref = Reflection(Dry);
+  ref = ref.getVariableNames();
+  for(let v = 0; v < ref.length; v = v+1){
+  	println("VAR: "+ref.get(v).getName()+" | "+ref.get(v).getValue());
+  	ref.get(v).setValue(10);
+  }
   
-  let b = Array(10);
-  println("array length: "+b.length);
+  for(let v = 0; v < ref.length; v = v+1){
+  	println("VAR: N "+ref.get(v).getName()+" | "+ref.get(v).getValue());
+  }
   
-  a = "hello";
-  b.set(0, a);
-  println("GOT: "+b.get(0));
+  println("REF? "+Dry.a);
   
-  let f = Dry.re(b);
-  f.set(0, "bye");
-  println("GOT again: "+b.get(0));
+  println("----SOCKET DEMONSTRATION----");
+  let sock = Socky("hello.txt");
+  sock.createNewFile();
   
-  Dry.change(b);
-  println("GOT again1: "+b.get(0));
-  
-  println("TIME: "+System.nanoTime());
-  
-  f = Long("123");
-  a = Integer("12");
-  println("parsed: "+(f+a));
 }
 
 function help(){
-	return Main.changeMe;
+	return 10;
 }
 
 

@@ -101,7 +101,7 @@ Wordy | Date: 5/10/2018
  -Need to find a way to revamp identifier lookup to accomadate this new feature
 
 
-Wordy | Date: 5/13/2018
+Wordy | Date: 5/13/2018 - 5/14/2018
 *Implemented one way Java interaction. (Meaning Wordy code can call Java methods, and retrieve
  Java variables. Java code cannot yet interact with Wordy code in a beautiful manner)
   -Can call Java constructors and methods
@@ -109,6 +109,13 @@ Wordy | Date: 5/13/2018
 *The package "wordy.standard" will be for standard library classes and functionalities
   -Added array functionality using the Array class
 *Added long support
+*Played around with reflection within Wordy runtime. Changing variable
+ values are a bit tricky as 
+*Further enforcement of Import aliases on constructors
+ Example: 
+   import java.net.Socket as Socky;
+   
+   let b = Socky(); //you can call Socket's constructor as Socky()
 *Runtime has been majorly changed. The type tree is as is:
 
 Component -> StackComponent -> VariableMember
@@ -129,9 +136,32 @@ Component -> StackComponent -> VariableMember
  -Work on bidirectional interaction between Wordy and Java code
  -Smoother type comparison between primitives (longs, ints, and doubles), along with computations
    *Right now, I'm converting ints to longs, and using doubles for comparisons
+ -Need stronger function search for Java methods. Right now, searches for java methods
+  just match the argument amount and name. There is not check for argument types and 
+  parameter type expectation. Also, if the arguments are subtypes of parameters.
+   *This can be challenging.
 
+*Clarifications:
+ -Wordy types (types declared in Wordy code) shouldn't be directly referenced to 
+  in Java code. Let's say you've made a class in Java that does something with a 
+  Wordy object - say the type "Ice", as in:
+     
+     public void some(Ice ice) {  <--That's not correct. Ice isn't an actual
+                                     class in Java space.
+     }
+     
+     public void some(Instance ice){               <--This is the correct way.
+        //check if ice is an Ice instance:           
+        if(ice.getDefinition().childof("Ice")){
+        
+        }     
+     }
 
+	When Wordy code interacts with Java code, the Wordy runtime sends
+	Instance objects rather than actual instances of the objects their representing.
 
+   WORDY  ---> (Instances)  JAVA
+   WORDY  <--- (Objects / JavaInstances (wrappers for Objects)) JAVA
 
 
 
