@@ -164,6 +164,11 @@ Component -> StackComponent -> VariableMember
    WORDY  <--- (Objects / JavaInstances (wrappers for Objects)) JAVA
 
 
+Wordy | Date: 5/18/2018
+* All TODOs of the previous entries are still active
+* About Wordy functions and lookup:
+  - Two Wordy functions are considered the same when they're in the same file - or class - , same name and same
+    amount of arguments
 
 
 

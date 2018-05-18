@@ -18,10 +18,10 @@ public class Main {
   
   public static void main(String[] args) throws Exception {
     String [] sourceFile = {"src\\Sources\\Flood.w", "src\\Sources\\Dry.w"};    
-       /* 
+       
     WordyCompiler compiler = new WordyCompiler(sourceFile);
     Map<String, FileStructure> fileMap = compiler.compile();
-     */
+     
        
     /*
     System.out.println(Operator.simpleArithmetic(JavaInstance.wrapInstance(10), 
@@ -45,15 +45,15 @@ public class Main {
     System.out.println("---RETRIEVE 2: "+ secondInstance.retrieveVariable("changeMe").getValue());
     */
     
-    /*
+    
     System.out.println("!!!!!!!!!!!----------EXECUTE----------!!!!!!!!!!!");
     
     WordyRuntime runtime = new WordyRuntime();
     runtime.initialize(fileMap);
     runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
     //System.out.println(changeMe);
-    */
     
-    System.out.println(Object.class.isAssignableFrom(FileInstance.class));
+    
+    System.out.println(Integer.TYPE.equals(int.class));
   }
 }

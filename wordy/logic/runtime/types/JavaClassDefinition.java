@@ -3,12 +3,15 @@ package wordy.logic.runtime.types;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import wordy.logic.common.FunctionKey;
-import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.JavaVariableMember;
+import wordy.logic.runtime.execution.Callable;
+import wordy.logic.runtime.execution.FunctionMember;
 import wordy.logic.runtime.execution.JavaCallable;
 
 public class JavaClassDefinition extends TypeDefinition{
@@ -79,14 +82,28 @@ public class JavaClassDefinition extends TypeDefinition{
 
       for(Constructor<?> constructor: respClass.getConstructors()) {
         JavaCallable callable = new JavaCallable(constructor);
-        JavaFunctionKey functionKey = JavaFunctionKey.spawnKey(respClass.getSimpleName(), constructor.getParameterTypes()); 
-        definition.functions.put(functionKey, callable);
+        FunctionKey functionKey = new FunctionKey(callable.getName(), callable.requiredArgs()); 
+        
+        if (definition.functions.containsKey(functionKey)) {
+          List<Callable> sameFuncKeys = definition.functions.get(functionKey);
+          sameFuncKeys.add(callable);
+        }
+        else {
+          definition.functions.put(functionKey, Arrays.asList(callable));
+        }
       }
 
       for(Method method : respClass.getMethods()) {
         JavaCallable callable = new JavaCallable(method);
-        JavaFunctionKey functionKey = JavaFunctionKey.spawnKey(method.getName(), method.getParameterTypes());
-        definition.functions.put(functionKey, callable);
+        FunctionKey functionKey = new FunctionKey(callable.getName(), callable.requiredArgs()); 
+        
+        if (definition.functions.containsKey(functionKey)) {
+          List<Callable> sameFuncKeys = definition.functions.get(functionKey);
+          sameFuncKeys.add(callable);
+        }
+        else {
+          definition.functions.put(functionKey, Arrays.asList(callable));
+        }
       }
 
       for(Field field : respClass.getFields()) {

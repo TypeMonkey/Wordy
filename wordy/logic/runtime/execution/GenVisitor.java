@@ -1,10 +1,8 @@
 package wordy.logic.runtime.execution;
 
-import java.text.NumberFormat;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
-import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.common.NodeVisitor;
 import wordy.logic.compile.ReservedSymbols;
 import wordy.logic.compile.Token;
@@ -16,9 +14,7 @@ import wordy.logic.compile.nodes.LiteralNode;
 import wordy.logic.compile.nodes.MemberAccessNode;
 import wordy.logic.compile.nodes.MethodCallNode;
 import wordy.logic.compile.nodes.UnaryNode;
-import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.compile.nodes.ASTNode.NodeType;
-import wordy.logic.runtime.RuntimeFile;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
@@ -202,6 +198,7 @@ public class GenVisitor implements NodeVisitor{
         VariableMember instanceMem = variable.getValue().retrieveVariable(memberAccessNode.getMemberName().content());
         //System.out.println("----Var member: "+instanceMem+" | "+instanceMem.getType());
         if (instanceMem == null) {
+          System.out.println("----TO: "+variable.getValue().getDefinition().getName());
           throw new RuntimeException("Cannot find property '"+memberAccessNode.getMemberName().content()+"' "+
               "for instance of '"+variable.getType().getName()+"' at line "+
                memberAccessNode.tokens()[0].lineNumber());
@@ -250,16 +247,8 @@ public class GenVisitor implements NodeVisitor{
       
       Callable callable = table.findCallable(funcName.content(), args.length);
       if (callable == null) {
-        callable = table.findCallable(JavaFunctionKey.spawnKey(funcName.content(), args));
-        System.out.println("---TRYING: "+JavaFunctionKey.spawnKey(funcName.content(), args));
-        if (callable == null) {
-          throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-              funcName.lineNumber());
-        }
-        else {
-          Instance result = callable.call(frameVisitor,frameExec, args);   
-          stack.push(result);
-        }
+        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+            funcName.lineNumber());
       }
       else {    
         //System.out.println("---FUNC ARGS: "+args.length+" | "+callable.getName()+" | "+callNode.getName().lineNumber());
@@ -289,37 +278,48 @@ public class GenVisitor implements NodeVisitor{
       frameExec.clearLocalVars();
       GenVisitor frameVisitor = new GenVisitor(frameExec, currentFile, runtime);
       
-      Callable callable = instance.getDefinition().findFunction(funcName.content(), args.length);
-      if (callable instanceof JavaCallable) {
-        JavaCallable javaCallable = (JavaCallable) callable;
-        Instance result = null;
-        if (javaCallable.isStatic() || javaCallable.isAConstructor()) {
-          result = javaCallable.call(frameVisitor, frameExec, args);
-        }
-        else {
-          Instance [] javaArgs = new Instance[args.length + 1]; //put first element as the java Instance
-          javaArgs[0] = instance;
-          System.arraycopy(args, 0, javaArgs, 1, args.length);
-          //System.out.println("----CALLING: "+javaCallable.getName());
-          result = javaCallable.call(frameVisitor, frameExec, javaArgs);
-          //System.out.println("---AFTER CALL: "+javaCallable.getName());
-        }
-        stack.push(result);
+      List<Callable> potentialCallables = instance.getDefinition().findFunction(funcName.content(), args.length);
+      if (potentialCallables == null) {
+        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+            funcName.lineNumber());
       }
-      else {
-        if (callable == null) {
-          throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-              funcName.lineNumber());
+      
+      for(Callable callable : potentialCallables) {
+        if (callable.argumentsCompatible(args)) {
+          
         }
-        else {
+        if (callable instanceof JavaCallable) {
+          JavaCallable javaCallable = (JavaCallable) callable;
           Instance result = null;
-          if (instance instanceof FileInstance) {
-            result = callable.call(frameVisitor, frameExec, args);
+          if (javaCallable.isStatic() || javaCallable.isAConstructor()) {
+            result = javaCallable.call(frameVisitor, frameExec, args);
           }
           else {
-            result = callable.call(frameVisitor, frameExec, args);
+            Instance [] javaArgs = new Instance[args.length + 1]; //put first element as the java Instance
+            javaArgs[0] = instance;
+            System.arraycopy(args, 0, javaArgs, 1, args.length);
+            //System.out.println("----CALLING: "+javaCallable.getName());
+            //System.out.println("**** first? "+(instance == null)+"   arg size: "+javaArgs.length+" | "+(javaArgs[0] == null));
+            result = javaCallable.call(frameVisitor, frameExec, javaArgs);
+            //System.out.println("---AFTER CALL: "+javaCallable.getName());
           }
           stack.push(result);
+        }
+        else {
+          if (callable == null) {
+            throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
+                funcName.lineNumber());
+          }
+          else {
+            Instance result = null;
+            if (instance instanceof FileInstance) {
+              result = callable.call(frameVisitor, frameExec, args);
+            }
+            else {
+              result = callable.call(frameVisitor, frameExec, args);
+            }
+            stack.push(result);
+          }
         }
       }
     }

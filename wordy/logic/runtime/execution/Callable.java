@@ -33,6 +33,8 @@ public abstract class Callable extends Component{
    */
   public abstract Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args);
   
+  public abstract boolean argumentsCompatible(Instance ... args);
+  
   public final int requiredArgs() {
     return argAmnt;
   }

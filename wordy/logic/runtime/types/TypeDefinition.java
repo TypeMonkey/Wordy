@@ -1,6 +1,7 @@
 package wordy.logic.runtime.types;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,14 +34,14 @@ import wordy.logic.runtime.execution.FunctionMember;
 public class TypeDefinition{
     
   protected Map<String, VariableMember> variables;
-  protected Map<FunctionKey, FunctionMember> functions;
+  protected Map<FunctionKey, List<Callable>> functions;
   protected List<TypeDefinition> parents;
   protected String name;
   
   protected TypeDefinition(String name,
                            List<TypeDefinition> parents,
                            Map<String, VariableMember> variables, 
-                           Map<FunctionKey, FunctionMember> functions) {
+                           Map<FunctionKey, List<Callable>> functions) {
     this.name = name;
     this.variables = variables;
     this.functions = functions;
@@ -75,11 +76,11 @@ public class TypeDefinition{
     return splitted[splitted.length-1];
   }
   
-  public FunctionMember findFunction(String name, int argc) {
+  public List<Callable> findFunction(String name, int argc) {
     return findFunction(new FunctionKey(name, argc));
   }
   
-  public FunctionMember findFunction(FunctionKey key) {
+  public List<Callable> findFunction(FunctionKey key) {
     return functions.get(key);
   }
   
@@ -87,7 +88,7 @@ public class TypeDefinition{
     return variables.get(name);
   }
   
-  public Map<FunctionKey, FunctionMember> getFunctions() {
+  public Map<FunctionKey, List<Callable>> getFunctions() {
     return new HashMap<>(functions);
   }
   
@@ -158,7 +159,7 @@ public class TypeDefinition{
                                             currentFile,
                                             function.getStatements());
       }
-      definition.functions.put(new FunctionKey(funcName, argc), functionMember);
+      definition.functions.put(new FunctionKey(funcName, argc), Arrays.asList(functionMember));
     }
     
     /*
@@ -171,7 +172,8 @@ public class TypeDefinition{
                                                                 definition, 
                                                                 currentFile, 
                                                                 runtime);
-      definition.functions.put(new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs()), defaultCons);
+      definition.functions.put(new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs()), 
+                               Arrays.asList(defaultCons));
     }
     
     return definition;

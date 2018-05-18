@@ -2,15 +2,11 @@ package wordy.logic.runtime;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
-import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.compile.WordyCompiler;
 import wordy.logic.compile.structure.ClassStruct;
 import wordy.logic.compile.structure.FileStructure;
@@ -101,9 +97,9 @@ public class RuntimeFile extends TypeDefinition{
         try {
           Class<?> curClass = Class.forName(file.getImported());
           for(Constructor<?> constructor : curClass.getConstructors()) {
-            JavaFunctionKey consKey = JavaFunctionKey.spawnKey(curClass.getSimpleName(), constructor.getParameterTypes());
+            FunctionKey consKey = new FunctionKey(curClass.getSimpleName(), constructor.getParameterCount());
             if (file.getAlias() != null) {
-              consKey = JavaFunctionKey.spawnKey(file.getAlias().content(), constructor.getParameterTypes());
+              consKey = new FunctionKey(file.getAlias().content(), constructor.getParameterCount());
             }
             System.out.println("--PLACED JVA CONSTRUCTOR: "+consKey.name+ " | "+Arrays.toString(constructor.getParameterTypes()));
             javaConstructors.put(consKey, new JavaCallable(constructor));
@@ -120,7 +116,11 @@ public class RuntimeFile extends TypeDefinition{
                                                            runtime, 
                                                            instance, 
                                                            func.getStatements());
-        functions.put(new FunctionKey(functionMember.getName(), functionMember.requiredArgs()), functionMember);
+        FunctionKey functionKey = new FunctionKey(functionMember.getName(), functionMember.requiredArgs());
+        if (functions.containsKey(functionKey)) {
+          functions.get(functionKey).add(functionMember);
+        }
+        functions.put(functionKey, Arrays.asList(functionMember));
       }
       
       //now add the classes, and add their constructors to the function map
@@ -128,9 +128,17 @@ public class RuntimeFile extends TypeDefinition{
         TypeDefinition definition = TypeDefinition.constructDefinition(classStruct, runtime, instance);
         typeDefs.put(definition.getName(), definition);
         
-        for(FunctionMember classFunc : definition.getFunctions().values()) {
-          if (classFunc.isAConstructor()) {
-            functions.put(new FunctionKey(classFunc.getName(), classFunc.requiredArgs()), classFunc);
+        for(List<Callable> classFunctions : definition.getFunctions().values()) {
+          for(Callable classFunc : classFunctions) {
+            if (classFunc.isAConstructor()) {
+              FunctionKey functionKey = new FunctionKey(classFunc.getName(), classFunc.requiredArgs());
+              if (functions.containsKey(functionKey)) {
+                functions.get(functionKey).add(classFunc);
+              }
+              else {
+                functions.put(functionKey, Arrays.asList(classFunc));
+              }
+            }
           }
         }
       }

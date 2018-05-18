@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import wordy.logic.common.FunctionKey;
-import wordy.logic.common.JavaFunctionKey;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.execution.Callable;
@@ -31,7 +30,7 @@ public class RuntimeTable {
   private static Map<FunctionKey, EmbeddedFunction> embeddedFunctions;
 
   private List<Map<String, VariableMember>> varNameMaps;
-  private List<Map<FunctionKey, FunctionMember>> funcNameMaps;
+  private List<Map<FunctionKey, List<Callable>>> funcNameMaps;
   private Map<String, String> javaClassMap;
 
 
@@ -41,7 +40,7 @@ public class RuntimeTable {
    * @param funcs - the array of Maps to use when looking for functions
    */
   public RuntimeTable(Map<String,  VariableMember> [] vars, 
-                      Map<FunctionKey, FunctionMember> [] funcs,
+                      Map<FunctionKey, List<Callable>> [] funcs,
                       Map<String, String> javaClassMap) {
     varNameMaps = new ArrayList<>();
     varNameMaps.addAll(Arrays.asList(vars));
@@ -85,20 +84,22 @@ public class RuntimeTable {
    * @param key - the FunctionKey of the function to look for
    * @return the corresponding FunctionMember, or null if none was found
    */
-  public Callable findCallable(String name, Instance ... args) {
-    for(Map<FunctionKey, FunctionMember> current : funcNameMaps) {
+  public List<Callable> findCallable(FunctionKey key) {
+    for(Map<FunctionKey, List<Callable>> current : funcNameMaps) {
       if (current.containsKey(key)) {
         return current.get(key);
       }
     }
     
     if (embeddedFunctions.containsKey(key)) {
-      return embeddedFunctions.get(key);
+      return Arrays.asList(embeddedFunctions.get(key));
     }
     return null;
   }
   
-  
+  public List<Callable> findCallable(String name, int argc) {
+    return findCallable(new FunctionKey(name, argc));
+  } 
   
   public String findBinaryName(String name) {
     return javaClassMap.get(name);
@@ -125,13 +126,9 @@ public class RuntimeTable {
     varNameMaps.add(varMap);
   }
   
-  public void addFuncMap(Map<FunctionKey, FunctionMember> funcMap) {
+  public void addFuncMap(Map<FunctionKey, List<Callable>> funcMap) {
     funcNameMaps.add(funcMap);
   }
-  
-  public Callable findCallable(String name, int argc) {
-    return findCallable(new FunctionKey(name, argc));
-  } 
   
   @SuppressWarnings("unchecked")
   public RuntimeTable clone(boolean keepLocalVar) {
@@ -150,7 +147,7 @@ public class RuntimeTable {
       cloneVarMap[i] = new HashMap<>(varNameMaps.get(i));
     }
     
-    Map<FunctionKey, FunctionMember>[] cloneFuncNameMaps = new Map[funcNameMaps.size() ];    
+    Map<FunctionKey, List<Callable>>[] cloneFuncNameMaps = new Map[funcNameMaps.size() ];    
     for(int i = 0; i < cloneFuncNameMaps.length; i++) {
       //System.out.println("CLONING FUNCS: "+(funcNameMaps.get(i) == null));
       cloneFuncNameMaps[i] = new HashMap<>(funcNameMaps.get(i));
@@ -179,6 +176,7 @@ public class RuntimeTable {
         System.out.print(args[0]);
         return null;
       }
+
     };    
     map.put(new FunctionKey(print.getName(), print.requiredArgs()), print);
 

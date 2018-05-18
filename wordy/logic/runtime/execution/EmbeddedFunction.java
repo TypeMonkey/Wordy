@@ -1,5 +1,6 @@
 package wordy.logic.runtime.execution;
 
+import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.types.TypeDefinition;
 
 public abstract class EmbeddedFunction extends Callable{
@@ -11,6 +12,11 @@ public abstract class EmbeddedFunction extends Callable{
     super(name, argAmount, null);
     this.returnType = returnType;
   }
+  
+  public boolean argumentsCompatible(Instance ... args) {
+    return argAmnt == args.length;
+  }
+
   
   public void setAsConstructor(boolean constr) {
     isAConstructor = constr;

@@ -58,7 +58,7 @@ public class WordyRuntime {
         throw new RuntimeException("Cannot find the file '"+file+"' !");
       }
       
-      Callable main = fileInstance.getDefinition().findFunction("main", argc);
+      Callable main = fileInstance.getDefinition().findFunction("main", argc).get(0);
       if (main == null) {
         throw new RuntimeException("The file '"+file+"' doesn't contain a main function "+
                                    "that takes in "+argc+" arguments");

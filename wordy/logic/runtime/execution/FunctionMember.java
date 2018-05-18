@@ -398,6 +398,10 @@ public class FunctionMember extends Callable{
     return false;
   }
   
+  public boolean argumentsCompatible(Instance ... args) {
+    return argAmnt == args.length;
+  }
+  
   private static class BlockExecResult{
     
     static final int NORMAL_END = 3;

@@ -74,19 +74,19 @@ public class Operator {
         Integer rightOp =   (Integer) rightOperand.getInstance();
         //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(leftOp + rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(leftOp - rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(leftOp * rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = JavaInstance.wrapInstance(leftOp / rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = JavaInstance.wrapInstance(leftOp % rightOp);
+          result = JavaInstance.wrapInstance(new Integer(leftOp % rightOp));
         }   
       }
       else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) &&
@@ -95,19 +95,19 @@ public class Operator {
         Long rightOp =  (Long) rightOperand.getInstance();
         //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(leftOp + rightOp);
+          result = JavaInstance.wrapInstance(new Long(leftOp + rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(leftOp - rightOp);
+          result = JavaInstance.wrapInstance(new Long(leftOp - rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(leftOp * rightOp);
+          result = JavaInstance.wrapInstance(new Long(leftOp * rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = JavaInstance.wrapInstance(leftOp / rightOp);
+          result = JavaInstance.wrapInstance(new Long(leftOp / rightOp));
         }
         else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = JavaInstance.wrapInstance(leftOp % rightOp);
+          result = JavaInstance.wrapInstance(new Long(leftOp % rightOp));
         }   
       }
       else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
