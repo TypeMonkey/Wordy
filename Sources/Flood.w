@@ -1,5 +1,4 @@
 import wordy.standard.Reflection; 
-import java.io.File as Socky;
 
 function main(a){
   println(">>>REFLECTION<<<");
@@ -15,11 +14,6 @@ function main(a){
   }
   
   println("REF? "+Dry.a);
-  
-  println("----SOCKET DEMONSTRATION----");
-  let sock = Socky("hello.txt");
-  sock.createNewFile();
-  
 }
 
 function help(){

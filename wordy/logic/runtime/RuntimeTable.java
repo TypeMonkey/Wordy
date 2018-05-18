@@ -85,7 +85,7 @@ public class RuntimeTable {
    * @param key - the FunctionKey of the function to look for
    * @return the corresponding FunctionMember, or null if none was found
    */
-  public Callable findCallable(FunctionKey key) {
+  public Callable findCallable(String name, Instance ... args) {
     for(Map<FunctionKey, FunctionMember> current : funcNameMaps) {
       if (current.containsKey(key)) {
         return current.get(key);
@@ -97,6 +97,8 @@ public class RuntimeTable {
     }
     return null;
   }
+  
+  
   
   public String findBinaryName(String name) {
     return javaClassMap.get(name);

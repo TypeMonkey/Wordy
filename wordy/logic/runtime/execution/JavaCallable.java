@@ -42,14 +42,25 @@ public class JavaCallable extends FunctionMember{
     Object result = null;
     
     Object [] realArgs = new Object[args.length];
-    for(int i = 0; i < realArgs.length; i++) {
-      System.out.println("*PASSED TYPE: "+args[i].getDefinition());
-      if (args[i] instanceof JavaInstance) {
-        JavaInstance jArgs = (JavaInstance) args[i];
-        realArgs[i] = jArgs.getInstance();
+    Class<?> [] types = method.getParameterTypes();
+    for(int i = 0; i < types.length; i++) {
+      Instance current = args[i];
+      if (types[i].isAssignableFrom(Instance.class)) {
+        //java method actually wants an Instance
+        realArgs[i] = current;
       }
       else {
-        realArgs[i] = args[i];
+        //java method wants a Java Object
+        if (current instanceof JavaInstance) {
+          Object actualInstance = ((JavaInstance) current).getInstance();
+          if (actualInstance != null && !types[i].isInstance(actualInstance)) {
+            throw new IllegalArgumentException("Method '"+method.getName()+"' was given the wrong argument types");
+          }
+          realArgs[i] = actualInstance;
+        }
+        else {
+          throw new IllegalArgumentException("Method '"+method.getName()+"' was given the wrong argument types");
+        }
       }
     }
     

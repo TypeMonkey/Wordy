@@ -8,9 +8,9 @@ import wordy.logic.runtime.components.JavaInstance;
 
 public class JavaFunctionKey extends FunctionKey{
 
-  private String [] argTypes;
+  private Class<?> [] argTypes;
   
-  public JavaFunctionKey(String name, String ... fullTypeNames) {
+  public JavaFunctionKey(String name, Class<?> ... fullTypeNames) {
     super(name, fullTypeNames.length);
     this.argTypes = fullTypeNames;
   }
@@ -18,9 +18,21 @@ public class JavaFunctionKey extends FunctionKey{
   public boolean equals(Object object) {
     if (object instanceof JavaFunctionKey) {
       JavaFunctionKey key = (JavaFunctionKey) object;
-      return super.equals(key) && Arrays.equals(key.argTypes, argTypes);
+      return super.equals(key) && compatibleTypes(key.argTypes);
     }
     return false;
+  }
+  
+  private boolean compatibleTypes(Class<?> ... args) {
+    for(int i = 0 ; i < argTypes.length; i++) {
+      if (argTypes[i].isAssignableFrom(Instance.class)) {
+        
+      }
+      if (argTypes[i].isAssignableFrom(args[i]) == false) {
+        return false;
+      }
+    }
+    return true;
   }
   
   public int hashCode() {
@@ -31,23 +43,7 @@ public class JavaFunctionKey extends FunctionKey{
     return "JF-KEY: "+name+" | "+Arrays.toString(argTypes);
   }
   
-  public static JavaFunctionKey spawnKey(String name, Class<?> ... types) {
-    String [] typeNames = new String[types.length];
+  public static JavaFunctionKey spawnKey(String name, Instance ... args) {
     
-    for(int i = 0; i < typeNames.length; i++) {
-      typeNames[i] = types[i].getName();
-    }
-    
-    return new JavaFunctionKey(name, typeNames);
-  }
-  
-  public static JavaFunctionKey spawnKey(String name, Object ... instances) {
-    String [] typeNames = new String[instances.length];
-    
-    for(int i = 0; i < typeNames.length; i++) {
-      typeNames[i] = instances[i].getClass().getName();
-    }
-    
-    return new JavaFunctionKey(name, typeNames);
   }
 }
