@@ -255,7 +255,6 @@ public class FunctionMember extends Callable{
                                                            variable.getExpression(),
                                                            variable.isConstant());
         executor.placeLocalVar(variableMember);
-        
         if (variable.getExpression() != null) {
           //System.out.println("---INITIALIZATION"+variable.getExpression().tokens()[0]);
           variable.getExpression().accept(visitor);
@@ -293,8 +292,11 @@ public class FunctionMember extends Callable{
       }      
     }        
         
+    
     while(peeked) {
-      BlockExecResult result = executeBlock(visitor, executor, forLoop.getStatements());
+      RuntimeTable loopExecutor = executor.clone(true);
+      GenVisitor loopVisitor = new GenVisitor(loopExecutor, currentFile, runtime);
+      BlockExecResult result = executeBlock(loopVisitor, loopExecutor, forLoop.getStatements());
       if (result.gotBreak()) {
         break;
       }
@@ -355,13 +357,15 @@ public class FunctionMember extends Callable{
       }
       else if (loopStatement.getDescription() == StatementDescription.VAR_DEC) {
         Variable variable = (Variable) loopStatement;
-        VariableMember variableMember = new VariableMember(variable.getName().content(), variable.isConstant());
+        VariableMember variableMember = new VariableMember(variable.getName().content(), 
+                                                           variable.getExpression(), 
+                                                           variable.isConstant());
         if(executor.placeLocalVar(variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
-              variable.getExpression().tokens()[0].lineNumber());
+              variableMember.getExpr().tokens()[0].lineNumber());
         }
         else {
-          if (variable.getExpression() != null) {
+          if (variableMember.getExpr() != null) {
             variableMember.getExpr().accept(visitor);
             StackComponent member = visitor.peekStack();
             if (member.isAnInstance()) {

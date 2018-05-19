@@ -1,9 +1,5 @@
 
 let a = 90;
-let b;
-let c;
-let d;
-let e;
 
 class Ob{
 	
@@ -24,5 +20,5 @@ function change(b){
 }
 
 function get(){
-	return e;
+	return 10;
 }

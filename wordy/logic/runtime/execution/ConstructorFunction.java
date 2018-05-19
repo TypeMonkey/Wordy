@@ -54,7 +54,7 @@ public class ConstructorFunction extends FunctionMember{
         }
         else {
           VariableMember variableMember = (VariableMember) result;
-          System.out.println("!- "+variableMember.getValue());
+          //System.out.println("!- "+variableMember.getValue());
           member.setValue(variableMember.getValue());
         }
       }

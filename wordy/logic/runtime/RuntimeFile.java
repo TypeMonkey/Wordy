@@ -1,6 +1,7 @@
 package wordy.logic.runtime;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +54,7 @@ public class RuntimeFile extends TypeDefinition{
    * The key to this map will be the class' simple name, and value is it's fully qualified name
    */
   private Map<String, String> javaClasses; //imported java classes
-  private Map<FunctionKey, JavaCallable> javaConstructors;
+  private Map<FunctionKey, List<Callable>> javaConstructors;
   private Map<String, TypeDefinition> typeDefs; //file classes
   
   public RuntimeFile(String name) {
@@ -78,7 +79,13 @@ public class RuntimeFile extends TypeDefinition{
           Class<?> curClass = Class.forName(standard);
           for(Constructor<?> constructor : curClass.getConstructors()) {
             FunctionKey consKey = new FunctionKey(curClass.getSimpleName(), constructor.getParameterCount());
-            javaConstructors.put(consKey, new JavaCallable(constructor));
+            JavaCallable javaConstructor = new JavaCallable(constructor);
+            if (javaConstructors.containsKey(consKey)) {
+              javaConstructors.get(consKey).add(javaConstructor);
+            }
+            else {
+              javaConstructors.put(consKey, new ArrayList<>(Arrays.asList(javaConstructor)));
+            }
           }
         } catch (ClassNotFoundException e) {
           throw new RuntimeException("Cannot load the class "+standard);
@@ -101,8 +108,14 @@ public class RuntimeFile extends TypeDefinition{
             if (file.getAlias() != null) {
               consKey = new FunctionKey(file.getAlias().content(), constructor.getParameterCount());
             }
-            System.out.println("--PLACED JVA CONSTRUCTOR: "+consKey.name+ " | "+Arrays.toString(constructor.getParameterTypes()));
-            javaConstructors.put(consKey, new JavaCallable(constructor));
+            //System.out.println("--PLACED JVA CONSTRUCTOR: "+consKey.name+ " | "+Arrays.toString(constructor.getParameterTypes()));
+            JavaCallable javaConstructor = new JavaCallable(constructor);
+            if (javaConstructors.containsKey(consKey)) {
+              javaConstructors.get(consKey).add(javaConstructor);
+            }
+            else {
+              javaConstructors.put(consKey, new ArrayList<>(Arrays.asList(javaConstructor)));
+            }
           }
         } catch (ClassNotFoundException e) {
           throw new RuntimeException("Cannot load the class "+file.getImported());
@@ -177,7 +190,7 @@ public class RuntimeFile extends TypeDefinition{
     return instance;
   }
   
-  public Map<FunctionKey, JavaCallable> getJavaConstructors(){
+  public Map<FunctionKey, List<Callable>> getJavaConstructors(){
     return javaConstructors;
   }
   

@@ -30,7 +30,7 @@ public class PrimitiveTypeChecks {
      return true;
     }
     else {
-      return value.isAssignableFrom(acceptor);
+      return acceptor.isAssignableFrom(value);
     }
   }
   

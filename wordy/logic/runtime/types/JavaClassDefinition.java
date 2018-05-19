@@ -3,6 +3,7 @@ package wordy.logic.runtime.types;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +90,7 @@ public class JavaClassDefinition extends TypeDefinition{
           sameFuncKeys.add(callable);
         }
         else {
-          definition.functions.put(functionKey, Arrays.asList(callable));
+          definition.functions.put(functionKey, new ArrayList<Callable>(Arrays.asList(callable)));
         }
       }
 
@@ -102,7 +103,7 @@ public class JavaClassDefinition extends TypeDefinition{
           sameFuncKeys.add(callable);
         }
         else {
-          definition.functions.put(functionKey, Arrays.asList(callable));
+          definition.functions.put(functionKey, new ArrayList<Callable>(Arrays.asList(callable)));
         }
       }
 

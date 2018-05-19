@@ -42,8 +42,7 @@ public class RuntimeTable {
   public RuntimeTable(Map<String,  VariableMember> [] vars, 
                       Map<FunctionKey, List<Callable>> [] funcs,
                       Map<String, String> javaClassMap) {
-    varNameMaps = new ArrayList<>();
-    varNameMaps.addAll(Arrays.asList(vars));
+    varNameMaps = new ArrayList<>(Arrays.asList(vars));
     
     funcNameMaps = new ArrayList<>(Arrays.asList(funcs));
     this.javaClassMap = javaClassMap;
@@ -87,6 +86,7 @@ public class RuntimeTable {
   public List<Callable> findCallable(FunctionKey key) {
     for(Map<FunctionKey, List<Callable>> current : funcNameMaps) {
       if (current.containsKey(key)) {
+        //System.out.println("---current : "+key.name);
         return current.get(key);
       }
     }
@@ -164,7 +164,7 @@ public class RuntimeTable {
       @Override
       public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) {
         System.out.println(args[0]);
-        return null;
+        return JavaInstance.wrapInstance("null");
       }
 
     };

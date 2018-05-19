@@ -1,12 +1,14 @@
 package wordy.logic;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import wordy.logic.compile.WordyCompiler;
 import wordy.logic.compile.structure.FileStructure;
+import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
@@ -18,7 +20,7 @@ public class Main {
   
   public static void main(String[] args) throws Exception {
     String [] sourceFile = {"src\\Sources\\Flood.w", "src\\Sources\\Dry.w"};    
-       
+           
     WordyCompiler compiler = new WordyCompiler(sourceFile);
     Map<String, FileStructure> fileMap = compiler.compile();
      
@@ -52,8 +54,6 @@ public class Main {
     runtime.initialize(fileMap);
     runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
     //System.out.println(changeMe);
-    
-    
-    System.out.println(Integer.TYPE.equals(int.class));
+       
   }
 }

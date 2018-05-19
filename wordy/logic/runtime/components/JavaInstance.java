@@ -58,7 +58,6 @@ public class JavaInstance extends Instance{
   public static JavaInstance createStaticInstance(Class<?> respClass) {
     
     JavaClassDefinition definition = JavaClassDefinition.defineClass(respClass);
-    
     if (definition.getStaticRep() != null) {
       return definition.getStaticRep();
     }
