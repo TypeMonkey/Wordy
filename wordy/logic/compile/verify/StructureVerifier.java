@@ -296,7 +296,7 @@ public class StructureVerifier {
         StatementBlock nestedBlock = (StatementBlock) statement;
         boolean nestedInsideLoop = insideALoop;
         
-        System.out.println("---NEXT: "+nestedBlock.blockType()+" | "+nestedBlock.getBlockSig().lineNumber());
+        System.out.println("---NEXT: "+nestedBlock.blockType());
         if(recentTryBlock != null && nestedBlock.blockType() != BlockType.CATCH) {
           throw new ParseError("Invalid try block placement", recentTryBlock.getBlockSig().lineNumber());
         }       

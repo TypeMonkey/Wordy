@@ -291,28 +291,28 @@ public class GenVisitor implements NodeVisitor{
       frameExec.clearLocalVars();
       GenVisitor frameVisitor = new GenVisitor(frameExec, currentFile, runtime);
 
-      List<Callable> potentialCallables = instance.getDefinition().findFunction(funcName.content(), args.length + 1);
+      List<Callable> potentialCallables = instance.getDefinition().findFunction(funcName.content(), args.length);
+      //System.out.println("----LOOKING: "+(args.length)+" | "+instance.getDefinition().getName());
       if (potentialCallables == null) {
         throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
             funcName.lineNumber());
       }
       
-      //System.out.println("----potentials: "+potentialCallables.size()+" | "+potentialCallables.get(0).getName());
+      //System.out.println("----potentials: "+potentialCallables.size()+" | "+potentialCallables.get(0).getName()+" "+
+      //                                                                     potentialCallables.get(0).argAmnt);
       
       for(Callable callable : potentialCallables) {
         //System.out.println("----TESTING: "+callable.getName());
         if (callable instanceof JavaCallable) {
           JavaCallable javaCallable = (JavaCallable) callable;
-
-          Instance [] javaArgs = new Instance[args.length + 1]; //put first element as the java Instance
-          javaArgs[0] = instance;
-          System.arraycopy(args, 0, javaArgs, 1, args.length);
-          System.out.println("----CALLING: "+javaCallable.getName()+" | "+((JavaInstance) instance).getInstance());
+          javaCallable.setTarget((JavaInstance) instance);
+          
+          //System.out.println("----CALLING: "+javaCallable.getName()+" | "+((JavaInstance) instance).getInstance());
           //System.out.println("**** first? "+(instance == null)+"   arg size: "+javaArgs.length+" | "+(javaArgs[0] == null));
-          if (javaCallable.argumentsCompatible(javaArgs)) {
-            Instance result = javaCallable.call(frameVisitor, frameExec, javaArgs);
-            System.out.println("---AFTER CALL: "+((JavaInstance) result).getInstance().getClass());
-            System.out.println("       ACTUAL: "+((JavaInstance) result).getInstance());
+          if (javaCallable.argumentsCompatible(args)) {
+            Instance result = javaCallable.call(frameVisitor, frameExec, args);
+            //System.out.println("---AFTER CALL: "+((JavaInstance) result).getInstance().getClass());
+            //System.out.println("       ACTUAL: "+((JavaInstance) result).getInstance());
             stack.push(result);
             return;
           }
@@ -320,10 +320,10 @@ public class GenVisitor implements NodeVisitor{
         }
         else {     
           if (callable.argumentsCompatible(args)) {
-            System.out.println("------CALLING: "+callable.getName());
+            //System.out.println("------CALLING: "+callable.getName());
             Instance result = callable.call(frameVisitor, frameExec, args);
-            System.out.println("---AFTER CALL - W: "+((JavaInstance) result).getInstance().getClass());
-            System.out.println("           ACTUAL: "+((JavaInstance) result).getInstance());
+            //System.out.println("---AFTER CALL - W: "+((JavaInstance) result).getInstance().getClass());
+            //System.out.println("           ACTUAL: "+((JavaInstance) result).getInstance());
             stack.push(result);      
             return;
           }     

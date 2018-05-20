@@ -84,7 +84,6 @@ public class JavaClassDefinition extends TypeDefinition{
       for(Constructor<?> constructor: respClass.getConstructors()) {
         JavaCallable callable = new JavaCallable(constructor);
         FunctionKey functionKey = new FunctionKey(callable.getName(), callable.requiredArgs()); 
-        
         if (definition.functions.containsKey(functionKey)) {
           List<Callable> sameFuncKeys = definition.functions.get(functionKey);
           sameFuncKeys.add(callable);
@@ -97,7 +96,6 @@ public class JavaClassDefinition extends TypeDefinition{
       for(Method method : respClass.getMethods()) {
         JavaCallable callable = new JavaCallable(method);
         FunctionKey functionKey = new FunctionKey(callable.getName(), callable.requiredArgs()); 
-        
         if (definition.functions.containsKey(functionKey)) {
           List<Callable> sameFuncKeys = definition.functions.get(functionKey);
           sameFuncKeys.add(callable);
@@ -105,6 +103,7 @@ public class JavaClassDefinition extends TypeDefinition{
         else {
           definition.functions.put(functionKey, new ArrayList<Callable>(Arrays.asList(callable)));
         }
+        //System.out.println("  ***PLACING METHOD: "+callable.getName()+" | "+callable.requiredArgs());
       }
 
       for(Field field : respClass.getFields()) {

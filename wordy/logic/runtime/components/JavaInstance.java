@@ -62,7 +62,7 @@ public class JavaInstance extends Instance{
       return definition.getStaticRep();
     }
     
-    JavaInstance instance = new JavaInstance(respClass.getSimpleName(), definition, true);
+    JavaInstance instance = new JavaInstance("STATIC REP: "+respClass.getName(), definition, true);
     for(VariableMember member : instance.instanceVars.values()) {
       JavaVariableMember javaVar = (JavaVariableMember) member;
       if (!javaVar.isStatic()) {

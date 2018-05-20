@@ -39,7 +39,9 @@ public class WhileLoopFormatter {
     }
     else if (compExpr.nodeType() == NodeType.OPERATOR) {
       BinaryOpNode opNode = (BinaryOpNode) compExpr;
-      if (ReservedSymbols.isABooleanOperator(opNode.getOperator()) == false) {
+      if (!ReservedSymbols.isABooleanOperator(opNode.getOperator()) && 
+          !ReservedSymbols.isAComparisonOp(opNode.getOperator())) {
+        System.out.println(opNode.getOperator());
         throw new ParseError("While loop conditional expression doesn't evaluate to a boolean", blockSig.lineNumber());
       }
     }
@@ -61,7 +63,9 @@ public class WhileLoopFormatter {
     }
     else {
       //block is empty
-      return new WhileLoopBlock(conditional, false);
+      WhileLoopBlock whileLoop = new WhileLoopBlock(conditional, false);
+      whileLoop.setBlockSig(blockSig);
+      return whileLoop;
     }   
   }
   

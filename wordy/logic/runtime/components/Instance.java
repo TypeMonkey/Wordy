@@ -1,6 +1,5 @@
 package wordy.logic.runtime.components;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;

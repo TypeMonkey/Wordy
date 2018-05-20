@@ -108,7 +108,8 @@ public class RuntimeFile extends TypeDefinition{
             if (file.getAlias() != null) {
               consKey = new FunctionKey(file.getAlias().content(), constructor.getParameterCount());
             }
-            //System.out.println("--PLACED JVA CONSTRUCTOR: "+consKey.name+ " | "+Arrays.toString(constructor.getParameterTypes()));
+            
+            //System.out.println("--PLACED JVA CONSTRUCTOR: "+consKey.name+ " | "+consKey.argAmnt);
             JavaCallable javaConstructor = new JavaCallable(constructor);
             if (javaConstructors.containsKey(consKey)) {
               javaConstructors.get(consKey).add(javaConstructor);
@@ -145,6 +146,7 @@ public class RuntimeFile extends TypeDefinition{
           for(Callable classFunc : classFunctions) {
             if (classFunc.isAConstructor()) {
               FunctionKey functionKey = new FunctionKey(classFunc.getName(), classFunc.requiredArgs());
+              //System.out.println("***PLACING: "+functionKey.argAmnt+" | "+functionKey.name);
               if (functions.containsKey(functionKey)) {
                 functions.get(functionKey).add(classFunc);
               }

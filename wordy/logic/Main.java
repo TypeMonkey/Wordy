@@ -1,18 +1,14 @@
 package wordy.logic;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import wordy.logic.compile.WordyCompiler;
 import wordy.logic.compile.structure.FileStructure;
-import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.FileInstance;
-import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
+import wordy.standard.Array;
+import wordy.standard.Reflection;
 
 public class Main {
   
@@ -47,13 +43,12 @@ public class Main {
     System.out.println("---RETRIEVE 2: "+ secondInstance.retrieveVariable("changeMe").getValue());
     */
     
-    
     System.out.println("!!!!!!!!!!!----------EXECUTE----------!!!!!!!!!!!");
     
     WordyRuntime runtime = new WordyRuntime();
     runtime.initialize(fileMap);
     runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
     //System.out.println(changeMe);
-       
+    System.out.println("!!!!!!!!!!!----------EXECUTE(DONE)----------!!!!!!!!!!!");
   }
 }

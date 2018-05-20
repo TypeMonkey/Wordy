@@ -164,14 +164,19 @@ Component -> StackComponent -> VariableMember
    WORDY  <--- (Objects / JavaInstances (wrappers for Objects)) JAVA
 
 
-Wordy | Date: 5/18/2018
+Wordy | Date: 5/18/2018 - 5/20/2018
 * All TODOs of the previous entries are still active
 * About Wordy functions and lookup:
   - Two Wordy functions are considered the same when they're in the same file - or class - , same name and same
     amount of arguments
 
+* Reflection seems to be alrigth now. 
 
-
+*TODOS (In addition)
+-Enforce type enforcement for inheritance
+ *That means calling super constructors in child's constructors
+  -First statement in child's constructors must be a function call: (like: super())
+-Implement exceptions
 
 
 

@@ -14,9 +14,10 @@ public class JavaCallable extends FunctionMember{
 
   private Method method;
   private Constructor<?> constructor;
+  private JavaInstance target;
   
   public JavaCallable(Method method) {
-    super(method.getName(), method.getParameters().length + 1, null, null, null);
+    super(method.getName(), method.getParameters().length, null, null, null);
     this.method = method;
   }
   
@@ -46,14 +47,7 @@ public class JavaCallable extends FunctionMember{
 
     Class<?> [] types = null;
     if (method != null) {
-      if (Modifier.isStatic(method.getModifiers()) == false) {
-        types = new Class[method.getParameterCount() + 1];
-        types[0] = method.getDeclaringClass();
-        System.arraycopy(method.getParameterTypes(), 0, types, 1, method.getParameterCount());
-      }
-      else {
-        types = method.getParameterTypes();
-      }
+      types = method.getParameterTypes();
     }
     else {
       types = constructor.getParameterTypes();
@@ -71,8 +65,8 @@ public class JavaCallable extends FunctionMember{
         if (current instanceof JavaInstance) {
           Object actualInstance = ((JavaInstance) current).getInstance();
           if (actualInstance != null && !PrimitiveTypeChecks.isCompatible(types[i], actualInstance.getClass())) {
-            System.out.println("---cur type: "+types[i].getName()+" | "+actualInstance.getClass().getName()+
-                " | "+types[i].isInstance(actualInstance)+" | "+(actualInstance != null));
+            //System.out.println("---cur type: "+types[i].getName()+" | "+actualInstance.getClass().getName()+
+            //    " | "+types[i].isInstance(actualInstance)+" | "+(actualInstance != null));
             throw new IllegalArgumentException("Method '"+method.getName()+"' was given the wrong argument types");
           }
           realArgs[i] = actualInstance;
@@ -99,8 +93,12 @@ public class JavaCallable extends FunctionMember{
     }
     else {
       try {
-        result = method.invoke(realArgs[0], Arrays.copyOfRange(realArgs, 1, args.length));
-        System.out.println("    !CALL FIRST ARG: "+realArgs[0].getClass().getName()+" | "+realArgs.length);
+        if (Modifier.isStatic(method.getModifiers())) {
+          result = method.invoke(null, realArgs);
+        }
+        else {
+          result = method.invoke(target.getInstance(), realArgs);
+        }
       } catch (Exception e) {         
         //System.out.println(" first arg type: | "+name+" | "+(realArgs[0] == null)+" | "+Arrays.copyOfRange(realArgs, 1, args.length).length);
         //System.out.println("---ARG TYPES: "+Arrays.toString(method.getParameterTypes())+" | "+realArgs.length);
@@ -116,22 +114,27 @@ public class JavaCallable extends FunctionMember{
       return (Instance) result;
     }
     
-    System.out.println("    *WRAP: "+result.getClass());  
+    /*
+    if (result != null) {
+      System.out.println("    *WRAP: "+result.getClass());  
+    }
+    else {
+      System.out.println("    *WRAP: VOID");  
+    }
+    */
     return JavaInstance.wrapInstance(result);
   }
   
   public boolean argumentsCompatible(Instance ... args) {
     if (super.argumentsCompatible(args)) {
       if (method != null) {
-        Class<?> [] paramTypes = new Class[method.getParameterCount() + 1];
-        paramTypes[0] = method.getDeclaringClass();
-        System.arraycopy(method.getParameterTypes(), 0, paramTypes, 1, method.getParameterCount());
+        Class<?> [] paramTypes = method.getParameterTypes();
         
-        System.out.println("---CHECK: "+name+" | "+args.length);
+        //System.out.println("---CHECK: "+name+" | "+args.length);
         for(int i = 0; i < paramTypes.length; i++) {
           if (Instance.class.isAssignableFrom(paramTypes[i])) {
             if (args[i] != null && !paramTypes[i].isInstance(args[i])) {
-              System.out.println("---BAD INSTANCE");
+              //System.out.println("---BAD INSTANCE");
               return false;
             }
           }
@@ -140,13 +143,13 @@ public class JavaCallable extends FunctionMember{
               JavaInstance currentIns = (JavaInstance) args[i];
               Object instance = currentIns.getInstance();
               if (instance != null && !PrimitiveTypeChecks.isCompatible(paramTypes[i], instance.getClass())) {
-                System.out.println("---NO INSTANCE "+paramTypes[i]+" | "+instance.getClass()+" | "+
-                                          paramTypes[i].isAssignableFrom(instance.getClass()));
+                //System.out.println("---NO INSTANCE "+paramTypes[i]+" | "+instance.getClass()+" | "+
+                //                          paramTypes[i].isAssignableFrom(instance.getClass()));
                 return false;
               }
             }
             else {
-              System.out.println("---NOT JAVA INSTANCE");
+              //System.out.println("---NOT JAVA INSTANCE");
               return false;
             }
           }
@@ -159,7 +162,7 @@ public class JavaCallable extends FunctionMember{
         for(int i = 0; i < paramTypes.length; i++) {
           if (Instance.class.isAssignableFrom(paramTypes[i])) {
             if (args[i] != null && !paramTypes[i].isInstance(args[i])) {
-              System.out.println("---BAD INSTANCE C");
+              //System.out.println("---BAD INSTANCE C");
               return false;
             }
           }
@@ -168,12 +171,12 @@ public class JavaCallable extends FunctionMember{
               JavaInstance currentIns = (JavaInstance) args[i];
               Object instance = currentIns.getInstance();
               if (instance != null && !PrimitiveTypeChecks.isCompatible(paramTypes[i], instance.getClass())) {
-                System.out.println("---BAD INSTANCE CC "+paramTypes[i].getName()+" | "+instance.getClass());
+                //System.out.println("---BAD INSTANCE CC "+paramTypes[i].getName()+" | "+instance.getClass());
                 return false;
               }
             }
             else {
-              System.out.println("---BAD INSTANCE CD");
+              //System.out.println("---BAD INSTANCE CD");
               return false;
             }
           }
@@ -182,6 +185,10 @@ public class JavaCallable extends FunctionMember{
       }    
     }
     return false;
+  }
+  
+  public void setTarget(JavaInstance instance) {
+    this.target = instance;
   }
   
   public boolean isStatic() {
