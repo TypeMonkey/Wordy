@@ -180,6 +180,14 @@ public class RuntimeTable {
     };    
     map.put(new FunctionKey(print.getName(), print.requiredArgs()), print);
 
+    EmbeddedFunction typeof = new EmbeddedFunction("typeof", 1, null) {
+      @Override
+      public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) {
+        return JavaInstance.wrapInstance( args[0].getDefinition());
+      }
+
+    };    
+    map.put(new FunctionKey(typeof.getName(), typeof.requiredArgs()), typeof);
     
     return map;
   }

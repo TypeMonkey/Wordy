@@ -27,11 +27,16 @@ import wordy.logic.compile.verify.StructureVerifier;
  *       prior to runtime. Since Wordy is dynamic, of course no type checking is done.
  */
 public class WordyCompiler {
+  
+  public static final double WORDY_VERSION = 1.0;
+  
   public static final List<String> JAVA_CLASSES;
   
   static {
     List<String> classes = new ArrayList<>(getStandardJavaClasses());
     classes.add("wordy.standard.Array");
+    classes.add("wordy.standard.ArrayList");
+    classes.add("wordy.standard.Reflection");
     JAVA_CLASSES = Collections.unmodifiableList(classes);
   }
   

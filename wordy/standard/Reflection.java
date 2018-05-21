@@ -4,19 +4,21 @@ import java.util.Iterator;
 
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.components.Instance;
-import wordy.logic.runtime.components.JavaInstance;
 
+/**
+ * Acts as a front-end to reflection related functionalities of a Wordy
+ * environment
+ * @author Jose Guaro
+ *
+ */
 public class Reflection {
 	private Instance instance;
 	
 	public Reflection(Instance instance) {
 		this.instance = instance;
-		System.out.println("---INVOKED: "+instance.getName());
 	}
 	
 	public Array getVariableNames() {
-	  System.out.println("--GATHER: "+instance.varMap().size());
-	  System.out.println("--AGAIN: "+instance.getDefinition().getVariables().size());
 		Iterator<VariableMember> vars = instance.varMap().values().iterator();
 		Array array = new Array(instance.varMap().size());
 		for(int i = 0; vars.hasNext(); i++) {
@@ -24,9 +26,5 @@ public class Reflection {
 		}
 		
 		return array;
-	}
-	
-	public static Instance wrapValue(Object object) {
-	  return JavaInstance.wrapInstance(object);
 	}
 }

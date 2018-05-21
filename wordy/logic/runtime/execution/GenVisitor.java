@@ -173,9 +173,15 @@ public class GenVisitor implements NodeVisitor{
         stack.push(component);
     }
     else {
-      StackComponent member = stack.pop();
+      StackComponent member = stack.pop();      
       if (member instanceof Instance) {
         Instance instance = (Instance) member;
+        
+        if (member == JavaInstance.getNullRep()) {
+          throw new NullPointerException("A null instance was referred to, at line: "
+                                                                            +memberAccessNode.tokens()[0].lineNumber());
+        }
+        
         VariableMember instanceMem = instance.retrieveVariable(memberAccessNode.getMemberName().content());
         if (instanceMem == null) {
           throw new RuntimeException("Cannot find property '"+memberAccessNode.getMemberName().content()+"' "+
@@ -194,7 +200,10 @@ public class GenVisitor implements NodeVisitor{
       }
       else {
         VariableMember variable = (VariableMember) member;
-        //System.out.println("---VARIABLE: "+variable.getName()+ " | "+variable.getClass()+" | "+variable.getType());
+        if (variable.getValue() == JavaInstance.getNullRep()) {
+          throw new NullPointerException("A null instance was referred to, at line: "
+                                                                            +memberAccessNode.tokens()[0].lineNumber());
+        }
         VariableMember instanceMem = variable.getValue().retrieveVariable(memberAccessNode.getMemberName().content());
         //System.out.println("----Var member: "+instanceMem+" | "+instanceMem.getType());
         if (instanceMem == null) {
@@ -283,6 +292,10 @@ public class GenVisitor implements NodeVisitor{
       }
       else {
         instance = (Instance) stack.pop();
+      }
+      
+      if (instance == JavaInstance.getNullRep()) {
+        throw new NullPointerException("A null instance was referred to, at line: "+funcName.lineNumber());
       }
 
       //System.out.println("----INSTANCE FUNC CALL "+instance.getClass()+" | "+args.length);

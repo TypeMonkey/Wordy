@@ -5,19 +5,15 @@ import java.util.Map;
 import wordy.logic.compile.WordyCompiler;
 import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.runtime.WordyRuntime;
-import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.JavaInstance;
-import wordy.standard.Array;
-import wordy.standard.Reflection;
 
-public class Main {
-  
-  public static int changeMe = 10;
+public class Main {  
   
   public static void main(String[] args) throws Exception {
-    String [] sourceFile = {"src\\Sources\\Flood.w", "src\\Sources\\Dry.w"};    
+    String [] sourceFiles = {"src\\Sources\\Flood.w", "src\\Sources\\Dry.w"};    
            
-    WordyCompiler compiler = new WordyCompiler(sourceFile);
+    printCompilerIntro(sourceFiles);
+    WordyCompiler compiler = new WordyCompiler(sourceFiles);
     Map<String, FileStructure> fileMap = compiler.compile();
      
        
@@ -43,12 +39,23 @@ public class Main {
     System.out.println("---RETRIEVE 2: "+ secondInstance.retrieveVariable("changeMe").getValue());
     */
     
-    System.out.println("!!!!!!!!!!!----------EXECUTE----------!!!!!!!!!!!");
-    
+    System.out.println("      --Form completed. Interpreting now...--      ");
     WordyRuntime runtime = new WordyRuntime();
+    System.out.println("      --Initializing runtime environment--      ");
     runtime.initialize(fileMap);
+    String mainSourceFile = "Flood";
+    System.out.println("      --Invoking main function in "+mainSourceFile+" --      ");
+    System.out.println();
     runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
-    //System.out.println(changeMe);
-    System.out.println("!!!!!!!!!!!----------EXECUTE(DONE)----------!!!!!!!!!!!");
+  }
+  
+  private static void printCompilerIntro(String [] sources) {
+    System.out.println("      WORDY: Vers. "+WordyCompiler.WORDY_VERSION+"      ");
+    System.out.println("--Target source files: ");
+    for(String x : sources) {
+      System.out.println("* "+x);
+    }
+    System.out.println("      FORMING SOURCES........");
+    System.out.println();
   }
 }

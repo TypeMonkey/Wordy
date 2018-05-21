@@ -5,6 +5,7 @@ import java.util.Map;
 
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.JavaClassDefinition;
+import wordy.standard.Array;
 
 /**
  * Represents the instance of a Java class
@@ -12,6 +13,8 @@ import wordy.logic.runtime.types.JavaClassDefinition;
  *
  */
 public class JavaInstance extends Instance{
+  
+  private static JavaInstance nullRep;
   
   private Object object;
   private boolean isStaticRep;
@@ -85,12 +88,26 @@ public class JavaInstance extends Instance{
         return getNullRep();
       }
       
-      JavaClassDefinition definition = JavaClassDefinition.defineClass(instance.getClass());
-      return new JavaInstance(instance, definition, false);
+      if (instance.getClass().isArray()) {
+        JavaClassDefinition definition = JavaClassDefinition.defineClass(Array.class);
+        Object [] arr = (Object[]) instance;
+        Array wordyArray = new Array(arr.length);
+        for (int i = 0; i < arr.length; i++) {
+          wordyArray.set(i, arr[i]);
+        }
+        return new JavaInstance(wordyArray, definition, false);
+      }
+      else {
+        JavaClassDefinition definition = JavaClassDefinition.defineClass(instance.getClass());
+        return new JavaInstance(instance, definition, false);
+      }
     }
   }
   
   public static JavaInstance getNullRep() {
-    return new JavaInstance(null, JavaClassDefinition.defineClass(Object.class), false);
+    if (nullRep == null) {
+      nullRep = new JavaInstance(null, JavaClassDefinition.defineClass(Object.class), false);
+    }
+    return nullRep;
   }
 }

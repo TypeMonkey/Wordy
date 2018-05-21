@@ -1,25 +1,25 @@
-import wordy.standard.Reflection; 
 import wordy.logic.Main;
-import java.io.File;
+import java.util.Random;
+import java.util.Scanner;
 
 function main(a){
-  let b = Reflection(Dry).getVariableNames();
-  
-  b = Dry.Ob(b);
-  b = b.k;
-  
-  a = 0;
-  while(a < b.length){
-  	println("QUERY: "+b.get(a));
-  	let var = b.get(a);
-  	var.setValue(10);
-  	println(" ---NEW: "+var.getValue());
-  	a = a + 1;
+   let b = Array(3);
+   b.set(0, 10);
+   b.set(1, 20);
+   b.set(2, 30);
+   
+   readList(ArrayList(b));
+   println("------");
+   let c = b.clone();
+   c.set(0, 90);
+   
+   readList(ArrayList(c));
+}
+
+function readList(list){
+  for(let a = 0; a < list.size(); a = a+1){
+    println(list.get(a));
   }
-  
-  println("a? "+Dry.a);
-  
-  
 }
 
 function help(){
