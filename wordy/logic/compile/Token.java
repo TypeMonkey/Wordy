@@ -11,6 +11,7 @@ public class Token {
     NUMBER,
     IDENT,
     CLASS,
+    IMPLEMENT,
     LITERAL,
     BOOL,
     BREAK,

@@ -1,12 +1,11 @@
 package wordy.logic.runtime;
-
 /**
  * A convenient class of a collection of static methods
  * to do type checks with primitive types and there respective wrapper classes
  * @author Jose Guaro
  *
  */
-public class PrimitiveTypeChecks {
+public class TypeChecks {
   
   public static boolean isCompatible(Class<?> acceptor, Class<?> value) {
     if ( (acceptor == Integer.class || acceptor == Integer.TYPE) && 
@@ -33,5 +32,4 @@ public class PrimitiveTypeChecks {
       return acceptor.isAssignableFrom(value);
     }
   }
-  
 }

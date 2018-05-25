@@ -35,24 +35,25 @@ public class TypeDefinition{
     
   protected Map<String, VariableMember> variables;
   protected Map<FunctionKey, List<Callable>> functions;
-  protected List<TypeDefinition> parents;
+  protected TypeDefinition parent;
+  
+  protected List<TypeDefinition> interfaces;
+  
   protected String name;
   
   protected TypeDefinition(String name,
-                           List<TypeDefinition> parents,
+                           TypeDefinition parent,
                            Map<String, VariableMember> variables, 
                            Map<FunctionKey, List<Callable>> functions) {
     this.name = name;
     this.variables = variables;
     this.functions = functions;
-    this.parents = parents;
+    this.parent = parent;
+    interfaces = new ArrayList<>();
   }
   
   protected TypeDefinition(String name) {
-    variables = new LinkedHashMap<>();
-    functions = new HashMap<>();
-    parents = new ArrayList<>();
-    this.name = name;
+    this(name, null, new LinkedHashMap<>(), new HashMap<>());
   }
   
   public String getName() {
@@ -96,8 +97,8 @@ public class TypeDefinition{
     return new LinkedHashMap<>(variables);
   }
   
-  public List<TypeDefinition> getParent() {
-    return parents;
+  public TypeDefinition getParent() {
+    return parent;
   }
   
   /**
@@ -106,11 +107,11 @@ public class TypeDefinition{
    * @return
    */
   public boolean isChildOf(TypeDefinition definition) {
-    if (parents.contains(definition)) {
+    if (parent.equals(definition) || parent.isChildOf(definition)) {
       return true;
     }
     else {
-      for(TypeDefinition par: parents) {
+      for(TypeDefinition par: interfaces) {
         if (par.isChildOf(definition)) {
           return true;
         }
@@ -177,6 +178,14 @@ public class TypeDefinition{
     }
     
     return definition;
+  }
+  
+  /**
+   * Checks if the given TypeDefinition (Wordy class) coherently
+   * follows its parent. Ex: implements abstract methods, calls parent constructor, etc.
+   */
+  public static void enforceInheritance(TypeDefinition definition, WordyRuntime runtime) {
+    
   }
   
 }

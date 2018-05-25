@@ -183,7 +183,12 @@ Wordy | Date: 5/21/2018
 * Improved Array class for better functionality - such as shallow cloning
 * Added ArrayList class
 
-
+Wordy | Date: 5/24/2018
+* Adding enforcement of inheritance
+ -Added grammar to allow for interface implementation:
+    class Hello : Object implements Inteface1, Interface2, ... , InterfaceN {
+                    ^- parent                       ^-interfaces
+ -Actual enforcement occurs during runtime initialization
 
 
 

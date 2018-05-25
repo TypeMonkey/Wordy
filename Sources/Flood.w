@@ -2,6 +2,16 @@ import wordy.logic.Main;
 import java.util.Random;
 import java.util.Scanner;
 
+class Ob{
+	
+	let k;
+	
+	Ob(a){
+	  k = a;
+	}
+	
+}
+
 function main(a){
    let b = Array(3);
    b.set(0, 10);

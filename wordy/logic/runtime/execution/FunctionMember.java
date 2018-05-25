@@ -406,6 +406,10 @@ public class FunctionMember extends Callable{
     return argAmnt == args.length;
   }
   
+  public Statement[] getStatements() {
+    return statements;
+  }
+  
   private static class BlockExecResult{
     
     static final int NORMAL_END = 3;

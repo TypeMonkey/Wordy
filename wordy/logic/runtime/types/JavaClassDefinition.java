@@ -3,6 +3,7 @@ package wordy.logic.runtime.types;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,12 +59,32 @@ public class JavaClassDefinition extends TypeDefinition{
     this.respClass = respClass;
     
     if (respClass.equals(Object.class)) {
-      parents.clear();
+      parent = null;
     }
+  }
+  
+  public boolean equals(Object object) {
+    if (object instanceof JavaClassDefinition) {
+      JavaClassDefinition toCheck = (JavaClassDefinition) object;
+      return name.equals(toCheck.name);
+    }
+    return false;
   }
   
   public void setStaticRep(JavaInstance instance) {
     staticRep = instance;
+  }
+  
+  public boolean isInterface() {
+    return respClass.isInterface();
+  }
+  
+  public boolean isAbstract() {
+    return Modifier.isAbstract(respClass.getModifiers());
+  }
+  
+  public boolean isFinal() {
+    return Modifier.isFinal(respClass.getModifiers());
   }
   
   public String getSimpleName() {
@@ -113,11 +134,11 @@ public class JavaClassDefinition extends TypeDefinition{
 
 
       if (respClass.getSuperclass() != null) {
-        definition.parents.add(defineClass(respClass.getSuperclass()));
+        definition.parent = defineClass(respClass.getSuperclass());
       }
 
       for(Class<?> inter : respClass.getInterfaces()) {
-        definition.parents.add(defineClass(inter));
+        definition.interfaces.add(defineClass(inter));
       }
 
       mappedClasses.put(respClass, definition);

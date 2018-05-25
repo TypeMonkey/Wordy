@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
-import wordy.logic.runtime.PrimitiveTypeChecks;
+import wordy.logic.runtime.TypeChecks;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
@@ -64,7 +64,7 @@ public class JavaCallable extends FunctionMember{
         //java method wants a Java Object
         if (current instanceof JavaInstance) {
           Object actualInstance = ((JavaInstance) current).getInstance();
-          if (actualInstance != null && !PrimitiveTypeChecks.isCompatible(types[i], actualInstance.getClass())) {
+          if (actualInstance != null && !TypeChecks.isCompatible(types[i], actualInstance.getClass())) {
             //System.out.println("---cur type: "+types[i].getName()+" | "+actualInstance.getClass().getName()+
             //    " | "+types[i].isInstance(actualInstance)+" | "+(actualInstance != null));
             throw new IllegalArgumentException("Method '"+method.getName()+"' was given the wrong argument types");
@@ -142,7 +142,7 @@ public class JavaCallable extends FunctionMember{
             if (args[i] instanceof JavaInstance) {
               JavaInstance currentIns = (JavaInstance) args[i];
               Object instance = currentIns.getInstance();
-              if (instance != null && !PrimitiveTypeChecks.isCompatible(paramTypes[i], instance.getClass())) {
+              if (instance != null && !TypeChecks.isCompatible(paramTypes[i], instance.getClass())) {
                 //System.out.println("---NO INSTANCE "+paramTypes[i]+" | "+instance.getClass()+" | "+
                 //                          paramTypes[i].isAssignableFrom(instance.getClass()));
                 return false;
@@ -170,7 +170,7 @@ public class JavaCallable extends FunctionMember{
             if (args[i] instanceof JavaInstance) {
               JavaInstance currentIns = (JavaInstance) args[i];
               Object instance = currentIns.getInstance();
-              if (instance != null && !PrimitiveTypeChecks.isCompatible(paramTypes[i], instance.getClass())) {
+              if (instance != null && !TypeChecks.isCompatible(paramTypes[i], instance.getClass())) {
                 //System.out.println("---BAD INSTANCE CC "+paramTypes[i].getName()+" | "+instance.getClass());
                 return false;
               }

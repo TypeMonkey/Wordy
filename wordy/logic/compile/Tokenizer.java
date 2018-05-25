@@ -200,6 +200,9 @@ public class Tokenizer {
           else if (ReservedSymbols.AS.equals(identStr)) {
             tokens.add(new Token(identStr, Type.AS, lineNumber));
           }
+          else if (ReservedSymbols.IMPLNT.equals(identStr)) {
+            tokens.add(new Token(identStr, Type.IMPLEMENT, lineNumber));
+          }
           else {
             tokens.add(new Token(identStr, Type.IDENT, lineNumber));
           }

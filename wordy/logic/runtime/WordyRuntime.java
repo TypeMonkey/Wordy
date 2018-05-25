@@ -1,5 +1,6 @@
 package wordy.logic.runtime;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.GenVisitor;
+import wordy.logic.runtime.types.TypeDefinition;
 
 /**
  * Front-end for executing a Wordy program
@@ -34,8 +36,20 @@ public class WordyRuntime {
       }
       runtimeInitialized = true;
     }
+    
+    enforceInheritance();
   }
   
+  private void enforceInheritance() {
+    for(FileInstance instance : files.values()) {
+      RuntimeFile file = instance.getDefinition();
+      ArrayList<TypeDefinition> orderedCheck = new ArrayList<>();
+      for(TypeDefinition definition : file.getTypeDefs().values()) {
+        
+      }
+    }
+  }
+
   /**
    * Invokes the main function of this Wordy program
    * @param file - the file name whose main function to invoke
