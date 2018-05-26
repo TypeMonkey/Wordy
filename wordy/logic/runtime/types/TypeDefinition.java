@@ -37,7 +37,7 @@ public class TypeDefinition{
   protected Map<FunctionKey, List<Callable>> functions;
   protected TypeDefinition parent;
   
-  protected List<TypeDefinition> interfaces;
+  protected List<JavaClassDefinition> interfaces;
   
   protected String name;
   
@@ -101,6 +101,10 @@ public class TypeDefinition{
     return parent;
   }
   
+  public List<JavaClassDefinition> getInterfaces(){
+    return interfaces;
+  }
+    
   /**
    * Checks if the given TypeDefinition is a child of this TypeDefinition
    * @param definition
@@ -128,7 +132,12 @@ public class TypeDefinition{
   public static TypeDefinition constructDefinition(ClassStruct struct, 
                                                    WordyRuntime runtime, 
                                                    FileInstance currentFile) {
-    TypeDefinition definition = new TypeDefinition(struct.getFullName());
+    TypeDefinition definition = runtime.findTypeDef(currentFile.getName(), struct.getName().content());
+    if (definition != null) {
+      return definition;
+    }
+    
+    definition = new TypeDefinition(struct.getFullName());
     
     for(Variable member: struct.getVariables()) {
       VariableMember mem = new VariableMember(member.getName().content(), 
@@ -188,4 +197,10 @@ public class TypeDefinition{
     
   }
   
+  /**
+   * 
+   */
+  public static class RawTypeInfo{
+    
+  }
 }

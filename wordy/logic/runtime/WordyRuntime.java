@@ -102,4 +102,15 @@ public class WordyRuntime {
   public FileInstance findFile(String name) {
     return files.get(name);
   }
+  
+  public TypeDefinition findTypeDef(String fileName, String className) {
+    if (files.containsKey(fileName)) {
+      RuntimeFile file = files.get(fileName).getDefinition();
+      if (file.getTypeDefs().containsKey(className)) {
+        return file.getTypeDefs().get(className);
+      }
+      return null;
+    }
+    return null;
+  }
 }

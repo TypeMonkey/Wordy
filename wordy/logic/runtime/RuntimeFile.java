@@ -43,7 +43,6 @@ public class RuntimeFile extends TypeDefinition{
     
   private FileInstance instance;
   private boolean initialized;
-  private String name;
   
   /*
    * Imported java files.
@@ -59,7 +58,6 @@ public class RuntimeFile extends TypeDefinition{
   
   public RuntimeFile(String name) {
     super(name);
-    this.name = name;
     javaClasses = new HashMap<>();
     javaConstructors = new HashMap<>();
     typeDefs = new HashMap<>();
@@ -144,6 +142,7 @@ public class RuntimeFile extends TypeDefinition{
         
         for(List<Callable> classFunctions : definition.getFunctions().values()) {
           for(Callable classFunc : classFunctions) {
+            //places all constructor in the file's function context
             if (classFunc.isAConstructor()) {
               FunctionKey functionKey = new FunctionKey(classFunc.getName(), classFunc.requiredArgs());
               //System.out.println("***PLACING: "+functionKey.argAmnt+" | "+functionKey.name);

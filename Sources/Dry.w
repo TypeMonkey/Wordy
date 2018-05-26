@@ -7,7 +7,7 @@ let e = 90;
 let f = 90;
 */
 
-class Ob : Object implements Runnable, List, Inter, What{
+class Ob : Dry.Ob implements Runnable, List, Inter, What{
 	
 	let k;
 	
