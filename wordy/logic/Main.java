@@ -10,7 +10,7 @@ import wordy.logic.runtime.components.JavaInstance;
 public class Main {  
   
   public static void main(String[] args) throws Exception {
-    String [] sourceFiles = {"src\\Sources\\Flood.w", "src\\Sources\\Dry.w"};    
+    String [] sourceFiles = { "src\\Sources\\Dry.w", "src\\Sources\\Flood.w"};    
            
     printCompilerIntro(sourceFiles);
     WordyCompiler compiler = new WordyCompiler(sourceFiles);
@@ -39,6 +39,7 @@ public class Main {
     System.out.println("---RETRIEVE 2: "+ secondInstance.retrieveVariable("changeMe").getValue());
     */
     
+    
     System.out.println("      --Form completed. Interpreting now...--      ");
     WordyRuntime runtime = new WordyRuntime();
     System.out.println("      --Initializing runtime environment--      ");
@@ -46,7 +47,8 @@ public class Main {
     String mainSourceFile = "Flood";
     System.out.println("      --Invoking main function in "+mainSourceFile+" --      ");
     System.out.println();
-    runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
+    //runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
+    
   }
   
   private static void printCompilerIntro(String [] sources) {

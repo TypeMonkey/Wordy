@@ -205,8 +205,8 @@ public class Formatter{
   
   private ClassStruct parseClassDeclaration(ListIterator<Token> iterator) {
     Token name = null;
-    Token parent = null;
-    ArrayList<Token> interfaces = new ArrayList<>();
+        
+    ArrayList<Token> parentName = new ArrayList<>();
     ArrayList<Type> expected = new ArrayList<>(Arrays.asList(Type.IDENT));
     Token current = null;
     while (iterator.hasNext()) {
@@ -214,17 +214,10 @@ public class Formatter{
       System.out.println("---CURRENT CLASS"+current);
       if (expected.contains(current.type())) {
         if(current.type() == Type.IDENT) {
-          if (name != null) {
-            if (parent != null) {
-              interfaces.add(current);
-              expected.clear();
-              expected.addAll(Arrays.asList(Type.COMMA, Type.OPEN_SCOPE));
-            }
-            else {
-              parent = current;
-              expected.clear();
-              expected.addAll(Arrays.asList(Type.OPEN_SCOPE, Type.IMPLEMENT));
-            }
+          if (name != null) {    
+            parentName.add(current);
+            expected.clear();
+            expected.addAll(Arrays.asList(Type.OPEN_SCOPE, Type.DOT));
           }
           else {
             name = current;
@@ -232,11 +225,12 @@ public class Formatter{
             expected.addAll(Arrays.asList(Type.OPEN_SCOPE, Type.COLON));
           }
         }
-        else if (current.type() == Type.IMPLEMENT || current.type() == Type.COMMA) {
+        else if (current.type() == Type.COLON) {
           expected.clear();
           expected.add(Type.IDENT);
         }
-        else if (current.type() == Type.COLON) {
+        else if (current.type() == Type.DOT) {
+          parentName.add(current);
           expected.clear();
           expected.add(Type.IDENT);
         }
@@ -258,9 +252,9 @@ public class Formatter{
     List<Token> body = gatherBlock(iterator, current.lineNumber());
     body.remove(body.size()-1);
     
-    System.out.println("----CLASS DEC INFO: "+name.content()+" | pare: "+parent+" | inters: "+interfaces);
+    System.out.println("----CLASS DEC INFO: "+name.content()+" | pare: "+parentName);
     
-    ClassStruct struct = new ClassStruct(fileName, name, parent, interfaces);
+    ClassStruct struct = new ClassStruct(fileName, name, parentName.toArray(new Token[parentName.size()]));
     if (body.isEmpty()) {
       System.out.println("---CLASS PRINT: "+struct.getParentClass());
       return struct;

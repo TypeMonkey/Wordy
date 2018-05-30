@@ -34,18 +34,25 @@ public class WordyRuntime {
         
         files.put(file.getName(), instance);
       }
+      
+      enforceInheritance();
       runtimeInitialized = true;
     }
-    
-    enforceInheritance();
   }
   
   private void enforceInheritance() {
+    ArrayList<TypeDefinition> allDefs = new ArrayList<>();
     for(FileInstance instance : files.values()) {
       RuntimeFile file = instance.getDefinition();
-      ArrayList<TypeDefinition> orderedCheck = new ArrayList<>();
       for(TypeDefinition definition : file.getTypeDefs().values()) {
-        
+        TypeDefinition.includeInhertianceInfo(this, definition, instance);
+        allDefs.add(definition);
+      }
+    }
+    
+    for(TypeDefinition def: allDefs) {
+      if (def.isChildOf(def.getParent())) {
+        throw new RuntimeException("Type Error! "+def.getName()+" is a child of "+def.getParent().getName());
       }
     }
   }
@@ -101,16 +108,5 @@ public class WordyRuntime {
   
   public FileInstance findFile(String name) {
     return files.get(name);
-  }
-  
-  public TypeDefinition findTypeDef(String fileName, String className) {
-    if (files.containsKey(fileName)) {
-      RuntimeFile file = files.get(fileName).getDefinition();
-      if (file.getTypeDefs().containsKey(className)) {
-        return file.getTypeDefs().get(className);
-      }
-      return null;
-    }
-    return null;
   }
 }

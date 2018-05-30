@@ -17,20 +17,18 @@ public class ClassStruct {
   private Map<FunctionKey, Function> functions; 
   private Map<String, Variable> variables;
   
-  private Token parentClass;
-  private List<Token> interfaces; //the interfaces implemented by this class
+  private Token[] parentClass;
   
   public ClassStruct(String fileName, Token name) {
-    this(fileName, name, null, new ArrayList<>());
+    this(fileName, name, null);
   }
   
-  public ClassStruct(String fileName, Token name, Token parent, List<Token> interfaces) {
+  public ClassStruct(String fileName, Token name, Token [] parentName) {
     this.fileName = fileName;
     this.name = name;
-    this.parentClass = parent;
+    this.parentClass = parentName;
     this.functions = new HashMap<>();
     this.variables = new LinkedHashMap<>();
-    this.interfaces = interfaces;
   }
   
   public boolean equals(Object object) {
@@ -62,12 +60,8 @@ public class ClassStruct {
     return functions.put(key, function) == null;
   }
   
-  public void setParent(Token parentClass) {
+  public void setParent(Token [] parentClass) {
     this.parentClass = parentClass;
-  }
-  
-  public void addInterface(Token interfaceName) {
-    interfaces.add(interfaceName);
   }
   
   public String getFullName() {
@@ -78,11 +72,7 @@ public class ClassStruct {
     return name;
   }
   
-  public List<Token> getInterfaces(){
-    return interfaces;
-  }
-  
-  public Token getParentClass() {
+  public Token [] getParentClass() {
     return parentClass;
   }
   

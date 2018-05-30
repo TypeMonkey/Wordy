@@ -1,3 +1,5 @@
+import java.util.List;
+//import java.lang.Runnable as Runny;
 /*
 let a = 90;
 let b = 90;
@@ -7,7 +9,7 @@ let e = 90;
 let f = 90;
 */
 
-class Ob : Dry.Ob implements Runnable, List, Inter, What{
+class Ob : Flood.Sample{
 	
 	let k;
 	

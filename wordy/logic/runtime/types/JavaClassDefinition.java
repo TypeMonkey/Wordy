@@ -53,14 +53,29 @@ public class JavaClassDefinition extends TypeDefinition{
   
   private JavaInstance staticRep;
   private Class<?> respClass;
+  private List<JavaClassDefinition> interfaces;
   
   protected JavaClassDefinition(Class<?> respClass) {
     super(respClass.getName());
     this.respClass = respClass;
+    interfaces = new ArrayList<>();
     
     if (respClass.equals(Object.class)) {
       parent = null;
     }
+  }
+  
+  public boolean isChildOf(TypeDefinition definition) {
+    if (super.isChildOf(definition)) {
+      return true;
+    }
+    
+    for(JavaClassDefinition interDef : interfaces) {
+      if (interDef.isChildOf(definition)) {
+        return true;
+      }
+    }
+    return false;
   }
   
   public boolean equals(Object object) {

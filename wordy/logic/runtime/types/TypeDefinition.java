@@ -1,5 +1,6 @@
 package wordy.logic.runtime.types;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.FileInstance;
-import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.ConstructorFunction;
 import wordy.logic.runtime.execution.FunctionMember;
@@ -36,10 +36,10 @@ public class TypeDefinition{
   protected Map<String, VariableMember> variables;
   protected Map<FunctionKey, List<Callable>> functions;
   protected TypeDefinition parent;
-  
-  protected List<JavaClassDefinition> interfaces;
-  
+    
   protected String name;
+  
+  private ClassStruct struct;
   
   protected TypeDefinition(String name,
                            TypeDefinition parent,
@@ -49,7 +49,6 @@ public class TypeDefinition{
     this.variables = variables;
     this.functions = functions;
     this.parent = parent;
-    interfaces = new ArrayList<>();
   }
   
   protected TypeDefinition(String name) {
@@ -101,27 +100,21 @@ public class TypeDefinition{
     return parent;
   }
   
-  public List<JavaClassDefinition> getInterfaces(){
-    return interfaces;
+  private void attchClassStruct(ClassStruct struct) {
+    this.struct = struct;
+  }
+  
+  private ClassStruct getAttachedStruct() {
+    return struct;
   }
     
   /**
    * Checks if the given TypeDefinition is a child of this TypeDefinition
-   * @param definition
-   * @return
+   * @param definition - the TypeDefinition to check
+   * @return 
    */
   public boolean isChildOf(TypeDefinition definition) {
-    if (parent.equals(definition) || parent.isChildOf(definition)) {
-      return true;
-    }
-    else {
-      for(TypeDefinition par: interfaces) {
-        if (par.isChildOf(definition)) {
-          return true;
-        }
-      }
-      return false;
-    }
+    return (parent.equals(definition) || parent.isChildOf(definition));
   }
   
   /**
@@ -132,12 +125,8 @@ public class TypeDefinition{
   public static TypeDefinition constructDefinition(ClassStruct struct, 
                                                    WordyRuntime runtime, 
                                                    FileInstance currentFile) {
-    TypeDefinition definition = runtime.findTypeDef(currentFile.getName(), struct.getName().content());
-    if (definition != null) {
-      return definition;
-    }
-    
-    definition = new TypeDefinition(struct.getFullName());
+    TypeDefinition definition = new TypeDefinition(struct.getFullName());
+    definition.attchClassStruct(struct);
     
     for(Variable member: struct.getVariables()) {
       VariableMember mem = new VariableMember(member.getName().content(), 
@@ -189,18 +178,70 @@ public class TypeDefinition{
     return definition;
   }
   
-  /**
-   * Checks if the given TypeDefinition (Wordy class) coherently
-   * follows its parent. Ex: implements abstract methods, calls parent constructor, etc.
-   */
-  public static void enforceInheritance(TypeDefinition definition, WordyRuntime runtime) {
+  public static void includeInhertianceInfo(WordyRuntime runtime, TypeDefinition definition, FileInstance current) {
+    ClassStruct originalStruct = definition.getAttachedStruct();
+    
+    TypeDefinition parent = null;
+    if (originalStruct.getParentClass() == null || originalStruct.getParentClass().length == 0) {
+      parent = JavaClassDefinition.defineClass(Object.class);
+    }
+    else {
+      Token [] parentFull = originalStruct.getParentClass();
+      boolean foundParent = false;
+      if (parentFull.length == 1) {
+        //non-binary class name. First check file-local classes.
+        //If not found then, check the imports of this file
+        parent = current.getDefinition().getTypeDefs().get(parentFull[0].content());
+        if (parent == null) {
+          String fullJavaName = current.getDefinition().getJavaClassMap().get(parentFull[0].content());
+          if (fullJavaName == null) {
+            throw new RuntimeException("Can't find the parent class '"+parentFull[0].content()+"'");
+          }
+          else {
+            try {
+              parent = JavaClassDefinition.defineClass(Class.forName(fullJavaName));
+              foundParent = true;
+            } catch (ClassNotFoundException e) {
+              throw new RuntimeException("Can't find the parent class '"+parentFull[0].content()+"'");
+            }
+          }
+        }
+        else {
+          foundParent = true;
+        }
+      }
+      else if (parentFull.length == 3) {
+        FileInstance fileInstance = runtime.findFile(parentFull[0].content());
+        if (fileInstance == null) {
+          foundParent = false;
+        }
+        else {
+          parent = fileInstance.getDefinition().getTypeDefs().get(parentFull[2].content());
+          if (parent == null) {
+            foundParent = false;
+          }
+          foundParent = true;
+        }
+      }
+      
+      //assume this parent is a Java class (the full name is their binary name). If so, find it.
+      if (foundParent == false) {
+        String fullParentName = "";
+        for(Token t:parentFull) {
+          fullParentName += t.content();
+        }
+        
+        try {
+          parent = JavaClassDefinition.defineClass(Class.forName(fullParentName));
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException("Can't find the parent class '"+fullParentName+"'");
+        }
+      }
+    }
+    
+    //set found parent to definition's parent
+    definition.parent = parent;
     
   }
   
-  /**
-   * 
-   */
-  public static class RawTypeInfo{
-    
-  }
 }

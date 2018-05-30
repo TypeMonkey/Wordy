@@ -2,11 +2,11 @@ import wordy.logic.Main;
 import java.util.Random;
 import java.util.Scanner;
 
-class Ob{
+class Sample{
 	
 	let k;
 	
-	Ob(a){
+	Sample(a){
 	  k = a;
 	}
 	

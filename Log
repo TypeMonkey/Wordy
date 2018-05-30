@@ -183,7 +183,7 @@ Wordy | Date: 5/21/2018
 * Improved Array class for better functionality - such as shallow cloning
 * Added ArrayList class
 
-Wordy | Date: 5/24/2018
+Wordy | Date: 5/24/2018 - 5/26/2018
 * Adding enforcement of inheritance
  -Added grammar to allow for interface implementation:
     class Hello : Object implements Inteface1, Interface2, ... , InterfaceN {
@@ -191,6 +191,17 @@ Wordy | Date: 5/24/2018
  -Actual enforcement occurs during runtime initialization
 
 
+*Clarifications:
+ - Java binary names - like: "java.lang.Object" - are only allowed in class declarations
+
+
+Wordy | Date: 5/29/2018
+* Interface implementation doesn't make sense. I'm going to support only class-extension
+  and single inheritance.
+  -I've removed the grammar to allow this, but the actual type check is still in development
+*Clarifications:
+ -Interface implementation for Wordy doesn't make sense because:
+  *Wordy instances aren't meant to interact outside of Wordy
 
 
 
@@ -198,4 +209,17 @@ Wordy | Date: 5/24/2018
 
 
 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
