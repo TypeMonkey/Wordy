@@ -13,6 +13,7 @@ import wordy.logic.runtime.types.TypeDefinition;
  *
  */
 public abstract class Instance extends StackComponent{
+  
   protected TypeDefinition definition;
   protected Map<String, VariableMember> instanceVars;
   
@@ -38,6 +39,7 @@ public abstract class Instance extends StackComponent{
   public VariableMember retrieveVariable(String memberName) {
     return instanceVars.get(memberName);
   }
+  
   
   public TypeDefinition getDefinition() {
     return definition;

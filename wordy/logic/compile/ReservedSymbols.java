@@ -71,6 +71,9 @@ public final class ReservedSymbols {
   public static final String IMPORT = "import";
   public static final String AS = "as";
   public static final String IMPLNT = "implements";
+  
+  public static final String SUPER = "super";
+
  
   
   public static boolean isAnOperator(String potential) {

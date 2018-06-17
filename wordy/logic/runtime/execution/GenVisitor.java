@@ -22,6 +22,7 @@ import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
+import wordy.logic.runtime.components.TypeInstance;
 
 public class GenVisitor implements NodeVisitor{
  
@@ -132,7 +133,7 @@ public class GenVisitor implements NodeVisitor{
         //System.out.println("--- FOUND CLASS: "+className);
         if (className == null) {
           throw new RuntimeException("Can't find identifier '"+identifierNode.name()+"' at line "+
-              identifierNode.tokens()[0].lineNumber());
+              identifierNode.tokens()[0].lineNumber()+" , "+currentFile.getName());
         }
         else {
           try {
@@ -225,7 +226,6 @@ public class GenVisitor implements NodeVisitor{
 
   public void visit(MethodCallNode callNode) {
     Token funcName = callNode.getName();
-
     //visit all arguments
     for(ASTNode nodeArg: callNode.arguments()) {
       //System.out.println("****ARGS "+stack.size()+" | "+nodeArg.getClass());
@@ -302,6 +302,11 @@ public class GenVisitor implements NodeVisitor{
 
       RuntimeTable frameExec = table.clone(false);
       frameExec.clearLocalVars();
+      
+      if (instance instanceof TypeInstance) {
+        TypeInstance typeInstance = (TypeInstance) instance;
+        frameExec.addVariableMap(typeInstance.declaredVars());
+      }
       GenVisitor frameVisitor = new GenVisitor(frameExec, currentFile, runtime);
 
       List<Callable> potentialCallables = instance.getDefinition().findFunction(funcName.content(), args.length);
@@ -333,7 +338,7 @@ public class GenVisitor implements NodeVisitor{
         }
         else {     
           if (callable.argumentsCompatible(args)) {
-            //System.out.println("------CALLING: "+callable.getName());
+            System.out.println("------CALLING: "+callable.getName());
             Instance result = callable.call(frameVisitor, frameExec, args);
             //System.out.println("---AFTER CALL - W: "+((JavaInstance) result).getInstance().getClass());
             //System.out.println("           ACTUAL: "+((JavaInstance) result).getInstance());
@@ -351,7 +356,7 @@ public class GenVisitor implements NodeVisitor{
   public void visit(UnaryNode unaryNode) {
     unaryNode.getExpr().accept(this);
     StackComponent value = stack.pop();
-    if (value instanceof VariableMember) {
+    if (!value.isAnInstance()) {
       VariableMember variableMember = (VariableMember) value;
       stack.push(Operator.performUnaryOperation((JavaInstance) variableMember.getValue(), 
                                                  unaryNode.tokens()[0]));

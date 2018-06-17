@@ -127,6 +127,9 @@ public class JavaClassDefinition extends TypeDefinition{
         else {
           definition.functions.put(functionKey, new ArrayList<Callable>(Arrays.asList(callable)));
         }
+        
+        //adds constructor callable to separate list
+        definition.constructors.put(callable.requiredArgs(), callable);
       }
 
       for(Method method : respClass.getMethods()) {

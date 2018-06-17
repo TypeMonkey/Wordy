@@ -1,15 +1,23 @@
 package wordy.logic.runtime;
 
+import java.awt.geom.RectangularShape;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import wordy.logic.compile.nodes.ASTNode.NodeType;
+import wordy.logic.compile.nodes.MethodCallNode;
 import wordy.logic.compile.structure.FileStructure;
+import wordy.logic.compile.structure.Statement;
+import wordy.logic.compile.structure.Statement.StatementDescription;
 import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.execution.Callable;
+import wordy.logic.runtime.execution.FunctionMember;
 import wordy.logic.runtime.execution.GenVisitor;
+import wordy.logic.runtime.types.JavaClassDefinition;
 import wordy.logic.runtime.types.TypeDefinition;
 
 /**
@@ -46,15 +54,63 @@ public class WordyRuntime {
       RuntimeFile file = instance.getDefinition();
       for(TypeDefinition definition : file.getTypeDefs().values()) {
         TypeDefinition.includeInhertianceInfo(this, definition, instance);
+        
+        //Now, check the super class' constructors.
+        //If all constructors of the parent require at least one argument, then check 
+        //the child's constructors for a super() 
+        
+        System.out.println("----DEF: "+definition.getName()+" | "+definition.getParent());
+        boolean mustCheck = false;
+        Map<Integer, FunctionMember> superConstructors = definition.getParent().getConstructors();
+        for(FunctionMember supCons : superConstructors.values()) {
+          if (supCons.requiredArgs() > 0) {
+            mustCheck = true;
+          }
+        }
+        
+        if (mustCheck) {
+          for(FunctionMember constructor : definition.getConstructors().values()) {
+            Statement [] constStates = constructor.getStatements();
+            if (constStates == null || (constStates.length - constructor.requiredArgs()) < 1) {
+              throw new RuntimeException("The constructor for "+definition.getName()+" that takes "+constructor.requiredArgs()+
+                                         " arguments must first invoke a constructor to its parent, "+definition.getParent().getName());
+            }
+            else {
+              Statement firstStatement = constStates[constructor.requiredArgs()];
+              System.out.println("----first? "+firstStatement.getDescription()+" | "+definition.getName()+" | "+constStates.length);
+              if (firstStatement.getDescription() !=  StatementDescription.REGULAR || 
+                  firstStatement.getExpression().nodeType() != NodeType.FUNC_CALL) {
+                throw new RuntimeException("The constructor for "+definition.getName()+" that takes "+constructor.requiredArgs()+
+                    " arguments must first invoke a constructor to its parent, "+definition.getParent().getName());
+              }
+              else {
+                MethodCallNode callNode = (MethodCallNode) firstStatement.getExpression();
+                if (callNode.getName().content().equals("super") == false) {
+                  throw new RuntimeException("The constructor for "+definition.getName()+" that takes "+constructor.requiredArgs()+
+                      " arguments must first invoke a constructor to its parent, "+definition.getParent().getName());
+                }
+                else {
+                  if (superConstructors.containsKey(callNode.arguments().length) == false) {
+                    throw new RuntimeException("The constructor for "+definition.getName()+" that takes "+constructor.requiredArgs()+
+                        " arguments must first invoke a constructor to its parent, "+definition.getParent().getName());
+                  }
+                }
+              }
+            }
+          }
+        }
+        
         allDefs.add(definition);
       }
     }
     
+    /*
     for(TypeDefinition def: allDefs) {
-      if (def.isChildOf(def.getParent())) {
+      if (def.getParent().isChildOf(def)) {
         throw new RuntimeException("Type Error! "+def.getName()+" is a child of "+def.getParent().getName());
       }
     }
+    */
   }
 
   /**

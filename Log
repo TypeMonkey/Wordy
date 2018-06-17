@@ -205,7 +205,11 @@ Wordy | Date: 5/29/2018
 
 
 
-
+Wordy | Date: 6/17/2018
+* Inheritance has been implemented, but more intricate test cases are required.
+ - I still haven't worked on checking for cyclical inheritance (child is the parent of it's parent situations).
+   This should be pretty trivial to implement, but at this point, I've said that multiple times with no promise haha.
+ 
 
 
 

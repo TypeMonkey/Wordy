@@ -138,7 +138,7 @@ public class RuntimeFile extends TypeDefinition{
       //now add the classes, and add their constructors to the function map
       for(ClassStruct classStruct : structure.getClasses()) {
         TypeDefinition definition = TypeDefinition.constructDefinition(classStruct, runtime, instance);
-        typeDefs.put(definition.getName(), definition);
+        typeDefs.put(definition.getSimpleName(), definition);
         
         for(List<Callable> classFunctions : definition.getFunctions().values()) {
           for(Callable classFunc : classFunctions) {

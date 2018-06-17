@@ -47,7 +47,7 @@ public class Main {
     String mainSourceFile = "Flood";
     System.out.println("      --Invoking main function in "+mainSourceFile+" --      ");
     System.out.println();
-    //runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
+    runtime.execute("Flood", 1, JavaInstance.wrapInstance("hello"));
     
   }
   

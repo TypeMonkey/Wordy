@@ -4,14 +4,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import wordy.logic.common.FunctionKey;
 import wordy.logic.compile.Token;
 import wordy.logic.compile.structure.ClassStruct;
 import wordy.logic.compile.structure.Function;
+import wordy.logic.compile.structure.Statement;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
@@ -35,6 +38,7 @@ public class TypeDefinition{
     
   protected Map<String, VariableMember> variables;
   protected Map<FunctionKey, List<Callable>> functions;
+  protected Map<Integer, FunctionMember> constructors; //constructors mapped by the amount of arguments they accept
   protected TypeDefinition parent;
     
   protected String name;
@@ -44,15 +48,17 @@ public class TypeDefinition{
   protected TypeDefinition(String name,
                            TypeDefinition parent,
                            Map<String, VariableMember> variables, 
-                           Map<FunctionKey, List<Callable>> functions) {
+                           Map<FunctionKey, List<Callable>> functions,
+                           Map<Integer, FunctionMember> constructors) {
     this.name = name;
     this.variables = variables;
     this.functions = functions;
     this.parent = parent;
+    this.constructors = constructors;
   }
   
   protected TypeDefinition(String name) {
-    this(name, null, new LinkedHashMap<>(), new HashMap<>());
+    this(name, null, new LinkedHashMap<>(), new HashMap<>(), new HashMap<>());
   }
   
   public String getName() {
@@ -76,16 +82,28 @@ public class TypeDefinition{
     return splitted[splitted.length-1];
   }
   
+  public FunctionMember findConstructor(int argc) {
+    return constructors.get(argc);
+  }
+  
   public List<Callable> findFunction(String name, int argc) {
     return findFunction(new FunctionKey(name, argc));
   }
   
   public List<Callable> findFunction(FunctionKey key) {
-    return functions.get(key);
+    if (functions.containsKey(key)) {
+      return functions.get(key);
+    }
+    
+    return parent.findFunction(key);
   }
   
   public VariableMember findVariable(String name) {
-    return variables.get(name);
+    if (variables.containsKey(name)) {
+      return variables.get(name);
+    }
+    
+    return parent.findVariable(name);
   }
   
   public Map<FunctionKey, List<Callable>> getFunctions() {
@@ -94,6 +112,10 @@ public class TypeDefinition{
   
   public Map<String, VariableMember> getVariables(){
     return new LinkedHashMap<>(variables);
+  }
+  
+  public Map<Integer, FunctionMember> getConstructors(){
+    return constructors;
   }
   
   public TypeDefinition getParent() {
@@ -109,7 +131,7 @@ public class TypeDefinition{
   }
     
   /**
-   * Checks if the given TypeDefinition is a child of this TypeDefinition
+   * Checks if the given TypeDefinition is a superclass to this TypeDefinition
    * @param definition - the TypeDefinition to check
    * @return 
    */
@@ -149,6 +171,7 @@ public class TypeDefinition{
                                                  definition, 
                                                  currentFile, 
                                                  runtime);
+        definition.constructors.put(functionMember.requiredArgs(), functionMember);
         constructorFound = true;
       }
       else {
@@ -167,18 +190,21 @@ public class TypeDefinition{
     if (!constructorFound) {
       ConstructorFunction defaultCons = new ConstructorFunction(struct.getName().content(), 
                                                                 0, 
-                                                                null, 
+                                                                new Statement[0], 
                                                                 definition, 
                                                                 currentFile, 
                                                                 runtime);
-      definition.functions.put(new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs()), 
-                               Arrays.asList(defaultCons));
+      FunctionKey functionKey = new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs());
+      definition.functions.put(functionKey, Arrays.asList(defaultCons));
+      definition.constructors.put(defaultCons.requiredArgs(), defaultCons);
+      System.out.println("--------->>>ADDED DEAFULE CONSTRUCTOR FOR "+definition.name+" | "+defaultCons.requiredArgs());
     }
     
     return definition;
   }
   
   public static void includeInhertianceInfo(WordyRuntime runtime, TypeDefinition definition, FileInstance current) {
+    System.out.println("------!FOR CLASS: "+definition.getName()+"!--------");
     ClassStruct originalStruct = definition.getAttachedStruct();
     
     TypeDefinition parent = null;
@@ -219,10 +245,15 @@ public class TypeDefinition{
           parent = fileInstance.getDefinition().getTypeDefs().get(parentFull[2].content());
           if (parent == null) {
             foundParent = false;
+            System.out.println(fileInstance.getDefinition().getTypeDefs().keySet());
+            System.out.println("*****NOT FOUND: "+parentFull[2].content());
           }
-          foundParent = true;
+          else {
+            foundParent = true;
+          }
         }
       }
+      
       
       //assume this parent is a Java class (the full name is their binary name). If so, find it.
       if (foundParent == false) {
@@ -240,8 +271,8 @@ public class TypeDefinition{
     }
     
     //set found parent to definition's parent
+    System.out.println("----PARENT FOUND? "+parent+" | "+Arrays.toString(originalStruct.getParentClass()));
     definition.parent = parent;
-    
   }
   
 }

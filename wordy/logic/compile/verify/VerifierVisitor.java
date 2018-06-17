@@ -58,7 +58,8 @@ public class VerifierVisitor implements NodeVisitor{
     Token iden = node.getTokenName();
     if (prior == null || prior == Prior.MEM_ACC || prior == Prior.IDEN) {
       Variable variable = table.getVariable(iden.content());
-      if (!iden.content().equals(ReservedSymbols.THIS)) {
+      if (!iden.content().equals(ReservedSymbols.THIS) && 
+          !iden.content().equals(ReservedSymbols.SUPER)) {
         if (variable == null) {
           if (className == null) {
             System.out.println("---FINDING: "+iden.content()+" | "+table.getFiles()+" | "+table.getFileStruct(iden.content()));

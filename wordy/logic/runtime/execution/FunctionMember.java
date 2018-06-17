@@ -78,7 +78,7 @@ public class FunctionMember extends Callable{
         //System.out.println("----PLACING VAR: "+variableMember.getName() + "|| " );
         if(table.placeLocalVar(variableMember)) {
           throw new RuntimeException("Duplicate variable '"+variableMember.getName()+"' at line "+
-                                       variable.getName().lineNumber());
+                                       variable.getName().lineNumber()+", "+currentFile.getName());
         }
         else {
           /*

@@ -11,11 +11,13 @@ let f = 90;
 
 class Ob : Flood.Sample{
 	
-	let k;
+	let instance;
 	
 	Ob(a){
-	  k = a;
+	  super(a);
+	  instance = a + 1;
 	}
+	
 	
 }
 
