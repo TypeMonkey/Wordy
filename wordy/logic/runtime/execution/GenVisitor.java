@@ -205,6 +205,8 @@ public class GenVisitor implements NodeVisitor{
           throw new NullPointerException("A null instance was referred to, at line: "
                                                                             +memberAccessNode.tokens()[0].lineNumber());
         }
+        
+        System.out.println("---RETRIEVING: "+memberAccessNode.getMemberName().content());
         VariableMember instanceMem = variable.getValue().retrieveVariable(memberAccessNode.getMemberName().content());
         //System.out.println("----Var member: "+instanceMem+" | "+instanceMem.getType());
         if (instanceMem == null) {

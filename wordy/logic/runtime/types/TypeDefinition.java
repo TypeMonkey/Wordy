@@ -95,6 +95,7 @@ public class TypeDefinition{
       return functions.get(key);
     }
     
+    System.out.println("IS NULL? "+(parent == null)+" "+(getAttachedStruct() == null)+" | "+getClass().getName()+" | "+key+" | "+name);
     return parent.findFunction(key);
   }
   
@@ -136,8 +137,9 @@ public class TypeDefinition{
    * @return 
    */
   public boolean isChildOf(TypeDefinition definition) {
-    return (parent.equals(definition) || parent.isChildOf(definition));
+    return (equals(definition) || parent.equals(definition) || parent.isChildOf(definition));
   }
+  
   
   /**
    * Creates a TypeDefinition instance based off a ClassStruct.

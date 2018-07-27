@@ -6,19 +6,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.print.attribute.standard.Sides;
+
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.TypeDefinition;
 
 public class TypeInstance extends Instance{
     
+  private Instance superInstance;
+  
   private TypeInstance(TypeDefinition baseClass, Instance superInstance) {
     super(baseClass);
     
+    this.superInstance = superInstance;
+    
     VariableMember thisVar = new VariableMember("this", this, null, true);
     instanceVars.put(thisVar.getName(), thisVar);
-    
-    VariableMember superVar = new VariableMember("super", superInstance, null, true);
-    instanceVars.put(superVar.getName(), superVar);
   }
   
   private void copyInstanceVars() {
@@ -34,15 +37,13 @@ public class TypeInstance extends Instance{
       return instanceVars.get(memberName);
     }
     
-    VariableMember superVar = instanceVars.get("super");
-    return superVar.getValue().retrieveVariable(memberName);
+    System.out.println("---SUPER NULL? "+(superInstance==null)+" | "+definition.getName());
+    return superInstance.retrieveVariable(memberName);
   }
   
-  public Map<String, VariableMember> declaredVars(){
-    VariableMember superVar = instanceVars.get("super");
-    
+  public Map<String, VariableMember> declaredVars(){    
     Set<String> currentKeySet = new HashSet<>(instanceVars.keySet());
-    currentKeySet.addAll(new HashSet<>(superVar.getValue().varMap().keySet()));
+    currentKeySet.addAll(new HashSet<>(superInstance.varMap().keySet()));
     
     HashMap<String, VariableMember> allVars = new HashMap<>();
     for(String varName : currentKeySet) {
@@ -50,7 +51,7 @@ public class TypeInstance extends Instance{
         allVars.put(varName, instanceVars.get(varName));
       }
       else {
-        allVars.put(varName, superVar.getValue().retrieveVariable(varName));
+        allVars.put(varName, superInstance.retrieveVariable(varName));
       }
     }
     return allVars;

@@ -58,8 +58,7 @@ public class VerifierVisitor implements NodeVisitor{
     Token iden = node.getTokenName();
     if (prior == null || prior == Prior.MEM_ACC || prior == Prior.IDEN) {
       Variable variable = table.getVariable(iden.content());
-      if (!iden.content().equals(ReservedSymbols.THIS) && 
-          !iden.content().equals(ReservedSymbols.SUPER)) {
+      if (!iden.content().equals(ReservedSymbols.THIS)) {
         if (variable == null) {
           if (className == null) {
             System.out.println("---FINDING: "+iden.content()+" | "+table.getFiles()+" | "+table.getFileStruct(iden.content()));
@@ -88,23 +87,25 @@ public class VerifierVisitor implements NodeVisitor{
         }    
         //System.out.println("*-*VAR FOUND");
       }
-      else if (prior == Prior.FUNC) {
-        Function function = table.getFunction(iden.content(), argAmnt);
-        if (function == null) {
-          System.out.println("---SYS FUNCS: "+table.getSystemFunctions());
-          if (table.systemFunctionExists(iden.content(), argAmnt) == false) {
-            if (className == null) {
-              throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
-            }
-            //System.out.println("*****CHECKING CLASS");
-            ClassStruct struct = table.getClass(className.content());
-            if (struct == null) {
-              throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
-            }
-            
-            function = struct.getFunction(iden.content(),argAmnt);
-            if (function == null) {
-              throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+      else if (prior == Prior.FUNC ) {
+        if (!iden.content().equals(ReservedSymbols.SUPER)) {
+          Function function = table.getFunction(iden.content(), argAmnt);
+          if (function == null) {
+            System.out.println("---SYS FUNCS: "+table.getSystemFunctions());
+            if (table.systemFunctionExists(iden.content(), argAmnt) == false) {
+              if (className == null) {
+                throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+              }
+              //System.out.println("*****CHECKING CLASS");
+              ClassStruct struct = table.getClass(className.content());
+              if (struct == null) {
+                throw new ParseError("Can't find class '"+className.content()+"' ", iden.lineNumber());
+              }
+              
+              function = struct.getFunction(iden.content(),argAmnt);
+              if (function == null) {
+                throw new ParseError("Can't find function '"+iden.content()+"' ", iden.lineNumber());
+              }
             }
           }
         }

@@ -187,6 +187,39 @@ public class RuntimeFile extends TypeDefinition{
     return instance;
   }
   
+  /**
+   * This method will always return false.
+   * 
+   * That's because files can't extend each other, and aren't type definitions themselves
+   */
+  public boolean isChildOf(TypeDefinition definition) {
+    return false;
+  }
+  
+  public FunctionMember findConstructor(int argc) {
+    return constructors.get(argc);
+  }
+  
+  public List<Callable> findFunction(String name, int argc) {
+    return findFunction(new FunctionKey(name, argc));
+  }
+  
+  public List<Callable> findFunction(FunctionKey key) {
+    if (functions.containsKey(key)) {
+      return functions.get(key);
+    }
+    
+    return null;
+  }
+  
+  public VariableMember findVariable(String name) {
+    if (variables.containsKey(name)) {
+      return variables.get(name);
+    }
+    
+    return null;
+  }
+  
   public FileInstance getInstance() {
     return instance;
   }

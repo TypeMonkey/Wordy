@@ -66,8 +66,19 @@ public class JavaClassDefinition extends TypeDefinition{
   }
   
   public boolean isChildOf(TypeDefinition definition) {
-    if (super.isChildOf(definition)) {
+    if (equals(definition)) {
+      //A type is a parent of itself
       return true;
+    }
+    else if (respClass.getSuperclass() == null) {
+      //This means that this current type definition is Object class
+      return false;
+    }
+    else {
+      JavaClassDefinition parentClass = JavaClassDefinition.defineClass(respClass.getSuperclass());
+      if (parentClass.isChildOf(definition)) {
+        return true;
+      }
     }
     
     for(JavaClassDefinition interDef : interfaces) {

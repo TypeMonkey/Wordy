@@ -2,13 +2,7 @@ import wordy.logic.Main;
 import java.util.Random;
 import java.util.Scanner;
 
-class Sample : Parent{
-	
-	let k;
-	
-	Sample(a){
-	  k = a;
-	}
+class Sample : Flood.Parent{
 	
 	
 	
@@ -16,16 +10,21 @@ class Sample : Parent{
 
 class Parent{
 
-	function call(){
-		return "from grandpa";
-	}
+	
 
 }
 
+function boy(){
+	throw Exception();
+}
+
 function main(a){
-  a = Dry.Ob(10);
-  println(a.k);
-  println(a.call());
+  try{
+  	boy();
+  }
+  catch(Exception e){
+    print("In catch!!");
+  }
 }
 
 

@@ -66,9 +66,9 @@ public class ConstructorFunction extends FunctionMember{
      * If the first statement isn't a super constructor invocation,
      * then get the no-arg constructor of the parent and invoke that.
      */
+    TypeDefinition parentDef = definition.getParent();
     if (statements != null && (statements.length - argAmnt) >= 1) {
       Statement first = statements[argAmnt];
-      TypeDefinition parentDef = definition.getParent();
       if (first.getExpression().nodeType() == NodeType.FUNC_CALL) {
         MethodCallNode superInvoke = (MethodCallNode) first.getExpression();
         if (superInvoke.getName().content().equals("super")) {
@@ -113,6 +113,13 @@ public class ConstructorFunction extends FunctionMember{
         System.out.println("---NULL? "+parentConstructor+" | "+parentDef.getName());
         superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);
       }
+    }
+    else {
+      //empty constructor: either explicitly empty, or implicitly included
+      //invoke non-arg constructor
+      FunctionMember parentConstructor = parentDef.findConstructor(0);
+      System.out.println("---NULL? "+parentConstructor+" | "+parentDef.getName());
+      superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);
     }
     
     TypeInstance typeInstance = TypeInstance.newInstance(definition, superInstance);

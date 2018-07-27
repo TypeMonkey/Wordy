@@ -29,6 +29,15 @@ public class CatchBlock extends StatementBlock{
       this.nameArr = nameArr;
     }   
     
+    public String getName() {
+      String x = "";
+      for(Token token : nameArr) {
+        x += token.content();
+      }
+      
+      return x;
+    }
+    
     public Token [] getNameArray() {
       return nameArr;
     }

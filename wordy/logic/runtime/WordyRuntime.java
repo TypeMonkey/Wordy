@@ -1,9 +1,7 @@
 package wordy.logic.runtime;
 
-import java.awt.geom.RectangularShape;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import wordy.logic.compile.nodes.ASTNode.NodeType;
@@ -14,10 +12,10 @@ import wordy.logic.compile.structure.Statement.StatementDescription;
 import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.errors.ThrowStatementResult;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.FunctionMember;
 import wordy.logic.runtime.execution.GenVisitor;
-import wordy.logic.runtime.types.JavaClassDefinition;
 import wordy.logic.runtime.types.TypeDefinition;
 
 /**
@@ -104,13 +102,13 @@ public class WordyRuntime {
       }
     }
     
-    /*
+    
     for(TypeDefinition def: allDefs) {
       if (def.getParent().isChildOf(def)) {
         throw new RuntimeException("Type Error! "+def.getName()+" is a child of "+def.getParent().getName());
       }
     }
-    */
+    
   }
 
   /**
@@ -150,19 +148,33 @@ public class WordyRuntime {
       
       RuntimeTable table = new RuntimeTable(varMaps, funcMaps, orgFile.getJavaClassMap() );
       GenVisitor visitor = new GenVisitor(table, fileInstance, this);
-      Instance ret = main.call(visitor, table, constants);
       
-      if (ret != null) {
-        if (ret instanceof JavaInstance) {
-          JavaInstance instance = (JavaInstance) ret;
-          return instance.getInstance();
+      try {
+        Instance ret = main.call(visitor, table, constants);
+        if (ret != null) {
+          if (ret instanceof JavaInstance) {
+            JavaInstance instance = (JavaInstance) ret;
+            return instance.getInstance();
+          }
         }
+        return ret;
+        
+      } catch (ThrowStatementResult e) {
+        System.err.println("Runtime Error: "+e.getMessage());
       }
-      return ret;
+      
+      return null;
     }
   }
   
   public FileInstance findFile(String name) {
     return files.get(name);
+  }
+  
+  public TypeDefinition findTypeDef(String fileName, String className) {
+    if (files.containsKey(fileName)) {
+      return files.get(fileName).getDefinition().getTypeDefs().get(className);
+    }
+    return null;
   }
 }

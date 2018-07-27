@@ -1,8 +1,11 @@
 package wordy.logic.runtime.execution;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import wordy.logic.compile.structure.CatchBlock;
+import wordy.logic.compile.structure.CatchBlock.ExceptionName;
 import wordy.logic.compile.structure.ForLoopBlock;
 import wordy.logic.compile.structure.IfBlock;
 import wordy.logic.compile.structure.Statement;
@@ -11,7 +14,7 @@ import wordy.logic.compile.structure.StatementBlock;
 import wordy.logic.compile.structure.Variable;
 import wordy.logic.compile.structure.WhileLoopBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
-import wordy.logic.runtime.RuntimeFile;
+import wordy.logic.compile.structure.TryBlock;
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
@@ -19,6 +22,11 @@ import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
+import wordy.logic.runtime.errors.ThrowStatementResult;
+import wordy.logic.runtime.errors.TypeError;
+import wordy.logic.runtime.errors.UnfoundClassException;
+import wordy.logic.runtime.types.JavaClassDefinition;
+import wordy.logic.runtime.types.TypeDefinition;
 
 /**
  * Represents a callable function.
@@ -29,6 +37,8 @@ public class FunctionMember extends Callable{
 
   protected Statement [] statements;
   protected FileInstance currentFile;
+  
+  private ThrowStatementResult lastThrow;
   private boolean lastIf;
   
   /**
@@ -67,6 +77,9 @@ public class FunctionMember extends Callable{
         }
         else if (result.gotContinue()) {
           continue;
+        }
+        else if (result.gotThrow()) {
+          throw new ThrowStatementResult(result.getReturnedObject());
         }
         else if (result.gotReturn()) {
           return result.getReturnedObject();
@@ -133,6 +146,28 @@ public class FunctionMember extends Callable{
           }      
         }
       }
+      else if (statement.getDescription() == StatementDescription.THROW) {
+        //check if evaluated type is a child of Java.lang.throwable
+        statement.getExpression().accept(visitor);
+        StackComponent checkPeeked = visitor.peekStack();
+        if (checkPeeked instanceof Instance) {
+          Instance actualInstance = (Instance) checkPeeked;
+          if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
+            throw new ThrowStatementResult(actualInstance);
+          }
+          throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
+                                   statement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
+        }
+        else {
+          VariableMember peekedVar = (VariableMember) checkPeeked;
+          Instance actualInstance = peekedVar.getValue();
+          if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
+            throw new ThrowStatementResult(actualInstance);
+          }
+          throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
+                                   statement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
+        }      
+      }
       else {
         //System.out.println("---EXEC NORM EXPR: "+statement.getExpression().getClass().getName());
         statement.getExpression().accept(visitor);
@@ -153,8 +188,97 @@ public class FunctionMember extends Callable{
     else if (block.blockType() == BlockType.IF) {
       return executeIf(visitor, executor, (IfBlock) block);
     }
+    else if (block.blockType() == BlockType.TRY) {
+      return executeTry(visitor, executor, (TryBlock) block);
+    }
+    else if (block.blockType() == BlockType.CATCH) {
+      return executeCatch(visitor, executor, (CatchBlock) block);
+    }
     else {
       return executeBlock(visitor, executor, block.getStatements());
+    }
+  }
+  
+  private BlockExecResult executeCatch(GenVisitor visitor, RuntimeTable executor, CatchBlock catchBlock) {
+    if (lastThrow != null) {
+      ArrayList<TypeDefinition> exceptionTypes = new ArrayList<>();
+      for(ExceptionName exName : catchBlock.getExceptionTypes()) {
+        if (exName.getNameArray().length == 1) {
+          //simple name. Check for name in file's type def map.
+          //If not present, check for imports
+          
+          if (currentFile.getDefinition().getTypeDefs().containsKey(exName.getName())) {
+            exceptionTypes.add(currentFile.getDefinition().getTypeDefs().get(exName.getName()));
+          }
+          else if (currentFile.getDefinition().getJavaClassMap().containsKey(exName.getName())) {
+            String fullClassName = currentFile.getDefinition().getJavaClassMap().get(exName.getName());
+            try {
+              Class<?> actualClass = Class.forName(fullClassName);
+              exceptionTypes.add(JavaClassDefinition.defineClass(actualClass));
+            } catch (ClassNotFoundException e) {
+              throw new UnfoundClassException(fullClassName, currentFile.getName(), catchBlock.getBlockSig().lineNumber());
+            }
+          }
+        }
+        else if (exName.getNameArray().length == 3) {
+          //Can be the full binary name of a Wordy class file: filename.classname
+          //or can be the binary name of a Java class, but it only has 3 things in it
+          //check for wordy class first
+          
+          TypeDefinition definition = runtime.findTypeDef(exName.getNameArray()[0].content(), 
+                                                          exName.getNameArray()[1].content());
+          if (definition == null) {
+            String fullClassName = exName.getName();
+            try {
+              Class<?> actualClass = Class.forName(fullClassName);
+              exceptionTypes.add(JavaClassDefinition.defineClass(actualClass));
+            } catch (ClassNotFoundException e) {
+              throw new UnfoundClassException(fullClassName, currentFile.getName(), catchBlock.getBlockSig().lineNumber());
+            }
+          }
+          else {
+            exceptionTypes.add(definition);
+          }
+        }
+        else if (exName.getNameArray().length > 3) {
+          //this is a full-on java class
+          try {
+            Class<?> actualClass = Class.forName(exName.getName());
+            exceptionTypes.add(JavaClassDefinition.defineClass(actualClass));
+          } catch (ClassNotFoundException e) {
+            throw new UnfoundClassException(exName.getName(), currentFile.getName(), catchBlock.getBlockSig().lineNumber());
+          }
+        }
+      }
+      
+      TypeDefinition actualThrowDef = lastThrow.getThrowInstance().getDefinition();
+      for(TypeDefinition definition : exceptionTypes) {
+        if (actualThrowDef.equals(definition) || actualThrowDef.isChildOf(definition)) {
+          executor = executor.clone(true);
+          VariableMember exceptionVar = new VariableMember(catchBlock.getVariableName().content(), false);
+          exceptionVar.setValue(lastThrow.getThrowInstance());
+          executor.placeLocalVar(exceptionVar);
+          
+          lastThrow = null;
+          return executeBlock(new GenVisitor(executor, currentFile, runtime), executor, catchBlock.getStatements());
+        }
+      }
+      
+      throw lastThrow;
+    }
+    else {
+      return new BlockExecResult(BlockExecResult.NORMAL_END, null);
+    }
+   
+  }
+  
+  private BlockExecResult executeTry(GenVisitor visitor, RuntimeTable executor, TryBlock tryBlock) {
+    try {
+      return executeBlock(visitor, executor, tryBlock.getStatements());
+    }
+    catch (ThrowStatementResult e) {
+      lastThrow = e;
+      return new BlockExecResult(BlockExecResult.THROWABLE_THROWN, e.getThrowInstance());
     }
   }
   
@@ -386,6 +510,28 @@ public class FunctionMember extends Callable{
           return result;
         }
       }
+      else if (loopStatement.getDescription() == StatementDescription.THROW) {
+        //check if evaluated type is a child of Java.lang.throwable
+        loopStatement.getExpression().accept(visitor);
+        StackComponent checkPeeked = visitor.peekStack();
+        if (checkPeeked instanceof Instance) {
+          Instance actualInstance = (Instance) checkPeeked;
+          if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
+            throw new ThrowStatementResult(actualInstance);
+          }
+          throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
+                                   loopStatement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
+        }
+        else {
+          VariableMember peekedVar = (VariableMember) checkPeeked;
+          Instance actualInstance = peekedVar.getValue();
+          if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
+            throw new ThrowStatementResult(actualInstance);
+          }
+          throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
+                                   loopStatement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
+        }      
+      }
       else {
         loopStatement.getExpression().accept(visitor);
       }
@@ -428,6 +574,10 @@ public class FunctionMember extends Callable{
     
     public Instance getReturnedObject() {
       return got;
+    }
+    
+    public boolean gotThrow() {
+      return encounter == THROWABLE_THROWN;
     }
     
     public boolean gotReturn() {
