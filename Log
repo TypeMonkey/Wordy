@@ -211,6 +211,11 @@ Wordy | Date: 6/17/2018
    This should be pretty trivial to implement, but at this point, I've said that multiple times with no promise haha.
 
 
+Wordy | Date: 9/16/2018
+* Inheritance checking should be correct now.
+* Fixed while-loop compatibility with single values. 
+  See WhileLoopFormatter.java
+
 
 
 

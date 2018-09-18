@@ -33,7 +33,7 @@ public class BinaryOpNode extends ASTNode{
     this.leftOperand = left;
     this.rightOperand = right;
   }
-  
+    
   public String getOperator() {
     return tokens[0].content();
   }

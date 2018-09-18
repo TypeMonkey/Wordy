@@ -22,19 +22,6 @@ public abstract class Instance extends StackComponent{
     this.definition = baseClass;
     instanceVars = new LinkedHashMap<>();
   }
-  
-  /**
-   * Checks if two instances are equal (using '==')
-   * 
-   * This is mainly for the GenVisitor to use when encountering 
-   * the '==' operator
-   * 
-   * @param instance
-   * @return
-   */
-  public boolean equality(Instance instance) {
-    return this == instance;
-  }
 
   public VariableMember retrieveVariable(String memberName) {
     return instanceVars.get(memberName);

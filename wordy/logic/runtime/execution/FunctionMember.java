@@ -16,13 +16,14 @@ import wordy.logic.compile.structure.WhileLoopBlock;
 import wordy.logic.compile.structure.StatementBlock.BlockType;
 import wordy.logic.compile.structure.TryBlock;
 import wordy.logic.runtime.RuntimeTable;
+import wordy.logic.runtime.TypeChecks;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
-import wordy.logic.runtime.errors.ThrowStatementResult;
+import wordy.logic.runtime.errors.InvocationException;
 import wordy.logic.runtime.errors.TypeError;
 import wordy.logic.runtime.errors.UnfoundClassException;
 import wordy.logic.runtime.types.JavaClassDefinition;
@@ -38,7 +39,7 @@ public class FunctionMember extends Callable{
   protected Statement [] statements;
   protected FileInstance currentFile;
   
-  private ThrowStatementResult lastThrow;
+  private InvocationException lastThrow;
   private boolean lastIf;
   
   /**
@@ -79,7 +80,7 @@ public class FunctionMember extends Callable{
           continue;
         }
         else if (result.gotThrow()) {
-          throw new ThrowStatementResult(result.getReturnedObject());
+          throw new InvocationException(result.getReturnedObject());
         }
         else if (result.gotReturn()) {
           return result.getReturnedObject();
@@ -153,7 +154,7 @@ public class FunctionMember extends Callable{
         if (checkPeeked instanceof Instance) {
           Instance actualInstance = (Instance) checkPeeked;
           if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
-            throw new ThrowStatementResult(actualInstance);
+            throw new InvocationException(actualInstance);
           }
           throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
                                    statement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
@@ -162,7 +163,7 @@ public class FunctionMember extends Callable{
           VariableMember peekedVar = (VariableMember) checkPeeked;
           Instance actualInstance = peekedVar.getValue();
           if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
-            throw new ThrowStatementResult(actualInstance);
+            throw new InvocationException(actualInstance);
           }
           throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
                                    statement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
@@ -276,7 +277,7 @@ public class FunctionMember extends Callable{
     try {
       return executeBlock(visitor, executor, tryBlock.getStatements());
     }
-    catch (ThrowStatementResult e) {
+    catch (InvocationException e) {
       lastThrow = e;
       return new BlockExecResult(BlockExecResult.THROWABLE_THROWN, e.getThrowInstance());
     }
@@ -323,6 +324,8 @@ public class FunctionMember extends Callable{
          lastIf = (boolean) instance.getInstance();
        }      
        
+       //System.out.println("---IF VALUE CONDIT: "+lastIf);
+       
        if(lastIf) {
          return executeBlock(visitor, executor, ifBlock.getStatements());
        }
@@ -331,16 +334,18 @@ public class FunctionMember extends Callable{
   }
   
   private BlockExecResult executeWhile(GenVisitor visitor, RuntimeTable executor, WhileLoopBlock whileLoop) {
+    //System.out.println("----EXECUTING WHILE----");
     whileLoop.getCondition().getExpression().accept(visitor);
     boolean peeked = false;
     StackComponent checkPeeked = visitor.peekStack();
     if (checkPeeked instanceof JavaInstance) {
-      peeked = (boolean) ((JavaInstance) checkPeeked).getInstance();
+      peeked = TypeChecks.getBooleanEquivalent(((JavaInstance) checkPeeked).getInstance());
+      //System.out.println("----RESULTS OF COND: "+peeked);
     }
     else {
       VariableMember peekedVar = (VariableMember) checkPeeked;
       JavaInstance instance = (JavaInstance) peekedVar.getValue();
-      peeked = (boolean) instance.getInstance();
+      peeked = TypeChecks.getBooleanEquivalent(instance.getInstance());
     }      
     
     while(peeked) {      
@@ -517,7 +522,7 @@ public class FunctionMember extends Callable{
         if (checkPeeked instanceof Instance) {
           Instance actualInstance = (Instance) checkPeeked;
           if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
-            throw new ThrowStatementResult(actualInstance);
+            throw new InvocationException(actualInstance);
           }
           throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
                                    loopStatement.getExpression().tokens()[0].lineNumber(), currentFile.getName());
@@ -526,7 +531,7 @@ public class FunctionMember extends Callable{
           VariableMember peekedVar = (VariableMember) checkPeeked;
           Instance actualInstance = peekedVar.getValue();
           if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Throwable.class))) {
-            throw new ThrowStatementResult(actualInstance);
+            throw new InvocationException(actualInstance);
           }
           throw new TypeError("throw exception doesn't evaluate to a throwable type! ", 
                                    loopStatement.getExpression().tokens()[0].lineNumber(), currentFile.getName());

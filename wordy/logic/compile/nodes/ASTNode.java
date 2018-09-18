@@ -38,6 +38,28 @@ public abstract class ASTNode {
   public abstract void accept(NodeVisitor visitor);
   
   /**
+   * Returns the Token that symbolizes the location of this node on the source code
+   * 
+   * For example, let's say we have a MethodCallNode that represents
+   * the function call: 
+   * 
+   * print("hello"); 
+   * 
+   * A Token that makes up this MethodCallNode is the Identifier 'print'. 
+   * 
+   * We can set this Token to be the location Token so that when an event occurs at that
+   * Node, we can refer to this Token's line number for reference.
+   * 
+   * This is useful for parsing and runtime errors.
+   *  
+   * 
+   * @return the Token that symbolizes the location of this node on the source code
+   */
+  public Token locationToken() {
+    return tokens[0];
+  }
+  
+  /**
    * Gets the tokens composing this node
    * @return the tokens composing this node
    */

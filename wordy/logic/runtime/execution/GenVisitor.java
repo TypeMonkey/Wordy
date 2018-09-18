@@ -328,7 +328,7 @@ public class GenVisitor implements NodeVisitor{
           javaCallable.setTarget((JavaInstance) instance);
           
           //System.out.println("----CALLING: "+javaCallable.getName()+" | "+((JavaInstance) instance).getInstance());
-          //System.out.println("**** first? "+(instance == null)+"   arg size: "+javaArgs.length+" | "+(javaArgs[0] == null));
+          //System.out.println("**** first? "+(instance == null)+"   arg: |"+args[0].toString()+"|" + "|"+instance+"|");
           if (javaCallable.argumentsCompatible(args)) {
             Instance result = javaCallable.call(frameVisitor, frameExec, args);
             //System.out.println("---AFTER CALL: "+((JavaInstance) result).getInstance().getClass());
@@ -340,7 +340,7 @@ public class GenVisitor implements NodeVisitor{
         }
         else {     
           if (callable.argumentsCompatible(args)) {
-            System.out.println("------CALLING: "+callable.getName());
+            //System.out.println("------CALLING: "+callable.getName());
             Instance result = callable.call(frameVisitor, frameExec, args);
             //System.out.println("---AFTER CALL - W: "+((JavaInstance) result).getInstance().getClass());
             //System.out.println("           ACTUAL: "+((JavaInstance) result).getInstance());

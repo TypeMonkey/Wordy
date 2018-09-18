@@ -13,7 +13,7 @@ import wordy.logic.compile.structure.Statement.StatementDescription;
 
 /**
  * Formats a sequence of Tokens that are terminated by
- * a semicolon, or parenthesis
+ * a semicolon
  * @author Jose Guaro
  *
  */
@@ -21,6 +21,10 @@ public class StatementFormatter {
   
   private List<Token> tokens;
   
+  /**
+   * Constructs a StatementFormatter
+   * @param tokens - the List of Tokens to format. 
+   */
   public StatementFormatter(List<Token> tokens) {
     this.tokens = tokens;
   }
@@ -62,9 +66,12 @@ public class StatementFormatter {
         tokens.remove(0);
         description = StatementDescription.THROW;
       }
+      
       if (tokens.size() == 1) {
+        System.out.println(tokens.get(0).content());
         throw new ParseError("Invalid statement", tokens.get(0).lineNumber());
       }
+      
       Parser parser = new Parser(tokens);
       return new Statement(parser.parse(), description);
     }

@@ -19,11 +19,17 @@ function boy(){
 }
 
 function main(a){
-  try{
-  	boy();
-  }
-  catch(Exception e){
-    print("In catch!!");
+  println("hello");
+  while(true){
+  	let in = input();
+  	
+  	if(in.equals("end")){
+  	  	println("bye bye");
+  	  	return "end";
+  	}
+  	else{
+  		println("Echoed! "+in);
+  	}  	
   }
 }
 

@@ -1,6 +1,7 @@
 package wordy.logic.runtime.execution;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -36,7 +37,12 @@ public class JavaCallable extends FunctionMember{
    *           (NOTE: if the java method is an instance or static method, the first Instance is interpreted
    *                  to be a JavaInstance that this method is being invoked on.
    *                  If it's a static method, the static rep. of the Java class is seen as that instance)
-   * @return the result of 
+   * @return the result of this call. 
+   *         If this Java Method returns an Instance object (meaning an instance of wordy.logic.runtime.components.Instance),
+   *         then this method will return just that object itself
+   *         
+   *         Else, if this method returns a pure Java Object (not an Intance instance), then that object will be wrapped
+   *         internally so it's compatible with Wordy code
    */
   @Override
   public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) {
@@ -55,9 +61,18 @@ public class JavaCallable extends FunctionMember{
 
     for(int i = 0; i < types.length; i++) {
       Instance current = args[i];
-      //System.out.println("---CURRENT INSTANCE!!! "+current);
-      if (types[i].isAssignableFrom(Instance.class)) {
-        //java method actually wants an Instance
+      //System.out.println("---CURRENT INSTANCE!!! "+types[i]);
+      if (types[i].isAssignableFrom(Instance.class) && types[i] != Object.class) {
+        /*
+         * java method actually wants an Instance instance
+         * 
+         * But what if the desired argument type is a java.lang.Object (any Java object really).
+         * 
+         * In that case, we should still choose to send the actual instance, instead of the Instance instance.
+         * This is helpful also when Object.equals() is called. 
+         */
+        
+        //System.out.println("---actual Instance instance");
         realArgs[i] = current;
       }
       else {
@@ -69,6 +84,7 @@ public class JavaCallable extends FunctionMember{
             //    " | "+types[i].isInstance(actualInstance)+" | "+(actualInstance != null));
             throw new IllegalArgumentException("Method '"+method.getName()+"' was given the wrong argument types");
           }
+          //System.out.println("----UNPEELED TYPE: "+actualInstance.getClass());
           realArgs[i] = actualInstance;
         }
         else {
@@ -84,6 +100,9 @@ public class JavaCallable extends FunctionMember{
     if (constructor != null) {
       try {
         result = constructor.newInstance(realArgs);
+      } catch (InvocationTargetException e) {
+        // Exception thrown inside callable
+        
       } catch (Exception e) {
         //System.out.println(" first arg type: "+realArgs[0].getClass());
         //System.out.println("---ARG TYPES: "+Arrays.toString(constructor.getParameterTypes())+" | "+realArgs.length);
@@ -98,12 +117,14 @@ public class JavaCallable extends FunctionMember{
         }
         else {
           result = method.invoke(target.getInstance(), realArgs);
+          //System.out.println("---ARGS TO "+name+" "+Arrays.toString(realArgs)+" | instnace it self |"+target.getInstance()+"| result = " + (realArgs[0].equals(target.getInstance())));
+          //System.out.println("--types: "+realArgs[0].getClass()+" | "+target.getInstance().getClass());
         }
       } catch (Exception e) {         
         //System.out.println(" first arg type: | "+name+" | "+(realArgs[0] == null)+" | "+Arrays.copyOfRange(realArgs, 1, args.length).length);
         //System.out.println("---ARG TYPES: "+Arrays.toString(method.getParameterTypes())+" | "+realArgs.length);
 
-        System.err.println("An exception was thrown when calling "+name+": "+System.lineSeparator());
+        //System.err.println("An exception was thrown when calling "+name+": "+System.lineSeparator());
         e.printStackTrace();
       }
     }

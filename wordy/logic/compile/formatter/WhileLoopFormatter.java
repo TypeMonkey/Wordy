@@ -83,13 +83,35 @@ public class WhileLoopFormatter {
           expected.clear();
           expected.add(Type.LEFT_PAREN);
         }
-        else if (current.type() == Type.LEFT_PAREN) {
+        else if (current.type() == Type.LEFT_PAREN) {      
+          /*
+           *  I'm preserving the closing parenthesis around a while-loop's conditional statement
+           *  as to allow for single value conditionals.
+           *  
+           *  Examples: 
+           *  while (true){
+           *    //code
+           *  }
+           *  
+           *  while (0){
+           *    //code
+           *  }
+           *  
+           *  while (.5){
+           *    //code
+           *  }
+           *  
+           *  We'll be using C conventions when discussing true and false.
+           *  So, any value that's not 0 (.5, -1, 1, "hello") is considered True.
+           *  Any value representing 0 ( 0 , 0.0 ) is considered False.
+           */
+          
+          conditional.add(current);
           conditional.addAll(Formatter.gatherEnclosingParanthesis(iterator, current.lineNumber()));
-          conditional.remove(conditional.size()-1);
           System.out.println("--WHILE-LOOP CONDITION: "+conditional);
           
           //can't have empty conditionals
-          if(conditional.isEmpty()) {
+          if(conditional.size() - 2 == 0) {
             throw new RuntimeException("Empty conditional for while-loop at line "+current.lineNumber());
           }
           

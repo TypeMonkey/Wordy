@@ -179,6 +179,31 @@ public class RuntimeTable {
 
     };    
     map.put(new FunctionKey(print.getName(), print.requiredArgs()), print);
+    
+    EmbeddedFunction input = new EmbeddedFunction("input", 0, null) {
+      @Override
+      public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) {
+        try {
+          
+          //block until input entered
+          while (System.in.available() == 0);
+          
+          //then read.
+          byte [] read = new byte[System.in.available()];
+          System.in.read(read);
+          
+          //parse bytes to String , cut off newline, and wrap it. Finally, return it.
+          return JavaInstance.wrapInstance(new String(read).replaceAll(System.lineSeparator(), ""));
+          
+        } catch (Exception e) {
+          System.err.println("!!FATAL IO (input()) ERROR!!");
+          e.printStackTrace();
+        }
+        return null;
+      }
+
+    };    
+    map.put(new FunctionKey(input.getName(), input.requiredArgs()), input);
 
     EmbeddedFunction typeof = new EmbeddedFunction("typeof", 1, null) {
       @Override

@@ -26,8 +26,8 @@ public class JavaInstance extends Instance{
     this.isStaticRep = isStaticRep;
   }
   
-  public boolean equality(Instance instance) {
-    return object == instance;
+  public boolean equality(JavaInstance instance) {
+    return object.equals(instance.object);
   }
   
   public VariableMember retrieveVariable(String memberName) {
