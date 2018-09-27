@@ -120,17 +120,20 @@ public class JavaCallable extends FunctionMember{
           //System.out.println("---ARGS TO "+name+" "+Arrays.toString(realArgs)+" | instnace it self |"+target.getInstance()+"| result = " + (realArgs[0].equals(target.getInstance())));
           //System.out.println("--types: "+realArgs[0].getClass()+" | "+target.getInstance().getClass());
         }
-      } catch (Exception e) {         
+      } catch (InvocationTargetException e) {         
         //System.out.println(" first arg type: | "+name+" | "+(realArgs[0] == null)+" | "+Arrays.copyOfRange(realArgs, 1, args.length).length);
         //System.out.println("---ARG TYPES: "+Arrays.toString(method.getParameterTypes())+" | "+realArgs.length);
 
-        //System.err.println("An exception was thrown when calling "+name+": "+System.lineSeparator());
+        System.err.println("An exception was thrown when calling "+name+": "+System.lineSeparator());
+        e.printStackTrace();
+      } catch (Exception e) {
+        System.out.println("-----ERRORWAHT "+" | "+(target == null));
         e.printStackTrace();
       }
     }
     //System.out.println("---CALLED: "+name);
 
-
+    target = null; //reset target
     if (result instanceof Instance) {
       return (Instance) result;
     }

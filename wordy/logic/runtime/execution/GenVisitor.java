@@ -23,6 +23,7 @@ import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.components.TypeInstance;
+import wordy.logic.runtime.errors.InvocationException;
 
 public class GenVisitor implements NodeVisitor{
  
@@ -271,8 +272,12 @@ public class GenVisitor implements NodeVisitor{
         //System.out.println("===CHCK: "+callable.getName()+" | "+callables.size());
         if (callable.argumentsCompatible(args)) {
           //System.out.println("---FUNC ARGS: "+args.length+" | "+callable.getName()+" | "+callNode.getName().lineNumber());
-          Instance result = callable.call(frameVisitor,frameExec, args);   
-          stack.push(result);
+          try {
+            Instance result = callable.call(frameVisitor,frameExec, args);
+            stack.push(result);
+          } catch (InvocationException e) {
+            throw new CarrierInvocationException(e);
+          }   
           //System.out.println("-----BACK FROM CAL TO: "+funcName.content()+" | ");
 
           return;
@@ -341,10 +346,14 @@ public class GenVisitor implements NodeVisitor{
         else {     
           if (callable.argumentsCompatible(args)) {
             //System.out.println("------CALLING: "+callable.getName());
-            Instance result = callable.call(frameVisitor, frameExec, args);
+            try {
+              Instance result = callable.call(frameVisitor, frameExec, args);
+              stack.push(result);      
+            } catch (InvocationException e) {
+              throw new CarrierInvocationException(e);
+            }
             //System.out.println("---AFTER CALL - W: "+((JavaInstance) result).getInstance().getClass());
             //System.out.println("           ACTUAL: "+((JavaInstance) result).getInstance());
-            stack.push(result);      
             return;
           }     
         }
@@ -375,5 +384,23 @@ public class GenVisitor implements NodeVisitor{
   
   public StackComponent peekStack() {
     return stack.peek();
+  }
+  
+  /**
+   * A helper class to carry around an InvocationException within GenVisitor
+   * @author Jose Guaro
+   *
+   */
+  public static class CarrierInvocationException extends RuntimeException {
+    
+    private InvocationException invokeExcept;
+    
+    public CarrierInvocationException(InvocationException invokeExcept) {
+      this.invokeExcept = invokeExcept;
+    }
+    
+    public InvocationException getException() {
+      return invokeExcept;
+    }
   }
 }

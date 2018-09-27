@@ -137,6 +137,11 @@ public class CatchBlockFormatter {
       throw new ParseError("Missing tokens: "+expected, current.lineNumber());
     }
     
+    //adds the exception name if no comma was found
+    names.add(new ExceptionName(currentName.toArray(new Token[currentName.size()])));
+    
+    System.out.println("EXCEPTIONS----CATCH: "+names);
+    
     Object [] ret = {names.toArray(new ExceptionName[names.size()]), varName};
     return ret;
   }

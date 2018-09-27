@@ -6,6 +6,7 @@ import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.Component;
 import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.errors.InvocationException;
 
 /**
  * Represents a callable file member (or a member that can be invoked)
@@ -31,7 +32,7 @@ public abstract class Callable extends Component{
    * @param visitor - the NodeVisitor to use to visit the nodes of this call
    * @param args - the arguments to this call
    */
-  public abstract Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args);
+  public abstract Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) throws InvocationException;
   
   public abstract boolean argumentsCompatible(Instance ... args);
   

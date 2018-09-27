@@ -216,7 +216,9 @@ Wordy | Date: 9/16/2018
 * Fixed while-loop compatibility with single values. 
   See WhileLoopFormatter.java
 
-
+Wordy | Date: 9/24/2018
+* On the Exception problem. All Wordy Exceptions will have to extend wordy.standard.Exception. 
+  It's way too much work to incorporate Java's Throwable in the Wordy Internal Environment
 
 
 

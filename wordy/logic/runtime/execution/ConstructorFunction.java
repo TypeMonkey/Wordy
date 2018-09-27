@@ -15,6 +15,7 @@ import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.components.TypeInstance;
+import wordy.logic.runtime.errors.InvocationException;
 import wordy.logic.runtime.types.TypeDefinition;
 
 /**
@@ -34,21 +35,28 @@ public class ConstructorFunction extends FunctionMember{
                                   FileInstance currentFile,
                                   WordyRuntime runtime) {
     super(name, argumentAmnt, runtime, currentFile, statements);
+    System.out.println("****CREATING CONSTRUCTOR: "+name+" | statements: "+statements.length);
     this.definition = definition;
   }
   
-  public Instance call(GenVisitor visitor,  RuntimeTable table, Instance ... args) {
+  public Instance call(GenVisitor visitor,  RuntimeTable table, Instance ... args) throws InvocationException{
     table = table.clone(false);
     table.addFuncMap(currentFile.getDefinition().getFunctions());
     visitor = new GenVisitor(table, currentFile, runtime);
     //System.out.println("-----CONSTRUCTOR!!!! "+definition.getName()+"------");
-    
+
     Instance superInstance = null;
-    
+
     RuntimeTable superTable = table.clone(false);
     superTable.clearLocalVars();
-    
+
     GenVisitor superVisitor = new GenVisitor(superTable, currentFile, runtime);
+    
+    /*
+     * The actual statements that we'll execute
+     */
+    ArrayList<Statement> actualFuncStatements = new ArrayList<>(Arrays.asList(statements));
+    
     /*
      * Add all constructor parameters to symbol table
      */
@@ -57,7 +65,7 @@ public class ConstructorFunction extends FunctionMember{
       VariableMember param = new VariableMember(rawParam.getName().content(), args[0], null, rawParam.isConstant());
       superTable.placeLocalVar(param);
     }
-    
+
     /*
      * Check the first statement. If it's a super constructor invocation, then
      * execute it. However, change reassign the "statements" variable to not include
@@ -67,15 +75,18 @@ public class ConstructorFunction extends FunctionMember{
      * then get the no-arg constructor of the parent and invoke that.
      */
     TypeDefinition parentDef = definition.getParent();
+    System.out.println("Constructor name: "+name+" | args: "+Arrays.toString(args)+" | "+statements.length);
     if (statements != null && (statements.length - argAmnt) >= 1) {
       Statement first = statements[argAmnt];
+      System.out.println("--constructor statement: "+Arrays.toString(first.getExpression().tokens()));
       if (first.getExpression().nodeType() == NodeType.FUNC_CALL) {
         MethodCallNode superInvoke = (MethodCallNode) first.getExpression();
         if (superInvoke.getName().content().equals("super")) {
+          System.out.println("----super call is first!");
           FunctionMember parentConstructor = parentDef.findConstructor(superInvoke.arguments().length);
-          
+
           Instance [] parentConstArgs = new Instance[superInvoke.arguments().length];
-          
+
           for(int i = 0 ; i < parentConstArgs.length; i++) {
             superVisitor.resetStack();
             superInvoke.arguments()[i].accept(superVisitor);
@@ -88,42 +99,48 @@ public class ConstructorFunction extends FunctionMember{
               parentConstArgs[i] = variable.getValue();
             }
           }
-          
+
           //reset for last argument
           superVisitor.resetStack();
-          
+
           if (parentConstructor.argumentsCompatible(parentConstArgs)) {
-            
-            
-            superInstance = parentConstructor.call(visitor, superTable, parentConstArgs); 
+
+
+            try {
+              superInstance = parentConstructor.call(visitor, superTable, parentConstArgs);
+            } catch (InvocationException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } 
           }
           else {
             throw new RuntimeException("Incompatible argument types at line "+superInvoke.tokens()[0].lineNumber());
           }
         }
-        
+
         //remove this statement from the statement array
-        ArrayList<Statement> newStatements = new ArrayList<>(Arrays.asList(statements));
-        newStatements.remove(argAmnt); //removes the super call
-        statements = newStatements.toArray(new Statement[statements.length - 1]);
+        actualFuncStatements.remove(argAmnt); //removes the super call
       }
       else {
         //invoke non-arg constructor
         FunctionMember parentConstructor = parentDef.findConstructor(0);
         System.out.println("---NULL? "+parentConstructor+" | "+parentDef.getName());
         superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);
+        
       }
     }
     else {
       //empty constructor: either explicitly empty, or implicitly included
       //invoke non-arg constructor
       FunctionMember parentConstructor = parentDef.findConstructor(0);
-      System.out.println("---NULL? "+parentConstructor+" | "+parentDef.getName());
-      superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);
+      System.out.println("---NULL? "+(parentConstructor == null)+" | "+parentDef.getName());
+      System.out.println(" ----constructors: "+parentDef.getConstructors().keySet());
+      System.out.println("---Which? "+statements.length+" | "+argAmnt);
+      superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);      
     }
-    
+
     TypeInstance typeInstance = TypeInstance.newInstance(definition, superInstance);
-    
+
     /*
      * Initialize the instance variables
      */
@@ -143,7 +160,7 @@ public class ConstructorFunction extends FunctionMember{
         }
       }
     }
-        
+
     /*
      * Then execute the actual statements of this constructor
      */
@@ -153,7 +170,19 @@ public class ConstructorFunction extends FunctionMember{
        * initializations.
        */
       visitor.resetStack();
-      super.call(visitor, table, args);  
+      
+      /*
+       * Dummy function that will execute the only necessary statements 
+       */
+      FunctionMember member = new FunctionMember(name, 
+          argAmnt, 
+          runtime, 
+          currentFile, 
+          actualFuncStatements.toArray(new Statement[actualFuncStatements.size()]));
+      member.call(superVisitor, table, args);
+
+      //super.call(visitor, table, args);
+
     }
     /*
      * Then return a new instance based on the provided TypeDefinition

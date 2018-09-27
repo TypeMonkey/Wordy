@@ -32,9 +32,11 @@ public class JavaInstance extends Instance{
   
   public VariableMember retrieveVariable(String memberName) {
     JavaVariableMember instance = (JavaVariableMember) instanceVars.get(memberName);
+    System.out.println("---returning ? "+(instance == null)+" | "+memberName+" | "+instanceVars.keySet());
     if (instance == null) {
       return instance;
     }
+    
     instance.setTarget(object);
     return instance;
   }

@@ -68,8 +68,10 @@ public class StatementFormatter {
       }
       
       if (tokens.size() == 1) {
-        System.out.println(tokens.get(0).content());
-        throw new ParseError("Invalid statement", tokens.get(0).lineNumber());
+        if (tokens.get(0).type() != Type.IDENT) {
+          System.out.println(tokens.get(0).content());
+          throw new ParseError("Invalid statement", tokens.get(0).lineNumber());
+        }
       }
       
       Parser parser = new Parser(tokens);

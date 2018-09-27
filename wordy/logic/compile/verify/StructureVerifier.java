@@ -368,9 +368,13 @@ public class StructureVerifier {
           else {
             recentTryBlock = null;
             nestedInsideLoop = false;
+            
+            CatchBlock catchBlock = (CatchBlock) nestedBlock;
+            Variable exceptVar = new Variable(catchBlock.getVariableName(), false);
+            blockTable.placeVariable(exceptVar);
           }
         }
-        verifyBlock(nestedBlock, table, className, nestedInsideLoop);     
+        verifyBlock(nestedBlock, blockTable, className, nestedInsideLoop);     
       }
       else {
         if(statement.getDescription() == StatementDescription.BREAK || 

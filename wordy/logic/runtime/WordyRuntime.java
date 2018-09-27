@@ -12,6 +12,7 @@ import wordy.logic.compile.structure.Statement.StatementDescription;
 import wordy.logic.runtime.components.FileInstance;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.errors.FatalInternalException;
 import wordy.logic.runtime.errors.InvocationException;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.FunctionMember;
@@ -161,8 +162,15 @@ public class WordyRuntime {
         
       } catch (InvocationException e) {
         e.printStackTrace();
-        System.err.println("Runtime Error: "+e.getThrowInstance().getDefinition().getName());
-      }
+        System.exit(0);
+      } catch (FatalInternalException e) {
+        /*
+         * If fatal exception, just print the exception message and exit the runtime
+         */
+        System.err.println(e.getMessage());
+        e.printStackTrace();
+        System.exit(0);
+      } 
       
       return null;
     }

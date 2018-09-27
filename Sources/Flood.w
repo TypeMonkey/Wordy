@@ -1,36 +1,22 @@
 import wordy.logic.Main;
+import wordy.standard.Exception;
 import java.util.Random;
 import java.util.Scanner;
 
-class Sample : Flood.Parent{
-	
-	
-	
-}
+class SampleException : Exception{
 
-class Parent{
-
-	
+	SampleException(num){
+		super("Sample error! "+num);
+	}
 
 }
 
-function boy(){
-	throw Exception();
+function lol(){
+  	
 }
 
 function main(a){
-  println("hello");
-  while(true){
-  	let in = input();
-  	
-  	if(in.equals("end")){
-  	  	println("bye bye");
-  	  	return "end";
-  	}
-  	else{
-  		println("Echoed! "+in);
-  	}  	
-  }
+  println("hello mark");
 }
 
 

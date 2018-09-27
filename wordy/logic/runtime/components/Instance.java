@@ -27,7 +27,6 @@ public abstract class Instance extends StackComponent{
     return instanceVars.get(memberName);
   }
   
-  
   public TypeDefinition getDefinition() {
     return definition;
   }

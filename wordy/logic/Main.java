@@ -10,7 +10,7 @@ import wordy.logic.runtime.components.JavaInstance;
 public class Main {  
   
   public static void main(String[] args) throws Exception {
-    String [] sourceFiles = { "src\\Sources\\Dry.w", "src\\Sources\\Flood.w"};    
+    String [] sourceFiles = { "src\\Sources\\Flood.w"};    
            
     printCompilerIntro(sourceFiles);
     WordyCompiler compiler = new WordyCompiler(sourceFiles);
