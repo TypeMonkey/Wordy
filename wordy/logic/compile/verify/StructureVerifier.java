@@ -1,5 +1,6 @@
 package wordy.logic.compile.verify;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -246,6 +247,10 @@ public class StructureVerifier {
           else {
             recentTryBlock = null;
             insideALoop = false;
+            
+            CatchBlock catchBlock = (CatchBlock) block;
+            Variable exceptVar = new Variable(catchBlock.getVariableName(), false);
+            blockTable.placeVariable(exceptVar);
           }
         }
         
@@ -283,7 +288,7 @@ public class StructureVerifier {
     TryBlock recentTryBlock = null;
     
     for(Statement statement : block.getStatements()) {
-      System.out.println("----BLOCK EXEC---- "+insideALoop+"||"+statement);
+      System.out.println(">>>>>BLOCK EXEC---- "+statement.getClass().getName());
       if (statement.getDescription() == StatementDescription.VAR_DEC) {
         table.placeVariable((Variable) statement);
         Variable variable = (Variable) statement;
@@ -372,8 +377,12 @@ public class StructureVerifier {
             CatchBlock catchBlock = (CatchBlock) nestedBlock;
             Variable exceptVar = new Variable(catchBlock.getVariableName(), false);
             blockTable.placeVariable(exceptVar);
+            System.out.println(">>>>>>>BLOCK TABLE: placed var: "+exceptVar.getName().content());
           }
         }
+        
+        System.out.println(">>TABLE CONTENTS NESTED: ");
+        System.out.println("  "+blockTable.getVariables());
         verifyBlock(nestedBlock, blockTable, className, nestedInsideLoop);     
       }
       else {
@@ -385,6 +394,8 @@ public class StructureVerifier {
           }
         }
         else {
+          System.out.println(">>TABLE CONTENTS: ");
+          System.out.println("  "+table.getVariables());
           statement.getExpression().accept(visitor);
         }
       }

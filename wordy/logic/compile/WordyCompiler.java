@@ -81,10 +81,15 @@ public class WordyCompiler {
      */
     
     ArrayList<FunctionKey> sysFuncs = new ArrayList<>();
-    sysFuncs.addAll(Arrays.asList(new FunctionKey("println", 1), new FunctionKey("print", 1)));
+    sysFuncs.addAll( Arrays.asList(new FunctionKey("println", 1), 
+                                   new FunctionKey("print", 1) ,
+                                   new FunctionKey("input", 1) ,
+                                   new FunctionKey("typeof", 1) ,
+                                   new FunctionKey("eprintln", 1),
+                                   new FunctionKey("eprint", 1))  );
     
     Collection<FileStructure> files = structures.values();
-    System.out.println("STRUCUTRE: "+files);
+    System.out.println("***************************STRUCUTRE: "+files+"***************************");
     for(FileStructure structure: files) {
       StructureVerifier verifier = new StructureVerifier(structure, sysFuncs, structures);
       verifier.verify();

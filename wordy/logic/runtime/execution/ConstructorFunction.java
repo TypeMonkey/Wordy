@@ -35,7 +35,7 @@ public class ConstructorFunction extends FunctionMember{
                                   FileInstance currentFile,
                                   WordyRuntime runtime) {
     super(name, argumentAmnt, runtime, currentFile, statements);
-    System.out.println("****CREATING CONSTRUCTOR: "+name+" | statements: "+statements.length);
+    //System.out.println("****CREATING CONSTRUCTOR: "+name+" | statements: "+statements.length);
     this.definition = definition;
   }
   
@@ -75,14 +75,14 @@ public class ConstructorFunction extends FunctionMember{
      * then get the no-arg constructor of the parent and invoke that.
      */
     TypeDefinition parentDef = definition.getParent();
-    System.out.println("Constructor name: "+name+" | args: "+Arrays.toString(args)+" | "+statements.length);
+    //System.out.println("Constructor name: "+name+" | args: "+Arrays.toString(args)+" | "+statements.length);
     if (statements != null && (statements.length - argAmnt) >= 1) {
       Statement first = statements[argAmnt];
-      System.out.println("--constructor statement: "+Arrays.toString(first.getExpression().tokens()));
+      //System.out.println("--constructor statement: "+Arrays.toString(first.getExpression().tokens()));
       if (first.getExpression().nodeType() == NodeType.FUNC_CALL) {
         MethodCallNode superInvoke = (MethodCallNode) first.getExpression();
         if (superInvoke.getName().content().equals("super")) {
-          System.out.println("----super call is first!");
+          //System.out.println("----super call is first!");
           FunctionMember parentConstructor = parentDef.findConstructor(superInvoke.arguments().length);
 
           Instance [] parentConstArgs = new Instance[superInvoke.arguments().length];
@@ -124,7 +124,7 @@ public class ConstructorFunction extends FunctionMember{
       else {
         //invoke non-arg constructor
         FunctionMember parentConstructor = parentDef.findConstructor(0);
-        System.out.println("---NULL? "+parentConstructor+" | "+parentDef.getName());
+        //System.out.println("---NULL? "+parentConstructor+" | "+parentDef.getName());
         superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);
         
       }
@@ -133,9 +133,9 @@ public class ConstructorFunction extends FunctionMember{
       //empty constructor: either explicitly empty, or implicitly included
       //invoke non-arg constructor
       FunctionMember parentConstructor = parentDef.findConstructor(0);
-      System.out.println("---NULL? "+(parentConstructor == null)+" | "+parentDef.getName());
-      System.out.println(" ----constructors: "+parentDef.getConstructors().keySet());
-      System.out.println("---Which? "+statements.length+" | "+argAmnt);
+      //System.out.println("---NULL? "+(parentConstructor == null)+" | "+parentDef.getName());
+      //System.out.println(" ----constructors: "+parentDef.getConstructors().keySet());
+     // System.out.println("---Which? "+statements.length+" | "+argAmnt);
       superInstance = parentConstructor.call(visitor, superTable, new Instance[0]);      
     }
 

@@ -127,7 +127,7 @@ public class JavaCallable extends FunctionMember{
         System.err.println("An exception was thrown when calling "+name+": "+System.lineSeparator());
         e.printStackTrace();
       } catch (Exception e) {
-        System.out.println("-----ERRORWAHT "+" | "+(target == null));
+        //System.out.println("-----ERRORWAHT "+" | "+(target == null));
         e.printStackTrace();
       }
     }

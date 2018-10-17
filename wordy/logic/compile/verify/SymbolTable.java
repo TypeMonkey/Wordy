@@ -142,6 +142,10 @@ public class SymbolTable {
     return systemFuncs;
   }
   
+  public Collection<Variable> getVariables(){
+    return variables.values();
+  }
+  
   public Collection<FileStructure> getFiles(){
     return otherSources.values();
   }

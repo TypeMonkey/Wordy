@@ -23,6 +23,7 @@ import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.components.TypeInstance;
+import wordy.logic.runtime.errors.FatalInternalException;
 import wordy.logic.runtime.errors.InvocationException;
 
 public class GenVisitor implements NodeVisitor{
@@ -207,7 +208,7 @@ public class GenVisitor implements NodeVisitor{
                                                                             +memberAccessNode.tokens()[0].lineNumber());
         }
         
-        System.out.println("---RETRIEVING: "+memberAccessNode.getMemberName().content());
+        //System.out.println("---RETRIEVING: "+memberAccessNode.getMemberName().content());
         VariableMember instanceMem = variable.getValue().retrieveVariable(memberAccessNode.getMemberName().content());
         //System.out.println("----Var member: "+instanceMem+" | "+instanceMem.getType());
         if (instanceMem == null) {
@@ -319,8 +320,9 @@ public class GenVisitor implements NodeVisitor{
       List<Callable> potentialCallables = instance.getDefinition().findFunction(funcName.content(), args.length);
       //System.out.println("----LOOKING: "+(args.length)+" | "+instance.getDefinition().getName());
       if (potentialCallables == null) {
-        throw new RuntimeException("Can't find function '"+funcName.content()+"' at line "+
-            funcName.lineNumber());
+        throw new FatalInternalException(currentFile.getName(), 
+                                         funcName.lineNumber(), 
+                                         "Can't find the function '"+funcName.content()+"'");
       }
       
       //System.out.println("----potentials: "+potentialCallables.size()+" | "+potentialCallables.get(0).getName()+" "+

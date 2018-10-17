@@ -121,6 +121,10 @@ public class JavaClassDefinition extends TypeDefinition{
     return staticRep;
   }
   
+  public boolean isAnInterface() {
+    return respClass.isInterface();
+  }
+  
   public static JavaClassDefinition defineClass(Class<?> respClass) {
     if (mappedClasses.containsKey(respClass)) {
       return mappedClasses.get(respClass);

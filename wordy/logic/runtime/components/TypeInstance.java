@@ -37,7 +37,7 @@ public class TypeInstance extends Instance{
       return instanceVars.get(memberName);
     }
     
-    System.out.println("---SUPER NULL? "+(superInstance==null)+" | "+superInstance.getName());
+    //System.out.println("---SUPER NULL? "+(superInstance==null)+" | "+superInstance.getName());
     return superInstance.retrieveVariable(memberName);
   }
   

@@ -58,7 +58,7 @@ public class WordyRuntime {
         //If all constructors of the parent require at least one argument, then check 
         //the child's constructors for a super() 
         
-        System.out.println("----DEF: "+definition.getName()+" | "+definition.getParent());
+        //System.out.println("----DEF: "+definition.getName()+" | "+definition.getParent());
         boolean mustCheck = false;
         Map<Integer, FunctionMember> superConstructors = definition.getParent().getConstructors();
         for(FunctionMember supCons : superConstructors.values()) {
@@ -76,7 +76,7 @@ public class WordyRuntime {
             }
             else {
               Statement firstStatement = constStates[constructor.requiredArgs()];
-              System.out.println("----first? "+firstStatement.getDescription()+" | "+definition.getName()+" | "+constStates.length);
+              //System.out.println("----first? "+firstStatement.getDescription()+" | "+definition.getName()+" | "+constStates.length);
               if (firstStatement.getDescription() !=  StatementDescription.REGULAR || 
                   firstStatement.getExpression().nodeType() != NodeType.FUNC_CALL) {
                 throw new RuntimeException("The constructor for "+definition.getName()+" that takes "+constructor.requiredArgs()+

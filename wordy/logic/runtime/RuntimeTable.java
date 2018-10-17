@@ -9,6 +9,7 @@ import java.util.Map;
 import wordy.logic.common.FunctionKey;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
+import wordy.logic.runtime.errors.InvocationException;
 import wordy.logic.runtime.execution.Callable;
 import wordy.logic.runtime.execution.EmbeddedFunction;
 import wordy.logic.runtime.execution.FunctionMember;
@@ -182,7 +183,7 @@ public class RuntimeTable {
     
     EmbeddedFunction input = new EmbeddedFunction("input", 0, null) {
       @Override
-      public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) {
+      public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) throws InvocationException {
         try {
           
           //block until input entered
@@ -196,10 +197,8 @@ public class RuntimeTable {
           return JavaInstance.wrapInstance(new String(read).replaceAll(System.lineSeparator(), ""));
           
         } catch (Exception e) {
-          System.err.println("!!FATAL IO (input()) ERROR!!");
-          e.printStackTrace();
+          throw new InvocationException(JavaInstance.wrapInstance(e), runtime, table, null);
         }
-        return null;
       }
 
     };    
@@ -213,6 +212,26 @@ public class RuntimeTable {
 
     };    
     map.put(new FunctionKey(typeof.getName(), typeof.requiredArgs()), typeof);
+    
+    EmbeddedFunction errPrintln = new EmbeddedFunction("eprintln", 1, null) {
+      @Override
+      public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) {
+        System.err.println(args[0]);
+        return null;
+      }
+
+    };    
+    map.put(new FunctionKey(errPrintln.getName(), errPrintln.requiredArgs()), errPrintln);
+    
+    EmbeddedFunction errPrint = new EmbeddedFunction("eprint", 1, null) {
+      @Override
+      public Instance call(GenVisitor visitor, RuntimeTable table, Instance... args) {
+        System.err.print(args[0]);
+        return null;
+      }
+
+    };    
+    map.put(new FunctionKey(errPrint.getName(), errPrint.requiredArgs()), errPrint);
     
     return map;
   }

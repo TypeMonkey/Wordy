@@ -50,12 +50,12 @@ public class InvocationException extends Exception{
   }
   
   public void registerTrace(String fileName, int lineNumber) {
-    System.out.println("-----TRACE: AT: "+ fileName+" . "+lineNumber);
+    //System.out.println("-----TRACE: AT: "+ fileName+" . "+lineNumber);
     stackTrace.push(new TraceElement(fileName, lineNumber));
   }
   
   public void registerCause(InvocationException exception) {
-    System.out.println("-----TRACE: EXCEPTION: "+exception.actualInstance.getName());
+    //System.out.println("-----TRACE: EXCEPTION: "+exception.actualInstance.getName());
     stackTrace.push(new ExceptionTraceElement(exception));
   }
   

@@ -115,7 +115,7 @@ public class FunctionMember extends Callable{
               return result.getReturnedObject();
             }
           } catch (InvocationException e) {
-            System.out.println("---CAUGHT: "+e);
+            //System.out.println("---CAUGHT: "+e);
             lastThrow = e;
           }
           
@@ -205,6 +205,7 @@ public class FunctionMember extends Callable{
           if (checkPeeked instanceof Instance) {
             Instance actualInstance = (Instance) checkPeeked;
             if (actualInstance.getDefinition().isChildOf(JavaClassDefinition.defineClass(Exception.class))) {
+              //System.out.println("-----exception: "+statement.getExpression().locationToken().lineNumber());
               InvocationException exception = new InvocationException(actualInstance, runtime, table, currentFile);
               exception.registerTrace(currentFile.getName(), statement.getExpression().locationToken().lineNumber());
               
@@ -326,7 +327,7 @@ public class FunctionMember extends Callable{
         }
       }
       
-      System.out.println("---IN CATCH! "+catchBlock.getExceptionTypes().length);
+      //System.out.println("---IN CATCH! "+catchBlock.getExceptionTypes().length);
       
       TypeDefinition actualThrowDef = lastThrow.getThrowInstance().getDefinition();
       for(TypeDefinition definition : exceptionTypes) {
@@ -336,8 +337,8 @@ public class FunctionMember extends Callable{
           exceptionVar.setValue(lastThrow.getThrowInstance());
           executor.placeLocalVar(exceptionVar);
 
-          System.out.println("---EXECUTING CATCH CODE "+actualThrowDef.getName());
-
+          //System.out.println("---EXECUTING CATCH CODE "+actualThrowDef.getName());
+          lastThrow = null;
           return executeBlock(new GenVisitor(executor, currentFile, runtime), executor, catchBlock.getStatements(), true);
         }
       }

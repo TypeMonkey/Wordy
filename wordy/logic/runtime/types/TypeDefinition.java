@@ -95,7 +95,13 @@ public class TypeDefinition{
       return functions.get(key);
     }
     
-    System.out.println("IS NULL? "+(parent == null)+" "+(getAttachedStruct() == null)+" | "+getClass().getName()+" | "+key+" | "+name);
+    //System.out.println("IS NULL? "+(parent == null)+" "+(getAttachedStruct() == null)+" | "+getClass().getName()+" | "+key+" | "+name);
+    if (parent == null) {
+      /**
+       * In case function searches reach all the way to java.lang.Object. 
+       */
+      return null;
+    }
     return parent.findFunction(key);
   }
   
@@ -104,6 +110,12 @@ public class TypeDefinition{
       return variables.get(name);
     }
     
+    if (parent == null) {
+      /**
+       * In case function searches reach all the way to java.lang.Object. 
+       */
+      return null;
+    }
     return parent.findVariable(name);
   }
   
@@ -121,6 +133,10 @@ public class TypeDefinition{
   
   public TypeDefinition getParent() {
     return parent;
+  }
+  
+  public boolean isAnInterface() {
+    return false;
   }
   
   private void attchClassStruct(ClassStruct struct) {
@@ -199,14 +215,14 @@ public class TypeDefinition{
       FunctionKey functionKey = new FunctionKey(defaultCons.getName(), defaultCons.requiredArgs());
       definition.functions.put(functionKey, Arrays.asList(defaultCons));
       definition.constructors.put(defaultCons.requiredArgs(), defaultCons);
-      System.out.println("--------->>>ADDED DEAFULE CONSTRUCTOR FOR "+definition.name+" | "+defaultCons.requiredArgs());
+      //System.out.println("--------->>>ADDED DEAFULE CONSTRUCTOR FOR "+definition.name+" | "+defaultCons.requiredArgs());
     }
     
     return definition;
   }
   
   public static void includeInhertianceInfo(WordyRuntime runtime, TypeDefinition definition, FileInstance current) {
-    System.out.println("------!FOR CLASS: "+definition.getName()+"!--------");
+    //System.out.println("------!FOR CLASS: "+definition.getName()+"!--------");
     ClassStruct originalStruct = definition.getAttachedStruct();
     
     TypeDefinition parent = null;
@@ -247,8 +263,8 @@ public class TypeDefinition{
           parent = fileInstance.getDefinition().getTypeDefs().get(parentFull[2].content());
           if (parent == null) {
             foundParent = false;
-            System.out.println(fileInstance.getDefinition().getTypeDefs().keySet());
-            System.out.println("*****NOT FOUND: "+parentFull[2].content());
+            //System.out.println(fileInstance.getDefinition().getTypeDefs().keySet());
+            //System.out.println("*****NOT FOUND: "+parentFull[2].content());
           }
           else {
             foundParent = true;
@@ -273,7 +289,7 @@ public class TypeDefinition{
     }
     
     //set found parent to definition's parent
-    System.out.println("----PARENT FOUND? "+parent+" | "+Arrays.toString(originalStruct.getParentClass()));
+    //System.out.println("----PARENT FOUND? "+parent+" | "+Arrays.toString(originalStruct.getParentClass()));
     definition.parent = parent;
   }
   

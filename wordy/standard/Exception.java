@@ -1,7 +1,9 @@
 package wordy.standard;
 
-public class Exception {
+import java.util.Stack;
 
+public class Exception {
+  
   public String message;
   
   public Exception(String message) {
