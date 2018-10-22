@@ -100,7 +100,16 @@ public class GenVisitor implements NodeVisitor{
             stack.push(JavaInstance.wrapInstance(true));
           }
           else {
-            stack.push(JavaInstance.wrapInstance(leftInstance == rightInstance));
+            if (leftInstance.isAJavaPrimitive() && rightInstance.isAJavaPrimitive()) {
+              JavaInstance leftJVInstance = (JavaInstance) leftInstance;
+              JavaInstance rightJVInstance = (JavaInstance) rightInstance;
+              //System.out.println("---JAVA EQUALS EQUALS: "+leftJVInstance.getInstance()+" | "+rightJVInstance.getInstance());
+              stack.push(JavaInstance.wrapInstance(leftJVInstance.deepEquality(rightJVInstance)));
+            }
+            else {
+              //System.out.println("---RAW EQUALS EQUALS: "+leftInstance.getClass()+" | "+rightInstance.getClass());
+              stack.push(JavaInstance.wrapInstance(leftInstance == rightInstance));
+            }
           }
         }
         else {
@@ -374,7 +383,7 @@ public class GenVisitor implements NodeVisitor{
       GenVisitor frameVisitor = new GenVisitor(frameExec, currentFile, runtime);
 
       List<Callable> potentialCallables = instance.getDefinition().findFunction(funcName.content(), args.length);
-      //System.out.println("----LOOKING: "+(args.length)+" | "+instance.getDefinition().getName());
+      //System.out.println("----LOOKING: "+(args.length)+" | "+instance.getDefinition().getFunctions().keySet());
       if (potentialCallables == null) {
         throw new FatalInternalException(currentFile.getName(), 
                                          funcName.lineNumber(), 

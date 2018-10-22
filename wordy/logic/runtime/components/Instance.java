@@ -35,6 +35,8 @@ public abstract class Instance extends StackComponent{
     return new HashMap<>(instanceVars);
   }
   
+  public abstract boolean isAJavaPrimitive();
+  
   public final boolean isSettable() {
     return false;
   }

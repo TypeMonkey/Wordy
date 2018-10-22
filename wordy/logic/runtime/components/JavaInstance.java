@@ -3,6 +3,7 @@ package wordy.logic.runtime.components;
 import java.util.HashMap;
 import java.util.Map;
 
+import wordy.logic.runtime.TypeChecks;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.types.JavaClassDefinition;
 import wordy.standard.Array;
@@ -24,6 +25,10 @@ public class JavaInstance extends Instance{
     instanceVars.putAll(definition.getVariables());
     this.object = object;
     this.isStaticRep = isStaticRep;
+  }
+  
+  public boolean deepEquality(JavaInstance instance) {
+    return object.equals(instance.object);
   }
   
   public VariableMember retrieveVariable(String memberName) {
@@ -107,5 +112,9 @@ public class JavaInstance extends Instance{
       nullRep = new JavaInstance(null, JavaClassDefinition.defineClass(Object.class), false);
     }
     return nullRep;
+  }
+
+  public boolean isAJavaPrimitive() {
+    return TypeChecks.isAPrimiiveType(object.getClass());
   }
 }

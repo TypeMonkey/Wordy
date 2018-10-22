@@ -1,5 +1,14 @@
 package wordy.logic.runtime;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import sun.launcher.resources.launcher;
 import wordy.logic.runtime.components.JavaInstance;
 
 /**
@@ -9,6 +18,28 @@ import wordy.logic.runtime.components.JavaInstance;
  *
  */
 public class TypeChecks {
+  
+  public static final Set<Class<?>> PRIMITIVE_CLASSES;
+  
+  static {
+    Set<Class<?>> temp = new HashSet<>();
+    temp.add(Integer.class);
+    temp.add(Integer.TYPE);
+    
+    temp.add(Double.class);
+    temp.add(Double.TYPE);
+    
+    temp.add(Boolean.class);
+    temp.add(Boolean.TYPE);
+    
+    temp.add(Long.class);
+    temp.add(Long.TYPE);
+    
+    temp.add(Character.class);
+    temp.add(Character.TYPE);
+    
+    PRIMITIVE_CLASSES = Collections.unmodifiableSet(temp);
+  }
   
   public static boolean isCompatible(Class<?> acceptor, Class<?> value) {
     if ( (acceptor == Integer.class || acceptor == Integer.TYPE) && 
@@ -65,5 +96,9 @@ public class TypeChecks {
     else {
       return instance != null;
     }
+  }
+  
+  public static boolean isAPrimiiveType(Class<?> type) {
+    return PRIMITIVE_CLASSES.contains(type);
   }
 }

@@ -63,4 +63,8 @@ public class TypeInstance extends Instance{
     
     return instance;
   }
+
+  public boolean isAJavaPrimitive() {
+    return false;
+  }
 }

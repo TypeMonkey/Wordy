@@ -35,6 +35,20 @@ class LinkedList{
 	  size = size + 1;
 	}
 	
+	function find(value){
+	  let cur = head;
+	  
+	  while(cur != null){
+	    if(cur.value.equals(value)){
+		  return true;
+		}
+		cur = cur.next;
+	  }
+	  
+	  return false;
+	}
+	
+	
 	function printAll(){
 	  let cur = head;
 	  
@@ -57,7 +71,7 @@ class Node{
 	let value;  //the value held by this Node
 	
 	Node(val){
-	  value = val;
+	  this.value = val;
 	}
 	
 }
@@ -73,6 +87,19 @@ function main(args){
    }
    
    llist.printAll();
+      
+   println("--QUERY--");
+   let entered = input();
+   
+   println(entered.equals("n") == false);
+   
+   while(entered.equals("n") == false){
+     println("FOUND? "+llist.find(Integer.valueOf(entered)) );
+	 println("--QUERY--");
+	 entered = input();
+   }
+   
+   println("LAST ENTERED: "+entered);
 }
 
 

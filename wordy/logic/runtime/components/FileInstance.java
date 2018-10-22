@@ -16,4 +16,9 @@ public class FileInstance extends Instance{
   public RuntimeFile getDefinition() {
     return (RuntimeFile) definition;
   }
+
+  @Override
+  public boolean isAJavaPrimitive() {
+    return false;
+  }
 }
