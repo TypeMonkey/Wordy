@@ -19,6 +19,7 @@ import wordy.logic.compile.structure.FileStructure;
 import wordy.logic.runtime.WordyRuntime;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
+import wordy.standard.Array;
 
 public class Main {  
   
@@ -59,12 +60,12 @@ public class Main {
           System.out.println("      --Invoking main function in "+mainSourceFile+" --      ");
           System.out.println();
           
-          Instance [] progArgs = new Instance[programArgs.length];
-          for(int i = 0 ; i < progArgs.length; i++) {
-            progArgs[i] = JavaInstance.wrapInstance(programArgs[i]);
+          Array arrayOfArgs = new Array(programArgs.length);
+          for(int i = 0 ; i < arrayOfArgs.length; i++) {
+            arrayOfArgs.set(i, JavaInstance.wrapInstance(programArgs[i]));
           }
-          
-          runtime.execute(mainSourceFile, 1, JavaInstance.wrapInstance("hello"));
+                    
+          runtime.execute(mainSourceFile, 1, JavaInstance.wrapInstance(arrayOfArgs));
         }
         else {
           //must have at least one source file

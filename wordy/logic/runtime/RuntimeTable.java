@@ -158,6 +158,10 @@ public class RuntimeTable {
     return new RuntimeTable(cloneVarMap, cloneFuncNameMaps, new HashMap<>(javaClassMap));
   }
   
+  public Map<String, VariableMember> getLocalVarMap(){
+    return varNameMaps.get(0);
+  }
+  
   private static Map<FunctionKey, EmbeddedFunction> loadEmbeddedFunctions(){
     HashMap<FunctionKey, EmbeddedFunction> map = new HashMap<>();
     

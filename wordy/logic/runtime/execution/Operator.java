@@ -143,6 +143,10 @@ public class Operator {
         return JavaInstance.wrapInstance(leftStr.concat(rightStr));        
       }
     }
+    
+    System.out.println("LEFT TYPE: "+leftOperand.getDefinition().getName()+
+                       " | RIGHT TYPE: "+rightOperand.getDefinition().getName());
+    
     throw new RuntimeException("Invalid types for arithmetic operation at line "+operator.lineNumber());
   }
   

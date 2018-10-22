@@ -2,13 +2,14 @@ package wordy.logic.runtime;
 
 import wordy.logic.compile.nodes.ASTNode;
 import wordy.logic.runtime.components.Instance;
+import wordy.logic.runtime.components.JavaInstance;
 import wordy.logic.runtime.components.StackComponent;
 import wordy.logic.runtime.types.TypeDefinition;
 
 public class VariableMember extends StackComponent{
 
   protected ASTNode expr;
-  protected Instance value;
+  protected Instance value = JavaInstance.getNullRep();
   protected boolean isConstant;
   protected TypeDefinition type; 
   
@@ -17,12 +18,13 @@ public class VariableMember extends StackComponent{
   }
   
   public VariableMember(String name, ASTNode expr, boolean isConstant) {
-    this(name, null, expr, isConstant);
+    this(name, JavaInstance.getNullRep(), expr, isConstant);
   }
 
   public VariableMember(String name, Instance value, ASTNode expr, boolean isConstant) {
     super(name);
     this.value = value;
+    this.type = value.getDefinition();
     this.expr = expr;
     this.isConstant = isConstant;
   }

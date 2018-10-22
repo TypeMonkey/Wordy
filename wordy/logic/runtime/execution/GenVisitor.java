@@ -43,10 +43,11 @@ public class GenVisitor implements NodeVisitor{
     this.table = executor;
     this.currentFile = currentFile;
     this.runtime = runtime;
+    //System.out.println(" GEN VIS: "+table.getLocalVarMap().keySet()+" | "+hashCode());
   }
   
   public void visit(BinaryOpNode binaryOpNode) {
-    //System.out.println("----OPERATOR: "+binaryOpNode.getOperator()+" | LINE: "+binaryOpNode.getRightOperand());
+    //System.out.println("----OPERATOR: "+binaryOpNode.getOperator()+" | LINE: "+binaryOpNode.getRightOperand()+ " | " + binaryOpNode.locationToken().lineNumber());
     if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUALS)) {
       pushVariable = true;
       binaryOpNode.getLeftOperand().accept(this);
@@ -65,39 +66,93 @@ public class GenVisitor implements NodeVisitor{
       
       //System.out.println("--> EQUAL AFTER: "+settable.getValue().getClass());
     }
-    else {
-      binaryOpNode.getLeftOperand().accept(this);
-      JavaInstance leftConstant = null;
-      if (stack.peek() instanceof JavaInstance) {
-        leftConstant = (JavaInstance) stack.pop();
-      }
-      else {
-        VariableMember left = (VariableMember) stack.pop();
-        leftConstant = (JavaInstance) left.getValue();
-        //System.out.println("---LEFT: "+leftConstant);
-      }
-            
-      binaryOpNode.getRightOperand().accept(this);
-      JavaInstance rightConstant = null;
-      if (stack.peek() instanceof JavaInstance) {
-        rightConstant = (JavaInstance) stack.pop();
-      }
-      else {
-        VariableMember right = (VariableMember) stack.pop();
-        rightConstant = (JavaInstance) right.getValue();
-      }
+    else {    
+      Instance nullRep = JavaInstance.getNullRep();
       
-      if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUAL_EQ)) {
-        stack.push(JavaInstance.wrapInstance(leftConstant.equality(rightConstant)));
-      }
-      else if (ReservedSymbols.isAComparisonOp(binaryOpNode.getOperator())) {
-        stack.push(Operator.arithemticComparison(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
-      }
-      else if (ReservedSymbols.isABooleanOperator(binaryOpNode.getOperator())) {
-        stack.push(Operator.booleanOperations(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
+      if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUAL_EQ) || 
+          binaryOpNode.getOperator().equals(ReservedSymbols.BANG_EQUALS)) {       
+        binaryOpNode.getLeftOperand().accept(this);
+        Instance leftInstance , rightInstance = null;
+        if (stack.peek() instanceof Instance) {
+          leftInstance = (Instance) stack.pop();
+        }
+        else {
+          VariableMember left = (VariableMember) stack.pop();
+          //System.out.println("---LEFT VAR NAME: "+left.getName()+" | "+left.getType().getName());
+          leftInstance = (Instance) left.getValue();
+        }
+            
+        binaryOpNode.getRightOperand().accept(this);
+        if (stack.peek() instanceof Instance) {
+          rightInstance = (Instance) stack.pop();
+        }
+        else {
+          VariableMember right = (VariableMember) stack.pop();
+          rightInstance = (Instance) right.getValue();
+        }
+        
+        if (binaryOpNode.getOperator().equals(ReservedSymbols.EQUAL_EQ)) {
+          if ( (leftInstance == nullRep && rightInstance != nullRep) || 
+               (leftInstance != nullRep && rightInstance == nullRep)) {
+            stack.push(JavaInstance.wrapInstance(false));
+          }
+          else if (leftInstance == nullRep && rightInstance == nullRep) {
+            stack.push(JavaInstance.wrapInstance(true));
+          }
+          else {
+            stack.push(JavaInstance.wrapInstance(leftInstance == rightInstance));
+          }
+        }
+        else {
+          if ( (leftInstance == nullRep && rightInstance != nullRep) || 
+               (leftInstance != nullRep && rightInstance == nullRep)) {
+            stack.push(JavaInstance.wrapInstance(true));
+          }
+          else if (leftInstance == nullRep && rightInstance == nullRep) {
+            stack.push(JavaInstance.wrapInstance(false));
+          }
+          else {
+            stack.push(JavaInstance.wrapInstance(leftInstance != rightInstance));
+          }
+        }        
       }
       else {
-        stack.push(Operator.simpleArithmetic(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
+        binaryOpNode.getLeftOperand().accept(this);
+        JavaInstance leftConstant = null;
+        if (stack.peek() instanceof JavaInstance) {
+          leftConstant = (JavaInstance) stack.pop();
+        }
+        else {
+          VariableMember left = (VariableMember) stack.pop();
+          //System.out.println("---LEFT VAR NAME: "+left.getName()+" | "+left.getType().getName());
+          leftConstant = (JavaInstance) left.getValue();
+        }
+              
+        binaryOpNode.getRightOperand().accept(this);
+        JavaInstance rightConstant = null;
+        if (stack.peek() instanceof JavaInstance) {
+          rightConstant = (JavaInstance) stack.pop();
+        }
+        else {
+          VariableMember right = (VariableMember) stack.pop();
+          rightConstant = (JavaInstance) right.getValue();
+        }
+        
+        //throw error if either operand is null
+        if (rightConstant == nullRep || leftConstant == nullRep) {
+          throw new RuntimeException("Null reference referred to at arithmethic operator. ("+
+                                     currentFile.getName()+".w , ln:"+binaryOpNode.locationToken().lineNumber()+")");
+        }
+        
+        if (ReservedSymbols.isAComparisonOp(binaryOpNode.getOperator())) {
+          stack.push(Operator.arithemticComparison(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
+        }
+        else if (ReservedSymbols.isABooleanOperator(binaryOpNode.getOperator())) {
+          stack.push(Operator.booleanOperations(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
+        }
+        else {
+          stack.push(Operator.simpleArithmetic(leftConstant, rightConstant, binaryOpNode.tokens()[0]));
+        }
       }
     }
   }
@@ -126,7 +181,8 @@ public class GenVisitor implements NodeVisitor{
   }
 
   public void visit(IdentifierNode identifierNode) {
-    //System.out.println("----IDENT: "+identifierNode.name());
+    //System.out.println("----IDENT: "+identifierNode.name()+" | "+identifierNode.locationToken().lineNumber());
+    //System.out.println("  ------"+table.getLocalVarMap().keySet()+" | "+hashCode());
     VariableMember member = table.findVariable(identifierNode.name());
     if (member == null) {
       FileInstance instance = runtime.findFile(identifierNode.name());
@@ -135,7 +191,7 @@ public class GenVisitor implements NodeVisitor{
         //System.out.println("--- FOUND CLASS: "+className);
         if (className == null) {
           throw new RuntimeException("Can't find identifier '"+identifierNode.name()+"' at line "+
-              identifierNode.tokens()[0].lineNumber()+" , "+currentFile.getName());
+              identifierNode.tokens()[0].lineNumber()+" , "+currentFile.getName()+".w");
         }
         else {
           try {
@@ -205,7 +261,7 @@ public class GenVisitor implements NodeVisitor{
         VariableMember variable = (VariableMember) member;
         if (variable.getValue() == JavaInstance.getNullRep()) {
           throw new NullPointerException("A null instance was referred to, at line: "
-                                                                            +memberAccessNode.tokens()[0].lineNumber());
+                                          + memberAccessNode.tokens()[0].lineNumber());
         }
         
         //System.out.println("---RETRIEVING: "+memberAccessNode.getMemberName().content());

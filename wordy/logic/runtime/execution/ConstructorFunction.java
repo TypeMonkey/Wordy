@@ -146,7 +146,7 @@ public class ConstructorFunction extends FunctionMember{
      */
     for(VariableMember member: typeInstance.varMap().values()) {
       //System.out.println("!!!PLACING INSTANCE VAR: "+member.getName());
-      table.placeLocalVar(member);
+      superTable.placeLocalVar(member);
       if (member.getExpr() != null) {
         member.getExpr().accept(visitor);
         StackComponent result = visitor.peekStack();
@@ -179,10 +179,9 @@ public class ConstructorFunction extends FunctionMember{
           runtime, 
           currentFile, 
           actualFuncStatements.toArray(new Statement[actualFuncStatements.size()]));
+      
+      //System.out.println("---PROCEDING CONSTRUCTOR BODY!!! "+table.getLocalVarMap().keySet());
       member.call(superVisitor, table, args);
-
-      //super.call(visitor, table, args);
-
     }
     /*
      * Then return a new instance based on the provided TypeDefinition

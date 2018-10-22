@@ -26,10 +26,6 @@ public class JavaInstance extends Instance{
     this.isStaticRep = isStaticRep;
   }
   
-  public boolean equality(JavaInstance instance) {
-    return object.equals(instance.object);
-  }
-  
   public VariableMember retrieveVariable(String memberName) {
     JavaVariableMember instance = (JavaVariableMember) instanceVars.get(memberName);
     //System.out.println("---returning ? "+(instance == null)+" | "+memberName+" | "+instanceVars.keySet());

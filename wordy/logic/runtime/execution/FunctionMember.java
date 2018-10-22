@@ -64,11 +64,11 @@ public class FunctionMember extends Callable{
    * Invokes this function, passing in its required arguments
    */
   public Instance call(GenVisitor visitor, RuntimeTable table, Instance ... args) throws InvocationException{    
-    //System.out.println("*****---CALLED: "+getName()+" | ");
+    //System.out.println("*****---CALLED: "+getName()+" | "+table.getLocalVarMap().keySet());
     table.addFuncMap(currentFile.getDefinition().getFunctions());
     int argCnt = argAmnt;
     for(Statement statement: statements) {
-      //System.out.println("------NEXT STATEMENT------ || "+currentFile.getName());
+      //System.out.println("------NEXT STATEMENT------ || "+currentFile.getName()+" | "+statement.getClass().getName());
       visitor.resetStack();
       
       /*
@@ -232,7 +232,7 @@ public class FunctionMember extends Callable{
           }      
         }
         else {
-          //System.out.println("---EXEC NORM EXPR: "+statement.getExpression().getClass().getName());
+          //System.out.println("---EXEC NORM EXPR: "+statement.getExpression().getClass().getName()+" | "+table.getLocalVarMap().keySet());
           statement.getExpression().accept(visitor);
         } 
       }
