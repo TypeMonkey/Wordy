@@ -2,8 +2,6 @@ package wordy.logic.runtime.errors;
 
 import java.util.Stack;
 
-import com.sun.org.apache.regexp.internal.recompile;
-
 import wordy.logic.runtime.RuntimeTable;
 import wordy.logic.runtime.VariableMember;
 import wordy.logic.runtime.WordyRuntime;

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import sun.launcher.resources.launcher;
 import wordy.logic.runtime.components.JavaInstance;
 
 /**
