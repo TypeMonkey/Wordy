@@ -1,6 +1,7 @@
 package wordy.logic;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +51,9 @@ public class Main {
           runtime.initialize(fileMap);
           String mainSourceFile = arguments.mainFile;
           if (mainSourceFile == null) {
-            mainSourceFile = sourceFiles[0];
+            //Have to correctly get the first source file's name, without the file extension
+            mainSourceFile = Paths.get(sourceFiles[0]).getFileName().toString();
+            mainSourceFile = mainSourceFile.substring(0, mainSourceFile.indexOf("."));
           }
           
           System.out.println("      --Invoking main function in "+mainSourceFile+" --      ");
