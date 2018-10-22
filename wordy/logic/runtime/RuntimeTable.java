@@ -198,7 +198,7 @@ public class RuntimeTable {
           System.in.read(read);
           
           //parse bytes to String , cut off newline, and wrap it. Finally, return it.
-          return JavaInstance.wrapInstance(new String(read).replaceAll(System.lineSeparator(), ""));
+          return JavaInstance.wrapInstance(new String(read).replaceAll("(\\r|\\n)+", ""));
           
         } catch (Exception e) {
           throw new InvocationException(JavaInstance.wrapInstance(e), runtime, table, null);
