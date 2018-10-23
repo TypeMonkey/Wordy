@@ -153,11 +153,11 @@ public class FunctionMember extends Callable{
                   variable.getExpression().accept(visitor);
                   StackComponent value = visitor.peekStack();
                   if (value instanceof Instance) {
-                    variableMember.setValue((Instance) value);
+                    variableMember.forceSetValue((Instance) value);
                   }
                   else {
                     VariableMember peekedVar = (VariableMember) value;
-                    variableMember.setValue(peekedVar.getValue());
+                    variableMember.forceSetValue(peekedVar.getValue());
                   }
                   //System.out.println("----GOT: "+variableMember.getValue().getClass());
                 } catch (CarrierInvocationException e) {
@@ -644,11 +644,11 @@ public class FunctionMember extends Callable{
             
             StackComponent member = visitor.peekStack();
             if (member.isAnInstance()) {
-              variableMember.setValue((Instance) member);
+              variableMember.forceSetValue((Instance) member);
             }
             else {
               VariableMember peekedVar = (VariableMember) member;          
-              variableMember.setValue(peekedVar.getValue());
+              variableMember.forceSetValue(peekedVar.getValue());
             }
           }          
         }       

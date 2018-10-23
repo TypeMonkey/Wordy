@@ -1,5 +1,5 @@
-import java.util.List;
 
-class Other{
 
+function main(a){
+  let const b = 10;
 }

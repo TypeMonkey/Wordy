@@ -1,5 +1,7 @@
 package wordy.logic.runtime;
 
+import java.util.Arrays;
+
 import wordy.logic.compile.nodes.ASTNode;
 import wordy.logic.runtime.components.Instance;
 import wordy.logic.runtime.components.JavaInstance;
@@ -33,6 +35,16 @@ public class VariableMember extends StackComponent{
     if (isConstant) {
       throw new IllegalStateException("Can't change the value of a constant variable");
     }
+    forceSetValue(constant);
+  }
+  
+  /**
+   * Forcebly changes the value of the variable, even if it's constant.
+   * 
+   * NOTE: Should only be used to initialize newly created variables
+   * @param constant - the value to set it to
+   */
+  public void forceSetValue(Instance constant) {
     this.value = constant;
     type = constant.getDefinition();
   }
