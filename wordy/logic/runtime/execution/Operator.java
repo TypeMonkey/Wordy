@@ -26,10 +26,9 @@ public class Operator {
     if (leftOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class)) && 
         rightOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class))) {
       JavaInstance result = null;
-      if ((leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
-           leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) && 
-          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
-        Long leftOp = (Long) leftOperand.getInstance();
+      if ( leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
+           rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
+        Double leftOp = (Double) leftOperand.getInstance();
         Double rightOp = (Double) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
           result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
@@ -47,40 +46,30 @@ public class Operator {
           result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
         }   
       }
-      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
-              (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ||
-               rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)))) {
-        Double leftOp = (Double) leftOperand.getInstance();
-        Long rightOp = (Long) rightOperand.getInstance();
-        if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp - rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp * rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp / rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
-        }   
-      }
-      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) && 
+      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) &&
                rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
         Integer leftOp = (Integer) leftOperand.getInstance();
-        Integer rightOp =   (Integer) rightOperand.getInstance();
-        //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
+        Integer rightOp = (Integer) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp + rightOp));
+          try {
+            result = JavaInstance.wrapInstance(new Integer(Math.addExact(leftOp, rightOp)));
+          } catch (ArithmeticException e) {
+            result = JavaInstance.wrapInstance(new Long(leftOp + rightOp));
+          }
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp - rightOp));
+          try {
+            result = JavaInstance.wrapInstance(new Integer(Math.subtractExact(leftOp, rightOp)));
+          } catch (ArithmeticException e) {
+            result = JavaInstance.wrapInstance(new Long(leftOp - rightOp));
+          }
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(new Integer(leftOp * rightOp));
+          try {
+            result = JavaInstance.wrapInstance(new Integer(Math.multiplyExact(leftOp, rightOp)));
+          } catch (ArithmeticException e) {
+            result = JavaInstance.wrapInstance(new Long(leftOp * rightOp));
+          }
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
           result = JavaInstance.wrapInstance(new Integer(leftOp / rightOp));
@@ -92,16 +81,27 @@ public class Operator {
       else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) &&
                rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class))) {
         Long leftOp = (Long) leftOperand.getInstance();
-        Long rightOp =  (Long) rightOperand.getInstance();
-        //System.out.println("---OPE: "+leftOperand.getInstance()+" | "+rightOperand.getInstance());
+        Long rightOp = (Long) rightOperand.getInstance();
         if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp + rightOp));
+          try {
+            result = JavaInstance.wrapInstance(new Long(Math.addExact(leftOp, rightOp)));
+          } catch (ArithmeticException e) {
+            throw e;
+          }
         }
         else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp - rightOp));
+          try {
+            result = JavaInstance.wrapInstance(new Long(Math.subtractExact(leftOp, rightOp)));
+          } catch (ArithmeticException e) {
+            throw e;
+          }
         }
         else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(new Long(leftOp * rightOp));
+          try {
+            result = JavaInstance.wrapInstance(new Long(Math.multiplyExact(leftOp, rightOp)));
+          } catch (ArithmeticException e) {
+            throw e;
+          }
         }
         else if (operator.content().equals(ReservedSymbols.DIV)) {
           result = JavaInstance.wrapInstance(new Long(leftOp / rightOp));
@@ -110,25 +110,8 @@ public class Operator {
           result = JavaInstance.wrapInstance(new Long(leftOp % rightOp));
         }   
       }
-      else if (leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) && 
-          rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
-        Double leftOp = (Double) leftOperand.getInstance();
-        Double rightOp = (Double) rightOperand.getInstance();
-        if (operator.content().equals(ReservedSymbols.PLUS)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp + rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.MINUS)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp - rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.MULT)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp * rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.DIV)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp / rightOp));
-        }
-        else if (operator.content().equals(ReservedSymbols.MOD)) {
-          result = JavaInstance.wrapInstance(new Double(leftOp % rightOp));
-        }   
+      else {
+        result = mixedOperandNumberTypes(leftOperand, rightOperand, operator);
       }
       return result;
     }
@@ -147,6 +130,54 @@ public class Operator {
     System.out.println("LEFT TYPE: "+leftOperand.getDefinition().getName()+
                        " | RIGHT TYPE: "+rightOperand.getDefinition().getName());
     
+    throw new RuntimeException("Invalid types for arithmetic operation at line "+operator.lineNumber());
+  }
+  
+  /**
+   * Adds, multiplies, divides and mods two numbers of different types
+   * @param leftOperand - the left operand
+   * @param rightOperand - the right operand
+   * @return JavaInstance that holds the result of the arithmetic operation
+   */
+  private static JavaInstance mixedOperandNumberTypes(JavaInstance leftOperand, JavaInstance rightOperand, Token operator) {
+    if (leftOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class)) && 
+        rightOperand.getDefinition().isChildOf(JavaClassDefinition.defineClass(Number.class))) {
+      JavaInstance result = null;
+      if ( leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class)) ) {
+        Double left = (Double) leftOperand.getInstance();
+        if (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
+          Integer right = (Integer) rightOperand.getInstance();
+          result = JavaInstance.wrapInstance(new Double(left + right));     
+        }
+        else if (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class))) {
+          Long right = (Long) rightOperand.getInstance();
+          result = JavaInstance.wrapInstance(new Double(left + right));     
+        }
+      }
+      else if ( leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class)) ) {
+        Integer left = (Integer) leftOperand.getInstance();
+        if (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
+          Double right = (Double) rightOperand.getInstance();
+          result = JavaInstance.wrapInstance(new Double(left + right));     
+        }
+        else if (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class))) {
+          Long right = (Long) rightOperand.getInstance();
+          result = JavaInstance.wrapInstance(new Long(left + right));     
+        }       
+      }
+      else if ( leftOperand.getDefinition().equals(JavaClassDefinition.defineClass(Long.class)) ) {
+        Long left = (Long) leftOperand.getInstance();
+        if (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Integer.class))) {
+          Integer right = (Integer) rightOperand.getInstance();
+          result = JavaInstance.wrapInstance(new Long(left + right));     
+        }
+        else if (rightOperand.getDefinition().equals(JavaClassDefinition.defineClass(Double.class))) {
+          Double right = (Double) rightOperand.getInstance();
+          result = JavaInstance.wrapInstance(new Double(left + right));     
+        }       
+      }
+      return result;
+    }
     throw new RuntimeException("Invalid types for arithmetic operation at line "+operator.lineNumber());
   }
   
