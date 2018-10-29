@@ -12,6 +12,9 @@ To use run the Window interpreter on a `.w` file, follow the given steps:
 ## Writing in Wordy
 The following [tutorial](https://github.com/TypeMonkey/Wordy/wiki/Writing-in-Wordy) contains information on the syntax of Wordy.
 
+## Dependencies
+Releases of Wordy depend on the OpenIDK 8 binaries for Window x86-64 provided by [this project](https://github.com/ojdkbuild/ojdkbuild).
+
 ## Future Developments
 My main future contributions to Wordy will be aminly code cleaning and commenting, along with bug fixes. 
 To read more about my future plans for Wordy, please go [here](https://github.com/TypeMonkey/Wordy/wiki).
